@@ -51,7 +51,18 @@ Iedereen speelt met hetzelfde deck van 10: 3× Slag (`int`, 6), 2× Vlottende Sl
 - **`TypeChanged` draagt meer dan het doc voorstelde**: HP voor en na, max HP en blok na, en `wrapped` als de waarde omklapte. Een verloren decimaal komt eerst als `ValueTruncated`, zoals elders.
 - **HP en blok zijn in het eventcontract `double`**, omdat een `double`-doelwit decimalen houdt. Voor `int` en `byte` staat er nooit iets na de komma.
 - **Elk type heeft een vaste kleur en vorm**: `int` blauw en hoekig, `double` paars en rond, `byte` geel met een dubbele rand. Een omgegoten vijand draagt voortaan de kleur van zijn nieuwe type.
+- **Wie de Kolos eerst slaat, maakt de truc moeilijker, en dat blijft zo.** Na een Slag wordt 500 als byte 244, en dan brengt één Herstel hem op 250 in plaats van 0. Eerst denken, dan slaan: dat hoort bij de puzzel.
+- **`ValueTruncated` zegt wat er afgekapt wordt** (`subject`: `Damage`, `Block` of `Hp`). Zo ziet afgekapte schade er niet meer uit als een afgekapt schild of als omgieten.
 - **De getallen zijn eerste gokken**: HP, schild en aanval van beide vijanden staan in `Scenarios.cs` en moeten in de playtest afgesteld worden.
+
+## Na de eerste playtest: leesbaarheid
+
+Testers zagen niet altijd of iets schade kreeg, en de vijand leek soms schade te krijgen zonder aanval. Er was geen bug, maar drie verschillende dingen zagen eruit als schade: afgekapte HP bij omgieten, een afgekapt schild in de vijandbeurt, en de val van 506 naar 250. Daarom:
+
+- **Een samenvatting per actie** boven elk doelwit: "-4 HP", "GEBLOKT · 6 op schild", "+12 schild", "int → byte". De vorige verdwijnt zodra er een nieuwe actie begint.
+- **Een gevechtslog** links, één regel per gebeurtenis, bijvoorbeeld "Geest: schild vangt 6 op, 6.5 over".
+- **Elke afgekapte waarde zegt wat ze is**: schade boven het hoofd, een schild in cyaan bij het schild, HP in het wit met "(int) HP".
+- **Een getal bij elke schildtreffer**, en een grotere HP-balk waarop het verloren stuk even licht blijft staan.
 
 ## Open
 

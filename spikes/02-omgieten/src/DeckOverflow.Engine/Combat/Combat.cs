@@ -180,7 +180,7 @@ public sealed class Combat
         if (whole)
         {
             (int truncated, double lost) = IntRules.Truncate(remaining);
-            if (lost > 0) Emit(new ValueTruncated(target.Id, remaining, truncated, lost));
+            if (lost > 0) Emit(new ValueTruncated(target.Id, remaining, truncated, lost, ValueSubject.Damage));
             damage = truncated;
         }
 
@@ -199,7 +199,7 @@ public sealed class Combat
         if (CastRules.IsWhole(target.Kind))
         {
             (int truncated, double lost) = IntRules.Truncate(amount);
-            if (lost > 0) Emit(new ValueTruncated(target.Id, amount, truncated, lost));
+            if (lost > 0) Emit(new ValueTruncated(target.Id, amount, truncated, lost, ValueSubject.Block));
             amount = truncated;
         }
 
@@ -247,7 +247,7 @@ public sealed class Combat
 
         if (hp.Lost > 0)
         {
-            Emit(new ValueTruncated(target.Id, hpBefore, IntRules.Truncate(hpBefore).Result, hp.Lost));
+            Emit(new ValueTruncated(target.Id, hpBefore, IntRules.Truncate(hpBefore).Result, hp.Lost, ValueSubject.Hp));
         }
 
         target.Kind = to;

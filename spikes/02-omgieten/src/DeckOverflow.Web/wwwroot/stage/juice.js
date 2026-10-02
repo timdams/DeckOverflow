@@ -10,6 +10,7 @@ export const juice = {
   comboPitchStep: 0.06,
   overflow: { freezeMs: 350, rollToMaxMs: 600 },
   cast: { meltMs: 380, holdMs: 260, pourMs: 420 },
+  summaryHoldMs: 1600,                          // hoe lang het resultaat van een kaart blijft staan
   cardFlyMs: 220,
   dealStaggerMs: 70,
 };

@@ -29,10 +29,14 @@ public abstract record GameEvent
     public int Seq { get; init; }
 }
 
+/// <summary>Welke waarde een decimaal verloor. Zo toont de stage afgekapte schade anders dan een afgekapt schild.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<ValueSubject>))]
+public enum ValueSubject { Damage, Block, Hp }
+
 // Uit spike 1. HP en blok zijn nu double, omdat een double-doelwit decimalen houdt.
 public sealed record CardPlayed(string CardId, int SourceId, int TargetId) : GameEvent;
 public sealed record DamageDealt(int TargetId, double Amount, double HpBefore, double HpAfter) : GameEvent;
-public sealed record ValueTruncated(int TargetId, double Before, int After, double Lost) : GameEvent;
+public sealed record ValueTruncated(int TargetId, double Before, int After, double Lost, ValueSubject Subject) : GameEvent;
 public sealed record ValueOverflowed(int TargetId, int Before, int Added, int After, int Max) : GameEvent;
 public sealed record BlockGained(int TargetId, double Amount, double Total) : GameEvent;
 public sealed record Healed(int TargetId, double Amount, double HpAfter) : GameEvent;

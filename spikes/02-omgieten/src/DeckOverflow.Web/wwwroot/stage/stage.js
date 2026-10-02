@@ -4,6 +4,7 @@
 import { juice, sec, wait, roll, text, burst, num, typeOf, typeBadge, COLORS, FONT_BODY } from './juice.js';
 import { initAudio, sfx, toggleMute } from './audio.js';
 import { runQueue } from './timeline.js';
+import { buildLog, clearLog, rememberCards } from './log.js';
 import { pixelSprite, icon, ART } from './sprites.js';
 
 const W = 960;
@@ -80,6 +81,8 @@ export async function init(host, dotnetRef, loadMs) {
   buildBackground();
   buildUi();
   buildHud();
+  // Gevechtslog links, onder de HUD en naast de speler
+  buildLog(S.layers.ui, 12, 84, 182, 228);
   setupInput();
 
   app.ticker.add(onTick);
@@ -118,6 +121,7 @@ export function sync(snapshot) {
     if (!c.intent) a.setIntent(null);
   }
 
+  rememberCards(snapshot.hand);
   S.ui.energy.text = `${snapshot.energy}/${snapshot.maxEnergy}`;
   S.ui.piles.text = `trek ${snapshot.drawPile} · aflegstapel ${snapshot.discardPile}`;
 
@@ -139,6 +143,7 @@ export function reset() {
   S.turn = 0;
   S.pending = null;
   S.busy = false;
+  clearLog();
 }
 
 export function dispose() {
@@ -312,21 +317,24 @@ function createActor(c) {
   const barW = 150;
   const bar = new PIXI.Container();
   bar.position.set(-barW / 2, 18);
-  const barBg = new PIXI.Graphics().rect(0, 0, barW, 16).fill(COLORS.ink).rect(2, 2, barW - 4, 12).fill(0x2b2533);
-  const barFill = new PIXI.Graphics().rect(2, 2, barW - 4, 12).fill(COLORS.white);   // getint in de kleur van het type
-  const hpText = text('', { size: 10 });
-  hpText.position.set(barW / 2, 8);
-  bar.addChild(barBg, barFill, hpText);
+  const barBg = new PIXI.Graphics().rect(0, 0, barW, 22).fill(COLORS.ink).rect(2, 2, barW - 4, 18).fill(0x2b2533);
+  // Wat er net af ging blijft even licht staan, zodat je ziet hoeveel een treffer kostte
+  const barLag = new PIXI.Graphics().rect(2, 2, barW - 4, 18).fill(COLORS.white);
+  barLag.alpha = 0.5;
+  const barFill = new PIXI.Graphics().rect(2, 2, barW - 4, 18).fill(COLORS.white);   // getint in de kleur van het type
+  const hpText = text('', { size: 12 });
+  hpText.position.set(barW / 2, 11);
+  bar.addChild(barBg, barLag, barFill, hpText);
 
   const badgeSlot = new PIXI.Container();
-  badgeSlot.position.set(barW + 8, 8);
+  badgeSlot.position.set(barW + 8, 11);
   bar.addChild(badgeSlot);
 
   const blockBox = new PIXI.Container();
   const shieldIcon = icon('shield', 3);
   const blockText = text('', { size: 10 });
   blockBox.addChild(shieldIcon, blockText);
-  blockBox.position.set(-barW / 2 - 30, 26);
+  blockBox.position.set(-barW / 2 - 30, 29);
   blockBox.visible = false;
 
   const intent = new PIXI.Container();
@@ -363,7 +371,14 @@ function createActor(c) {
     setHp(value) {
       a.hp = value;
       hpText.text = `${num(value)}/${num(a.max)}`;
-      barFill.scale.x = Math.max(0, Math.min(1, value / a.max));
+      const ratio = Math.max(0, Math.min(1, value / a.max));
+      barFill.scale.x = ratio;
+      if (ratio < barLag.scale.x) {
+        gsap.to(barLag.scale, { x: ratio, delay: sec(450), duration: sec(450), ease: 'power2.in', overwrite: true });
+      } else {
+        gsap.killTweensOf(barLag.scale);
+        barLag.scale.x = ratio;
+      }
     },
 
     rollHp(from, to) {

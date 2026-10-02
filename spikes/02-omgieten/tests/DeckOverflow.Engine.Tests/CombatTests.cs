@@ -58,7 +58,7 @@ public class CombatTests
         GameEvent[] expected =
         [
             new CardPlayed("giet-int", P, E),
-            new ValueTruncated(E, Before: 24.5, After: 24, Lost: 0.5),
+            new ValueTruncated(E, Before: 24.5, After: 24, Lost: 0.5, ValueSubject.Hp),
             new TypeChanged(E, ValueKind.Double, ValueKind.Int, HpBefore: 24.5, HpAfter: 24, MaxHpAfter: 24, BlockAfter: 12, Wrapped: false)
         ];
         Assert.Equal(expected, events);
@@ -90,7 +90,7 @@ public class CombatTests
             new TurnEnded(1),
             new BlockExpired(E, 12.5),
             new AttackLaunched(E, P, "9 / 2.0", 4.5),
-            new ValueTruncated(P, Before: 4.5, After: 4, Lost: 0.5),
+            new ValueTruncated(P, Before: 4.5, After: 4, Lost: 0.5, ValueSubject.Damage),
             new DamageDealt(P, Amount: 4, HpBefore: 50, HpAfter: 46),
             new BlockGained(E, Amount: 12.5, Total: 12.5),
             new TurnStarted(2, Energy: 3),
@@ -107,7 +107,7 @@ public class CombatTests
 
         var events = combat.Handle(new EndTurn()).WithoutSeq();
 
-        Assert.Contains(new ValueTruncated(E, Before: 12.5, After: 12, Lost: 0.5), events);
+        Assert.Contains(new ValueTruncated(E, Before: 12.5, After: 12, Lost: 0.5, ValueSubject.Block), events);
         Assert.Contains(new BlockGained(E, Amount: 12, Total: 12), events);
     }
 
@@ -145,7 +145,7 @@ public class CombatTests
 
         var events = combat.Play("vlottende-slag", E);
 
-        Assert.Equal(3, events.OfType<ValueTruncated>().Count());
+        Assert.Equal(3, events.OfType<ValueTruncated>().Count(t => t.Subject == ValueSubject.Damage));
         Assert.Equal([2.0, 2.0, 2.0], events.OfType<DamageDealt>().Select(d => d.Amount));
         Assert.Equal(500, combat.Enemy().Hp);
     }
@@ -265,6 +265,17 @@ public class CombatTests
         var events = combat.Handle(new EndTurn());
 
         Assert.IsType<PlayRejected>(Assert.Single(events));
+    }
+
+    [Fact]
+    public void ValueTruncated_zegt_wat_er_afgekapt_wordt()
+    {
+        var combat = TestHelpers.StartWithHand("geest", "giet-int");
+        var events = combat.Play("giet-int", E);
+
+        string json = JsonSerializer.Serialize(events, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+
+        Assert.Contains("""{"type":"ValueTruncated","targetId":1,"before":24.5,"after":24,"lost":0.5,"subject":"Hp","seq":2}""", json);
     }
 
     [Fact]

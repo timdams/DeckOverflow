@@ -5,17 +5,93 @@
 
 import { juice, sec, wait, hitPause, sizeOf, shake, floatText, burst, text, num, typeOf, COLORS } from './juice.js';
 import { sfx } from './audio.js';
+import { logEvent } from './log.js';
 
 export async function runQueue(S, events) {
   const ctx = { tails: [], combo: 0 };
+  clearSummaries();
 
   for (const e of events) {
+    logEvent(S, e);
     const handler = handlers[e.type];
     if (!handler) { console.debug('Stage negeert onbekend event', e); continue; }
     await handler(S, e, ctx);
   }
 
   await Promise.all(ctx.tails);
+  showSummaries(S, events);
+}
+
+// ---------------------------------------------------------------- samenvatting
+
+/**
+ * Na een kaart of een vijandbeurt: per doelwit één blok met het resultaat,
+ * zodat de speler niet uit zes losse animaties hoeft af te leiden wat er gebeurde.
+ */
+const summaries = new Set();
+
+/** Een nieuwe actie begint: het resultaat van de vorige mag weg, anders lopen ze door elkaar. */
+function clearSummaries() {
+  for (const box of summaries) gsap.to(box, { alpha: 0, duration: sec(120), overwrite: true, onComplete: () => destroyBox(box) });
+  summaries.clear();
+}
+
+const destroyBox = (box) => { if (!box.destroyed) box.destroy({ children: true }); };
+
+function showSummaries(S, events) {
+  const by = new Map();
+  const get = (id) => {
+    if (!by.has(id)) by.set(id, { hp: 0, blocked: 0, lost: 0, healed: 0, gained: 0, overflow: false, cast: null, hit: false });
+    return by.get(id);
+  };
+
+  for (const e of events) {
+    switch (e.type) {
+      case 'DamageDealt': { const s = get(e.targetId); s.hp += e.amount; s.hit = true; break; }
+      case 'BlockAbsorbed': { const s = get(e.targetId); s.blocked += e.absorbed; s.hit = true; break; }
+      case 'ValueTruncated':
+        if (e.subject === 'Damage') { const s = get(e.targetId); s.lost += e.lost; s.hit = true; }
+        break;
+      case 'Healed': get(e.targetId).healed += e.amount; break;
+      case 'ValueOverflowed': get(e.targetId).overflow = true; break;
+      case 'BlockGained': get(e.targetId).gained += e.amount; break;
+      case 'TypeChanged': get(e.targetId).cast = e; break;
+    }
+  }
+
+  for (const [id, s] of by) {
+    const a = S.actor(id);
+    if (!a) continue;
+    const lines = [];   // [tekst, kleur, groot?]
+    if (s.hit) {
+      lines.push(s.hp > 0 ? [`-${num(s.hp)} HP`, COLORS.red, true] : ['GEBLOKT', COLORS.cyan, true]);
+      if (s.blocked > 0) lines.push([`${num(s.blocked)} op schild`, COLORS.cyan]);
+      if (s.lost > 0) lines.push([`${num(s.lost)} afgekapt`, COLORS.orangeLight]);
+    }
+    if (s.overflow) lines.push(['OVERFLOW', COLORS.orange, true]);
+    if (s.healed > 0) lines.push([`+${num(s.healed)} HP`, COLORS.green, !s.hit]);
+    if (s.cast) lines.push([`${s.cast.from.toLowerCase()} → ${s.cast.to.toLowerCase()}`, typeOf(s.cast.to).color, !s.hit]);
+    if (s.gained > 0) lines.push([`+${num(s.gained)} schild`, COLORS.cyan, lines.length === 0]);
+    if (lines.length === 0) continue;
+
+    const box = new PIXI.Container();
+    let y = 0;
+    for (const [value, color, big] of lines) {
+      const t = big ? text(value, { size: 16, color }) : text(value, { size: 20, color, font: '"VT323", monospace' });
+      t.position.set(0, y);
+      y += t.height + 2;
+      box.addChild(t);
+    }
+    // Onderkant net boven de intent, groeit naar boven
+    const head = a.head();
+    box.position.set(head.x, head.y - 64 - y);
+    box.scale.set(0.3);
+    S.layers.top.addChild(box);
+    summaries.add(box);
+    gsap.timeline({ onComplete: () => { summaries.delete(box); destroyBox(box); } })
+      .to(box.scale, { x: 1, y: 1, duration: sec(180), ease: 'back.out(2.5)' })
+      .to(box, { alpha: 0, duration: sec(300) }, `+=${sec(juice.summaryHoldMs)}`);
+  }
 }
 
 const handlers = {
@@ -54,14 +130,23 @@ const handlers = {
 
   async ValueTruncated(S, e) {
     const a = S.actor(e.targetId);
-    const head = a.head();
-    const y = head.y - 30;
+    // Schade en HP boven het hoofd, een schild bij het schild
+    let anchor = a.head();
+    let y = anchor.y - 30;
+    if (e.subject === 'Block') {
+      anchor = S.layers.fx.toLocal(a.blockBox.getGlobalPosition());
+      y = anchor.y - 34;
+    }
+    const head = anchor;
+    const label = { Damage: '(int) schade', Block: '(int) schild', Hp: '(int) HP' }[e.subject] ?? '(int)';
+    const color = e.subject === 'Block' ? COLORS.cyan : e.subject === 'Hp' ? COLORS.white : COLORS.orangeLight;
 
     // "2.5" valt uiteen in "2" en ".5"
     const full = num(e.before);
     const dot = full.indexOf('.');
-    const left = text(dot < 0 ? full : full.slice(0, dot), { size: 26, color: COLORS.orangeLight });
-    const right = text(dot < 0 ? '' : full.slice(dot), { size: 26, color: COLORS.orangeLight });
+    const size = e.subject === 'Damage' ? 26 : 18;
+    const left = text(dot < 0 ? full : full.slice(0, dot), { size, color });
+    const right = text(dot < 0 ? '' : full.slice(dot), { size, color });
     const group = new PIXI.Container();
     right.x = left.width / 2 + right.width / 2;
     group.addChild(left, right);
@@ -75,9 +160,9 @@ const handlers = {
 
     sfx('tinkle', { volume: 0.7 });
     gsap.to(right, { y: 170, x: right.x + 30, rotation: 2.2, alpha: 0, duration: sec(800), ease: 'power2.in' });
-    burst(S.layers.fx, group.x + right.x / 2, y, { color: COLORS.orangeLight, count: 8, speed: 40, gravity: 140 });
+    burst(S.layers.fx, group.x + right.x / 2, y, { color, count: 8, speed: 40, gravity: 140 });
 
-    const tag = text('(int)', { size: 10, color: COLORS.muted });
+    const tag = text(label, { size: 10, color: COLORS.muted });
     tag.position.set(0, 24);
     tag.alpha = 0;
     group.addChild(tag);
@@ -158,6 +243,7 @@ const handlers = {
     const local = S.layers.fx.toLocal(p);
     sfx(e.remaining === 0 ? 'shatter' : 'shield', { volume: 0.7 });
     burst(S.layers.fx, local.x, local.y, { color: COLORS.cyan, count: 8 + Math.round(e.absorbed * 2), speed: 110 });
+    floatText(S.layers.fx, `-${num(e.absorbed)}`, local.x, local.y - 14, { size: 16, color: COLORS.cyan, rise: 30 });
     shake(a.blockIcon, 4, 200);
     a.setBlock(e.remaining);
     await wait(220);
@@ -281,7 +367,7 @@ const handlers = {
     // De nieuwe waarde
     a.setKind(e.to, e.maxHpAfter);
     a.setBlock(e.blockAfter);
-    label.text = `(${to}) ${num(Math.trunc(e.hpBefore))} = ${num(e.hpAfter)}`;
+    label.text = `(${to}) ${num(e.hpBefore)} = ${num(e.hpAfter)}`;
     if (e.wrapped) {
       // Past niet in het nieuwe type: alles bevriest, klik, de rest blijft over
       label.style.fill = COLORS.white;
