@@ -1,0 +1,35 @@
+@page "/"
+@implements IAsyncDisposable
+@inject StageBridge Stage
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+
+<div class="combat">
+    <div class="stage-host" @ref="_host"></div>
+
+    @if (_stageReady)
+    {
+        <div class="hud">
+            <span class="seed">seed @_seed</span>
+            <button disabled="@(_busy || IsOver)" @onclick="EndTurnAsync">Einde beurt</button>
+        </div>
+    }
+
+    @if (!_stageReady)
+    {
+        <div class="overlay">
+            <h1>Deck Overflow</h1>
+            <p>spike: één gevecht tegen de Byte-Golem</p>
+            <button disabled="@_starting" @onclick="StartAsync">@(_starting ? "Laden..." : "Speel")</button>
+        </div>
+    }
+    else if (IsOver && !_busy)
+    {
+        <div class="overlay result">
+            <div class="buttons">
+                <button @onclick="() => RestartAsync(NewSeed())">Nog een gevecht</button>
+                <button class="secondary" @onclick="() => RestartAsync(_seed)">Zelfde seed</button>
+            </div>
+        </div>
+    }
+</div>
