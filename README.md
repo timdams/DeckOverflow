@@ -1,85 +1,39 @@
-# Deck Overflow: spike
+# Deck Overflow
 
-Eén gevecht tegen de Byte-Golem. De spike moet drie vragen beantwoorden (zie het [Spike Design Doc](docs/spike-design-doc.md)):
+Een roguelike deckbuilder in de browser waarin de wereld gehoorzaamt aan C#. Wie de regels doorheeft, wint. Bedoeld voor eerstejaars programmeren en gebaseerd op de leerlijn van *Zie Scherp Scherper*.
 
-1. Draait een C#-motor in de browser met een aanvaardbare laadtijd?
-2. Stuurt die motor een PixiJS-stage aan zonder voelbare interop-vertraging?
-3. Voelt één gevecht satisfying genoeg om er nog één te willen?
+Er staat geen code in beeld: types, overflow, integer deling en operatorvoorrang zijn de natuurwetten van het spel. Na een gevecht geeft de Codex het concept zijn naam en linkt naar het hoofdstuk in het boek.
 
-## Starten
+## Waar staan we
 
-Vereist: .NET 10 SDK.
+| Fase | Wat | Stand |
+| --- | --- | --- |
+| Spike 1 | Eén gevecht tegen de Byte-Golem: C#-motor in de browser, PixiJS-stage, juice | Afgesloten, zie [spikes/01-byte-golem](spikes/01-byte-golem/) |
+| Spike 2 | Types op elke vijand en aanval, Omgieten als kerngereedschap | Gepland, scope in het [Spike Design Doc](docs/spike-design-doc.md#scope-spike-2) |
+| MVP-demo | Een speelbare Act 1: De Vatenvallei, met map, beloningen, Codex en een eenvoudig docentdashboard | Nog niet gestart |
 
-```bash
-dotnet test tests/DeckOverflow.Engine.Tests
-dotnet run --project src/DeckOverflow.Web
-```
+Playtest 1 bevestigde de techniek en dat de golem-ontdekking werkt, maar toonde ook dat één regel per vijand niet schaalt. Daarom rust het spel nu op twee systemen: alles heeft een type, en Omgieten verandert dat type.
 
-Een seed kies je via de URL: `/?seed=255`. Zonder seed geldt `ByteGolemScenario.DefaultSeed` (255), waarbij Herstel in de eerste hand zit.
+## Documenten
 
-## Bediening
+- [Game Design Document](docs/game-design-document.md): visie, pijlers, kernsysteem, Act 1, encounters, kaarten, Codex, antipatronen.
+- [Spike Design Doc](docs/spike-design-doc.md): architectuur, eventcontract, interop, succescriteria, de weg naar de MVP.
+- [Product sheet](docs/product-sheet/product-sheet.html): A4-pitch voor instellingen.
+- [Overzicht en bronnen](docs/README.md).
 
-- Sleep een kaart op een doelwit. Schild mag je gewoon omhoog slepen.
-- **Einde beurt**: knop rechtsonder.
-- **F**: snelle modus (alle duurtijden x0,5, behalve hit pause).
-- **M**: geluid aan/uit.
-
-## Structuur
+## Indeling
 
 ```text
-DeckOverflow.sln
-├─ docs/                       ontwerpdocumenten: GDD, spike design doc, product sheet
-├─ src/
-│  ├─ DeckOverflow.Engine/     pure C#, geen dependencies
-│  │  ├─ Values/               ValueKind, ByteRules, IntRules
-│  │  ├─ Combat/               Combat, Combatant, Intent, setup, snapshot, ByteGolemScenario
-│  │  ├─ Cards/                CardDefinition, Effect, Deck, CardCatalog
-│  │  ├─ Commands/             PlayCard, EndTurn
-│  │  ├─ Events/               GameEvent en subtypes (eventcontract)
-│  │  └─ Random/               SeededRng (PCG32)
-│  └─ DeckOverflow.Web/        Blazor WebAssembly shell
-│     ├─ Pages/CombatPage      host voor de stage, knoppen, orkestratie
-│     ├─ Interop/StageBridge   enige plek die met JS praat
-│     └─ wwwroot/
-│        ├─ stage/             stage.js, timeline.js, juice.js, audio.js, sprites.js
-│        ├─ lib/               PixiJS 8, GSAP 3, Howler 2 (vendored)
-│        ├─ audio/             placeholder-sprite, gegenereerd door tools/make_sfx.py
-│        └─ fonts/             Press Start 2P, VT323 (OFL)
-├─ tests/DeckOverflow.Engine.Tests/
-└─ tools/make_sfx.py           synthetiseert de placeholder-geluiden (numpy)
+├─ docs/                ontwerpdocumenten
+├─ spikes/
+│  └─ 01-byte-golem/    afgesloten spike, eigen .sln, draait los (tag spike-1)
+└─ .github/workflows/   CI per onderdeel
 ```
 
-## Meetpunten
+De code van het spel zelf komt later in `src/` en `tests/` op de root. Wat uit een spike de moeite waard is, nemen we daar bewust over in plaats van de spike door te laten groeien.
 
-Linksboven staat een HUD die de succescriteria rechtstreeks meet:
+## Architectuur
 
-| HUD | Criterium |
-| --- | --- |
-| `speelbaar na` | Laadtijd tot de Speel-knop klaarstaat. Meet ook met devtools, koude cache. |
-| `fps` en `min tijdens laatste animatie` | Vloeiendheid, vooral tijdens de overflow. |
-| `klik→frame` | Reactietijd van loslaten tot het eerste animatieframe. |
-| `motor` | Tijd die `Combat.Handle` nodig had. |
+![De motor beslist, de stage speelt af](docs/architectuur.svg)
 
-Downloadgrootte meet je op de publish-output:
-
-```bash
-dotnet publish src/DeckOverflow.Web -c Release
-```
-
-## Keuzes tijdens de spike
-
-Deze punten wijken af van of vullen het design doc aan:
-
-- **Extra events**: `BlockAbsorbed`, `BlockExpired`, `AttackLaunched`, `TurnStarted`, `PlayRejected` en `CombatEnded`. De stage negeert onbekende types, dus het contract blijft uitbreidbaar.
-- **Schade stopt op 0.** Ook voor de `byte`-golem. Underflow (`2 - 6` wordt `252`) is een mooie mechaniek voor later, maar zou de variant uit het design doc (golem op 2, daarna een Slag) breken.
-- **Herstel op een `int`-speler gaat niet boven max HP.** Dat is een spelregel. Bij `byte` geldt de typegrens, en die loopt over.
-- **Blok is een `int`.** Een halve schade kost een hele blokpunt: 7,5 schade op 10 blok laat 2 blok over.
-- **De golem heelt ook via `ByteRules`.** Staat hij op 254, dan doodt hij zichzelf met +2.
-- **De stage weigert al ongeldige doelwitten** (een Slag op jezelf landt niet). De motor weigert alleen wat de stage niet kan weten, zoals te weinig energie.
-- **Seed-determinisme** is vastgepind in `SeededRngTests.Reeks_is_vastgepind`. Faalt die test, dan veranderen alle bestaande seeds.
-
-## Nog te doen
-
-- Playtest met 5 studenten en 2 collega's; noteren wie pad B zelf vindt.
-- Meten op een gewone schoollaptop.
-- Licenties nakijken (PixiJS MIT, Howler MIT, GSAP standaardlicentie, fonts OFL).
+Een C#-regelmotor zonder UI of tijd neemt commands aan en geeft events terug. Een Blazor WebAssembly-shell orkestreert, en een JavaScript-stage (PixiJS, GSAP, Howler) speelt de events af als animatie en geluid. Spike 1 heeft deze opbouw bewezen; details staan in het [Spike Design Doc](docs/spike-design-doc.md#architectuur).

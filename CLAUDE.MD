@@ -1,33 +1,41 @@
 # Deck Overflow
 
-Roguelike deckbuilder in de browser waarin de wereld gehoorzaamt aan C#. Doelgroep: eerstejaars programmeren, gebaseerd op *Zie Scherp Scherper*. Deze repo is de spike: één gevecht tegen de Byte-Golem.
+Roguelike deckbuilder in de browser waarin de wereld gehoorzaamt aan C#. Doelgroep: eerstejaars programmeren, gebaseerd op *Zie Scherp Scherper*. Deze repo is de projectrepo voor het hele spel: ontwerp, spikes en later de game zelf.
 
 Lees eerst wat je nodig hebt:
 
-- [docs/spike-design-doc.md](docs/spike-design-doc.md): architectuur, eventcontract, interop, scope spike 2.
+- [README.md](README.md): stand van zaken en indeling.
 - [docs/game-design-document.md](docs/game-design-document.md): pijlers, kernsysteem, vijanden, kaarten, antipatronen.
-- [README.md](README.md): starten, bediening, structuur en keuzes tijdens de spike.
+- [docs/spike-design-doc.md](docs/spike-design-doc.md): architectuur, eventcontract, interop, scope spike 2, de weg naar de MVP.
+
+## Indeling en wat je waar doet
+
+- **`docs/`**: kopieën van gedeelde Claude Docs (bronnen in [docs/README.md](docs/README.md)). Pas je hier iets wezenlijks aan, meld dan dat het ook in het brondocument moet.
+- **`spikes/NN-naam/`**: afgesloten of lopende experimenten, elk met een eigen `.sln`, README en CI-workflow, los draaibaar. Een afgesloten spike verandert niet meer; bouw er niet op verder. Een nieuwe spike krijgt een nieuwe map.
+- **`src/` en `tests/` op de root** zijn voor het echte spel en bestaan nog niet. Code uit een spike neem je daar bewust over, niet door de spikemap te verplaatsen of te laten doorgroeien.
+- Spike 1 staat ook in git onder de tag `spike-1`.
 
 ## Commando's
+
+Spike 1 draai je vanuit `spikes/01-byte-golem/`:
 
 ```bash
 dotnet test tests/DeckOverflow.Engine.Tests      # wat CI draait
 dotnet run --project src/DeckOverflow.Web        # /?seed=255 kiest een seed
-dotnet publish src/DeckOverflow.Web -c Release   # downloadgrootte meten
 ```
 
 ## Architectuur: wie mag wat
 
-De motor beslist, de stage speelt af. Houd die grens scherp.
+Bewezen in spike 1 en de basis voor het spel. De motor beslist, de stage speelt af. Houd die grens scherp.
 
-- **`DeckOverflow.Engine`** kent alle spelregels. Pure C#, geen dependencies, geen `DateTime`, `Task.Delay` of `System.Random`. Status verandert alleen via `Combat.Handle(ICommand)`, dat een lijst `GameEvent`s teruggeeft.
-- **`DeckOverflow.Web`** is een dunne shell: orkestratie, geen regels. Alleen `Interop/StageBridge.cs` praat met JavaScript.
-- **`wwwroot/stage/`** zet events om in animatie en geluid. Geen spelregels, en de stage leest nooit zelf de spelstatus. Na elke `play` volgt een `sync` met de snapshot als waarheid.
+- **Motor** (`DeckOverflow.Engine`) kent alle spelregels. Pure C#, geen dependencies, geen `DateTime`, `Task.Delay` of `System.Random`. Status verandert alleen via `Combat.Handle(ICommand)`, dat een lijst `GameEvent`s teruggeeft.
+- **Shell** (`DeckOverflow.Web`, Blazor WebAssembly) orkestreert en bevat geen regels. Alleen `StageBridge` praat met JavaScript.
+- **Stage** (`wwwroot/stage/`, PixiJS + GSAP + Howler) zet events om in animatie en geluid. Geen spelregels, en ze leest nooit zelf de spelstatus. Na elke `play` volgt een `sync` met de snapshot als waarheid.
 - **Typeregels zijn echt .NET-gedrag**, geen nabootsing: `ByteRules` gebruikt `unchecked((byte)…)`, `IntRules` een gewone cast. Een nieuw type krijgt een eigen `XxxRules`-klasse.
-- **Elke regel die iets bijzonders doet, meldt het met een eigen event.** Dat is de haak voor juice en later de Codex.
-- **Events zijn klein en plat**: ids en getallen. Een nieuw event voeg je toe aan `GameEvent.cs` met `[JsonDerivedType]`, aan de tabel in het Spike Design Doc en aan de handlers in `timeline.js`. De stage negeert onbekende types, dus een event zonder handler breekt niets.
-- **Determinisme:** `SeededRng` (PCG32) is vastgepind in `SeededRngTests.Reeks_is_vastgepind`. Faalt die test, dan veranderen alle bestaande seeds. Pas de verwachte waarden niet zomaar aan.
-- **Geen CDN:** PixiJS, GSAP, Howler en de fonts staan in `wwwroot/lib` en `wwwroot/fonts`. Voeg nieuwe libraries daar ook toe.
+- **Elke regel die iets bijzonders doet, meldt het met een eigen event.** Dat is de haak voor juice en de Codex.
+- **Events zijn klein en plat**: ids en getallen, polymorf geserialiseerd met `[JsonDerivedType]`. Een nieuw event komt ook in de tabel in het Spike Design Doc en in de handlers van de stage. De stage negeert onbekende types.
+- **Determinisme:** een eigen RNG met seed (PCG32), vastgepind met een test op de eerste getallen. Faalt die, dan veranderen alle bestaande seeds; pas de verwachte waarden niet zomaar aan.
+- **Geen CDN:** libraries en fonts staan in `wwwroot/lib` en `wwwroot/fonts`, zodat het spel ook op een schoolnetwerk of GitHub Pages draait.
 - Juice-getallen staan in `juice.js`. Stel de feel daar af, niet in de handlers.
 
 ## Ontwerpregels die code raken
@@ -37,16 +45,13 @@ Uit het GDD. Een wijziging die hiertegen ingaat, eerst voorleggen.
 - **C# is natuurkunde.** Regels zijn altijd consistent en buigen nooit voor de les of voor de speler: als `int` afkapt, kapt `int` altijd af.
 - **Geen code in beeld in Act 1.** Kaarten tonen getallen, letters en woorden. Echte C# verschijnt pas in de Codex.
 - **Eerst ervaren, dan benoemen.** Geen tutorialschermen of uitleg vooraf. In de game heet casting "Omgieten"; het woord "cast" verschijnt pas in de Codex.
+- **Rekenen is gereedschap, nooit de taak.** Intents tonen standaard het totaal; alleen de Rekenmeester verbergt het.
 - **Geen gamification:** geen vragen als poort, geen punten of badges, geen echt geld of FOMO-timers.
-- **Compilefout of exception:** een kaart op een ongeldig doelwit weigert (de stage vangt dat af). Alleen runtimefouten ontploffen.
+- **Compilefout of exception:** een kaart op een ongeldig doelwit weigert. Alleen runtimefouten ontploffen.
 - Elk gevecht moet op meerdere manieren te winnen zijn. Begrijpen maakt het efficiënter, niet verplicht.
 
 ## Conventies
 
 - Taal: Nederlands voor spelteksten, comments, XML-docs en testnamen (`PadB_herstel_op_golem_laat_byte_overlopen_en_wint`). Identifiers in code blijven Engels.
 - .NET 10, nullable aan, `sealed record` voor commands, events en snapshots.
-- Nieuwe regels en scenario's krijgen een xUnit-test in `tests/DeckOverflow.Engine.Tests`. Gebruik `TestHelpers` voor de standaardopzet.
-
-## Documentatie
-
-`docs/` bevat kopieën van gedeelde Claude Docs (links in [docs/README.md](docs/README.md)). Neem je een ontwerpkeuze tijdens het bouwen, noteer die dan in "Keuzes tijdens de spike" in de README en meld dat ze ook in het Spike Design Doc moet.
+- Nieuwe regels en scenario's krijgen een xUnit-test.

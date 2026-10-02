@@ -9,10 +9,10 @@
 
 De markdown is overgenomen op 2 oktober 2026. De Claude Docs blijven de plek waar we samen schrijven en reageren; werk na een grote wijziging daar ook de kopie hier bij.
 
-## Stand van zaken tegenover de code
+## Stand van zaken tegenover spike 1
 
-- **Eventcontract:** de 15 events uit het Spike Design Doc staan zo in [GameEvent.cs](../src/DeckOverflow.Engine/Events/GameEvent.cs).
-- **Solution-structuur:** het doc noemt nog `TypedValue` en `Turn`. De spike kwam zonder uit; de werkelijke structuur staat in de [README](../README.md#structuur).
+- **Eventcontract:** de 15 events uit het Spike Design Doc staan zo in [GameEvent.cs](../spikes/01-byte-golem/src/DeckOverflow.Engine/Events/GameEvent.cs).
+- **Solution-structuur:** het doc noemt nog `TypedValue` en `Turn`. De spike kwam zonder uit; de werkelijke structuur staat in de [README van spike 1](../spikes/01-byte-golem/README.md#structuur).
 - **Spike 2** (een `double`-vijand, getypeerde aanvallen, Omgieten, event `TypeChanged`, `DoubleRules`) is nog niet gebouwd.
 - **Techniekkeuze:** het GDD laat Blazor tegenover een JavaScript-engine nog open. De spike koos een combinatie: de motor in Blazor WebAssembly, de stage in PixiJS.
 

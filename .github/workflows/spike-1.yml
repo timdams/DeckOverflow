@@ -1,4 +1,4 @@
-name: engine
+name: spike-1-engine
 
 on:
   push:
@@ -12,4 +12,4 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
-      - run: dotnet test tests/DeckOverflow.Engine.Tests
+      - run: dotnet test spikes/01-byte-golem/tests/DeckOverflow.Engine.Tests
