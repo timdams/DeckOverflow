@@ -5,7 +5,9 @@
       "mcp__claude-in-chrome__tabs_context_mcp",
       "mcp__claude-in-chrome__select_browser",
       "ClaudeInChromeDomain(localhost:5183)",
-      "ClaudeInChromeDomain(localhost:5214)"
+      "ClaudeInChromeDomain(localhost:5214)",
+      "ClaudeInChromeDomain(localhost:5175)",
+      "ClaudeInChromeDomain(127.0.0.1:5175)"
     ]
   }
 }

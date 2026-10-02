@@ -12,6 +12,7 @@ Er staat geen code in beeld: types, overflow, integer deling en operatorvoorrang
 | Spike 2 | Types op elke vijand en aanval, Omgieten als kerngereedschap | Gebouwd, nog niet met spelers getest, zie [spikes/02-omgieten](spikes/02-omgieten/) |
 | Spike 3 | De hele flow van een act: map, gevechten, beloningen, rustvuur, events, winkel, schat en baas | Gebouwd, nog niet met spelers getest, zie [spikes/03-vatenvallei](spikes/03-vatenvallei/) |
 | Spike 4 | De eerste minuten: een starterdeck dat meteen werkt, een openingskeuze, een vroeg wondermoment, en het spel in het Engels | Gebouwd, nog niet met spelers getest, zie [spikes/04-eerste-minuten](spikes/04-eerste-minuten/) |
+| Spike 5 | Tekenstijlen: elf stijlen voor kaarten en relics (van klei en tinnen speelgoed tot teletekst), te kiezen via een menu | Gebouwd, nog niet met spelers getest, zie [spikes/05-tekenstijlen](spikes/05-tekenstijlen/) |
 | MVP-demo | Een speelbare Act 1: De Vatenvallei, met map, beloningen, Codex en een eenvoudig docentdashboard | Nog niet gestart |
 
 **Prioriteit nu:** de core game loop. Eerst moet vechten, een beloning kiezen en de map leuk zijn; geluid, definitieve art en polish komen daarna.
@@ -33,7 +34,8 @@ Playtest 1 bevestigde de techniek en dat de golem-ontdekking werkt, maar toonde 
 │  ├─ 01-byte-golem/    afgesloten spike, eigen .sln, draait los (tag spike-1)
 │  ├─ 02-omgieten/      types en Omgieten: Vlottende Geest en Tinnen Kolos
 │  ├─ 03-vatenvallei/   een hele act: map, beloningen, rustvuur, events, winkel, baas
-│  └─ 04-eerste-minuten/ starterdeck, openingskeuze, de Bottomless Jug, Engelse teksten
+│  ├─ 04-eerste-minuten/ starterdeck, openingskeuze, de Bottomless Jug, Engelse teksten
+│  └─ 05-tekenstijlen/  elf tekenstijlen voor kaarten en relics, stijlmenu
 └─ .github/workflows/   CI per onderdeel
 ```
 

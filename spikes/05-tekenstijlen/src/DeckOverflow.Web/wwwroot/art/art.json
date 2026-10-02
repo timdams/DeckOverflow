@@ -1,0 +1,32 @@
+{
+  "styles": ["pixel", "sticker", "notebook", "clay", "tin", "patent", "manual", "cabinet", "marginalia", "cross-stitch", "teletext"],
+  "pixelated": ["pixel", "teletext"],
+  "cards": {
+    "strike": "strike",
+    "floating-strike": "floating-strike",
+    "heavy-strike": "heavy-strike",
+    "floating-rain": "floating-rain",
+    "molded-strike": "molded-strike",
+    "molded-rain": "molded-strike",
+    "shield": "shield",
+    "thick-shield": "thick-shield",
+    "mend": "mend",
+    "add": "add",
+    "double-up": "double-up",
+    "remold-int": "remold",
+    "remold-byte": "remold",
+    "set-to-1": "set-to-1",
+    "byte-trap": "byte-trap"
+  },
+  "relics": {
+    "counter": "relic-counter",
+    "floating-point": "relic-floating-point",
+    "scrap-pouch": "relic-scrap-pouch",
+    "anchor-barrel": "relic-anchor-barrel",
+    "great-pot": "relic-great-pot"
+  },
+  "nodes": {
+    "treasure": "treasure",
+    "rest": "rest"
+  }
+}

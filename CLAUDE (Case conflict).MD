@@ -17,15 +17,15 @@ Eerst de core game loop: vechten, een beloning kiezen, de map. Geluid, definitie
 - **`docs/`**: kopieën van gedeelde Claude Docs (bronnen in [docs/README.md](docs/README.md)). Pas je hier iets wezenlijks aan, meld dan dat het ook in het brondocument moet.
 - **`spikes/NN-naam/`**: afgesloten of lopende experimenten, elk met een eigen `.sln`, README en CI-workflow, los draaibaar. Een afgesloten spike verandert niet meer; bouw er niet op verder. Een nieuwe spike krijgt een nieuwe map.
 - **`src/` en `tests/` op de root** zijn voor het echte spel en bestaan nog niet. Code uit een spike neem je daar bewust over, niet door de spikemap te verplaatsen of te laten doorgroeien.
-- Spike 1 staat ook in git onder de tag `spike-1`. Spike 2 (`spikes/02-omgieten/`), spike 3 (`spikes/03-vatenvallei/`, de hele act met map en beloningen) en spike 4 (`spikes/04-eerste-minuten/`, starterdeck, openingskeuze, Engelse teksten) zijn gebouwd maar nog niet getest met spelers. Nieuw werk bouwt verder op spike 4.
+- Spike 1 staat ook in git onder de tag `spike-1`. Spike 2 (`spikes/02-omgieten/`), spike 3 (`spikes/03-vatenvallei/`, de hele act met map en beloningen) spike 4 (`spikes/04-eerste-minuten/`, starterdeck, openingskeuze, Engelse teksten) en spike 5 (`spikes/05-tekenstijlen/`, elf tekenstijlen voor kaarten en relics) zijn gebouwd maar nog niet getest met spelers. Nieuw werk bouwt verder op spike 5.
 
 ## Commando's
 
-Elke spike draai je vanuit zijn eigen map, bijvoorbeeld `spikes/04-eerste-minuten/`:
+Elke spike draai je vanuit zijn eigen map, bijvoorbeeld `spikes/05-tekenstijlen/`:
 
 ```bash
 dotnet test tests/DeckOverflow.Engine.Tests      # wat CI draait
-dotnet run --project src/DeckOverflow.Web        # spike 4: /?seed=255, of /?fight=reckoner
+dotnet run --project src/DeckOverflow.Web        # spike 5: /?seed=255, of /?fight=reckoner
 ```
 
 ## Architectuur: wie mag wat

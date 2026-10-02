@@ -1,0 +1,37 @@
+@inject Strings S
+@inject ArtStyle Art
+
+@* Spike 5: kies een tekenstijl uit art/art.json. *@
+
+<span class="art-menu">
+    <button class="secondary small" title="@S.T("ui.art.hint")" @onclick="() => _open = !_open">
+        @S.T("ui.art", ("style", S.T($"art.{Art.Current}"))) ▾
+    </button>
+    @if (_open)
+    {
+        <span class="art-menu-backdrop" @onclick="() => _open = false"></span>
+        <ul class="art-menu-list">
+            @foreach (var style in Art.Styles)
+            {
+                <li>
+                    <button class="@(style == Art.Current ? "current" : "")" @onclick="() => ChooseAsync(style)">
+                        <img src="art/@style/strike.png" alt="" class="@(Art.IsPixelated(style) ? "pixelated-img" : "")" />
+                        @S.T($"art.{style}")
+                    </button>
+                </li>
+            }
+        </ul>
+    }
+</span>
+
+@code {
+    [Parameter] public EventCallback<string> OnChoose { get; set; }
+
+    private bool _open;
+
+    private async Task ChooseAsync(string style)
+    {
+        _open = false;
+        await OnChoose.InvokeAsync(style);
+    }
+}
