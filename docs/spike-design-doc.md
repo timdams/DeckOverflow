@@ -299,6 +299,30 @@ Nieuwe run-events: `NodeEntered`, `GoldChanged`, `RunHpChanged`, `CardAdded`, `C
 - Een beloning voelt als een keuze, en Overslaan wordt soms gekozen.
 - Een run duurt 10 tot 15 minuten, en na verlies klikt de tester zelf op "Nieuwe run".
 
+## Spike 4: de eerste minuten
+
+Het begin van spike 3 speelde stroef: drie van de tien starterkaarten deden niets in het eerste gevecht, en het eerste aha-moment kwam pas bij een elite. Spike 4 werkt aan de eerste minuten, naar het voorbeeld van Slay the Spire. Gebouwd in [spike 4](../spikes/04-eerste-minuten/README.md).
+
+| Erbij | Bewust nog niet |
+| --- | --- |
+| Een starterdeck waarvan elke kaart meteen werkt: 4× Strike, 2× Floating Strike, 3× Shield, 1× Add | Een tweede personage of starterdeck |
+| De Gieterij: een openingskeuze tussen een kaart, een zichtbare relic en goud | Ruilen of risico's in de openingskeuze |
+| De Bottomless Jug achter een vroege `?`: een byte die zich voorbij 255 drinkt | Meer wonder-encounters |
+| Het spel in het Engels, alle spelteksten in `en.json` | Een Nederlandse vertaling |
+
+### Motor
+
+- **Geen spelteksten in de motor.** Snapshots en events dragen sleutels en getallen (`TextRef`); shell en stage zoeken de tekst op in `wwwroot/text/en.json`. Kaartnamen hangen aan de id, kaartteksten volgen uit het effect.
+- **Relics zijn klassen met haken.** `Combat` en `Run` roepen haken aan en kennen geen relic bij naam.
+- **Elk gevecht blijft te winnen:** zonder kaart die naar byte giet, wordt de Tinnen Kolos de Byte-Golem.
+- `PlayRejected.Reason` en `RunRejected.Reason` zijn nu sleutels, bv. `reject.no-energy`. Geen nieuwe events.
+
+### Wat spike 4 moet aantonen
+
+- Na 2 minuten weet een tester wat elke kaart in zijn hand doet, zonder uitleg.
+- De keuze in de Gieterij voelt als een eigen start.
+- Het omklappen van de kruik lokt een hardop "wacht, wat?" uit, en de tester kan daarna zeggen waarom het gebeurde.
+
 ## Succescriteria
 
 De spike slaagt als hij technisch vlot draait en als testers het gevecht willen herspelen. De drempels hieronder zijn voorstellen om bij de start vast te leggen.

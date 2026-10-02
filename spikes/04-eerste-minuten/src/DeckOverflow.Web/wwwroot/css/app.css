@@ -1,0 +1,148 @@
+@font-face {
+  font-family: "Press Start 2P";
+  src: url("../fonts/press-start-2p-latin-400-normal.woff2") format("woff2");
+  font-display: block;
+}
+
+@font-face {
+  font-family: "VT323";
+  src: url("../fonts/vt323-latin-400-normal.woff2") format("woff2");
+  font-display: block;
+}
+
+:root {
+  --bg: #14111b;
+  --ink: #1b1622;
+  --orange: #f39200;
+  --orange-light: #ffb347;
+  --muted: #8b84a0;
+}
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: #fff;
+  font-family: "VT323", monospace;
+  font-size: 20px;
+  overflow: hidden;
+}
+
+#app, .run {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.stage-host {
+  position: absolute;
+  inset: 0;
+}
+
+.stage-host canvas {
+  display: block;
+  image-rendering: pixelated;
+}
+
+.hud {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.seed {
+  color: var(--muted);
+}
+
+button {
+  font-family: "Press Start 2P", monospace;
+  font-size: 12px;
+  color: var(--ink);
+  background: var(--orange);
+  border: 3px solid var(--ink);
+  box-shadow: 0 4px 0 var(--ink);
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: transform 60ms, box-shadow 60ms, background 60ms;
+}
+
+button:hover:not(:disabled) {
+  background: var(--orange-light);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--ink);
+}
+
+button:disabled {
+  filter: grayscale(1) brightness(0.6);
+  cursor: default;
+}
+
+button.secondary {
+  background: #3d3a4b;
+  color: #fff;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  background: rgba(20, 17, 27, 0.92);
+  text-align: center;
+}
+
+.overlay.result {
+  background: transparent;
+  justify-content: flex-end;
+  padding-bottom: 22vh;
+  pointer-events: none;
+}
+
+.overlay.result .buttons {
+  pointer-events: auto;
+}
+
+.overlay h1 {
+  font-family: "Press Start 2P", monospace;
+  font-size: clamp(22px, 5vw, 48px);
+  color: var(--orange);
+  margin: 0;
+  text-shadow: 0 4px 0 var(--ink);
+}
+
+.overlay p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.buttons {
+  display: flex;
+  gap: 12px;
+}
+
+#blazor-error-ui {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 16px;
+  background: #e5484d;
+  color: #fff;
+  z-index: 1000;
+}
+
+#blazor-error-ui .reload, #blazor-error-ui .dismiss {
+  color: #fff;
+  margin-left: 12px;
+  cursor: pointer;
+}

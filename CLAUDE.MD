@@ -17,15 +17,15 @@ Eerst de core game loop: vechten, een beloning kiezen, de map. Geluid, definitie
 - **`docs/`**: kopieën van gedeelde Claude Docs (bronnen in [docs/README.md](docs/README.md)). Pas je hier iets wezenlijks aan, meld dan dat het ook in het brondocument moet.
 - **`spikes/NN-naam/`**: afgesloten of lopende experimenten, elk met een eigen `.sln`, README en CI-workflow, los draaibaar. Een afgesloten spike verandert niet meer; bouw er niet op verder. Een nieuwe spike krijgt een nieuwe map.
 - **`src/` en `tests/` op de root** zijn voor het echte spel en bestaan nog niet. Code uit een spike neem je daar bewust over, niet door de spikemap te verplaatsen of te laten doorgroeien.
-- Spike 1 staat ook in git onder de tag `spike-1`. Spike 2 (`spikes/02-omgieten/`) en spike 3 (`spikes/03-vatenvallei/`, de hele act met map en beloningen) zijn gebouwd maar nog niet getest met spelers.
+- Spike 1 staat ook in git onder de tag `spike-1`. Spike 2 (`spikes/02-omgieten/`), spike 3 (`spikes/03-vatenvallei/`, de hele act met map en beloningen) en spike 4 (`spikes/04-eerste-minuten/`, starterdeck, openingskeuze, Engelse teksten) zijn gebouwd maar nog niet getest met spelers. Nieuw werk bouwt verder op spike 4.
 
 ## Commando's
 
-Elke spike draai je vanuit zijn eigen map, bijvoorbeeld `spikes/03-vatenvallei/`:
+Elke spike draai je vanuit zijn eigen map, bijvoorbeeld `spikes/04-eerste-minuten/`:
 
 ```bash
 dotnet test tests/DeckOverflow.Engine.Tests      # wat CI draait
-dotnet run --project src/DeckOverflow.Web        # spike 3: /?seed=255, of /?gevecht=rekenmeester
+dotnet run --project src/DeckOverflow.Web        # spike 4: /?seed=255, of /?fight=reckoner
 ```
 
 ## Architectuur: wie mag wat
@@ -56,6 +56,7 @@ Uit het GDD. Een wijziging die hiertegen ingaat, eerst voorleggen.
 
 ## Conventies
 
-- Taal: Nederlands voor spelteksten, comments, XML-docs en testnamen (`PadB_herstel_op_golem_laat_byte_overlopen_en_wint`). Identifiers in code blijven Engels.
+- Taal: het spel is Engels, de ontwikkeling Nederlands. Spelteksten staan alleen in `wwwroot/text/en.json`, nooit in de code; de motor geeft sleutels en getallen (`TextRef`). Comments, XML-docs, testnamen (`PadB_herstel_op_golem_laat_byte_overlopen_en_wint`) en docs zijn Nederlands. Identifiers en ids (`floating-strike`, `jug`) zijn Engels.
+- Een nieuwe kaart, vijand, relic of event krijgt zijn tekst in `en.json`; `StringsTests` faalt anders. Een nieuwe relic is een klasse met haken (`Relic`), geen `if` in `Combat` of `Run`.
 - .NET 10, nullable aan, `sealed record` voor commands, events en snapshots.
 - Nieuwe regels en scenario's krijgen een xUnit-test.

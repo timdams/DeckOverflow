@@ -1,0 +1,35 @@
+@inject Strings S
+
+@* Een kaart buiten het gevecht, in dezelfde vorm als in de stage: rand in de kleur van het type. *@
+
+<button class="card-tile @KindClass @RarityClass @Class" disabled="@Disabled" @onclick="OnClick" style="--delay:@(Delay)ms">
+    <span class="cost">@Card.Cost</span>
+    @if (Card.Kind is { } kind)
+    {
+        <span class="type-badge @kind.ToString().ToLowerInvariant()">@kind.ToString().ToLowerInvariant()</span>
+    }
+    <span class="name">@S.Card(Card.Id)</span>
+    @if (Card.CastTo is { } to)
+    {
+        <span class="cast">→ <span class="type-badge @to.ToString().ToLowerInvariant()">@to.ToString().ToLowerInvariant()</span></span>
+    }
+    <span class="text">@S.T(Card.Text)</span>
+    @if (Footer is not null)
+    {
+        <span class="footer">@Footer</span>
+    }
+</button>
+
+@code {
+    [Parameter, EditorRequired] public CardInfo Card { get; set; } = default!;
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public EventCallback OnClick { get; set; }
+    [Parameter] public string? Footer { get; set; }
+    [Parameter] public string? Class { get; set; }
+
+    /// <summary>Vertraging van de inkomanimatie, zodat kaarten één voor één omdraaien.</summary>
+    [Parameter] public int Delay { get; set; }
+
+    private string KindClass => Card.Kind is { } k ? $"kind-{k.ToString().ToLowerInvariant()}" : "kind-none";
+    private string RarityClass => $"rarity-{Card.Rarity.ToString().ToLowerInvariant()}";
+}
