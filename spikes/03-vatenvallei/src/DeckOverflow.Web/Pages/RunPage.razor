@@ -1,0 +1,209 @@
+@page "/"
+@implements IAsyncDisposable
+@inject StageBridge Stage
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+
+<div class="run">
+    @* De stage staat altijd klaar onder de schermen, zodat PixiJS zijn maat houdt *@
+    <div class="stage-host" @ref="_host"></div>
+
+    @if (_run is null || _snap is null)
+    {
+        <div class="overlay">
+            <h1>Deck Overflow</h1>
+            <p>spike 3: de Vatenvallei, een hele act</p>
+            <button disabled="@_starting" @onclick="StartAsync">@(_starting ? "Laden..." : "Speel")</button>
+        </div>
+    }
+    else
+    {
+        var s = _snap;
+
+        @if (s.Phase == RunPhase.Combat || _busy)
+        {
+            <div class="hud">
+                <span class="seed">verdieping @s.Floor · seed @s.Seed</span>
+                <button disabled="@(_busy || s.Phase != RunPhase.Combat)" @onclick="EndTurnAsync">Einde beurt</button>
+            </div>
+        }
+        else
+        {
+            <div class="screen">
+                <header class="topbar">
+                    <span class="hp" title="Levenspunten">♥ @s.Hp/@s.MaxHp</span>
+                    <span class="gold" title="Goud">● @s.Gold</span>
+                    <span class="floor">verdieping @s.Floor/@s.Map.Rows</span>
+                    <span class="relics">
+                        @foreach (var relic in s.Relics)
+                        {
+                            <span class="relic" title="@relic.Text">@relic.Name</span>
+                        }
+                    </span>
+                    <button class="secondary small" @onclick="() => _showDeck = true">Deck (@s.Deck.Count)</button>
+                </header>
+
+                <main class="panel-area">
+                    @switch (s.Phase)
+                    {
+                        case RunPhase.Map:
+                            <MapBoard Map="s.Map" OnChoose="ChooseNodeAsync" />
+                            break;
+
+                        case RunPhase.Reward when s.Reward is { } reward:
+                            <section class="panel">
+                                <h2>Gewonnen</h2>
+                                <p class="loot">+@reward.Gold goud</p>
+                                @if (reward.Relic is { } relic)
+                                {
+                                    <p class="loot relic-found"><strong>@relic.Name</strong>: @relic.Text</p>
+                                }
+                                <p>Kies een kaart voor je deck.</p>
+                                <div class="card-row">
+                                    @for (int i = 0; i < reward.Cards.Count; i++)
+                                    {
+                                        int index = i;
+                                        <CardTile Card="reward.Cards[index]" Delay="@(index * 180)" Class="flip-in" OnClick="() => DoAsync(new TakeRewardCard(index))" />
+                                    }
+                                </div>
+                                <button class="secondary" @onclick="() => DoAsync(new SkipReward())">Overslaan</button>
+                            </section>
+                            break;
+
+                        case RunPhase.Rest when s.Rest is { } rest:
+                            <section class="panel">
+                                <h2>Rustvuur</h2>
+                                @if (rest.Outcome is null)
+                                {
+                                    <p>Het vuur knettert. Je hebt tijd voor één ding.</p>
+                                    <div class="choices">
+                                        <button @onclick="() => DoAsync(new RestHeal())">Rusten<small>Herstel @rest.HealAmount HP</small></button>
+                                        <button disabled="@(rest.UpgradableCards.Count == 0)" @onclick="() => PickUpgrade(rest)">Smeden<small>Verbeter een kaart</small></button>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <p class="outcome">@rest.Outcome</p>
+                                    <button @onclick="() => DoAsync(new Leave())">Verder</button>
+                                }
+                            </section>
+                            break;
+
+                        case RunPhase.Event when s.Event is { } ev:
+                            <section class="panel">
+                                <h2>@ev.Title</h2>
+                                <p class="story">@ev.Text</p>
+                                @if (ev.Outcome is null)
+                                {
+                                    <div class="choices column">
+                                        @for (int i = 0; i < ev.Options.Count; i++)
+                                        {
+                                            int index = i;
+                                            var option = ev.Options[index];
+                                            <button class="@(index == ev.Options.Count - 1 ? "secondary" : "")" disabled="@(!option.Enabled)"
+                                                    title="@option.DisabledReason" @onclick="() => ChooseEventOptionAsync(index, option)">
+                                                @option.Label<small>@(option.Enabled ? option.Detail : option.DisabledReason)</small>
+                                            </button>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <p class="outcome">@ev.Outcome</p>
+                                    <button @onclick="() => DoAsync(new Leave())">Verder</button>
+                                }
+                            </section>
+                            break;
+
+                        case RunPhase.Shop when s.Shop is { } shop:
+                            <section class="panel wide">
+                                <h2>Winkel</h2>
+                                <div class="card-row">
+                                    @for (int i = 0; i < shop.Cards.Count; i++)
+                                    {
+                                        int index = i;
+                                        var offer = shop.Cards[index];
+                                        <CardTile Card="offer.Card" Disabled="@(offer.Sold || offer.Price > s.Gold)"
+                                                  Footer="@(offer.Sold ? "verkocht" : $"● {offer.Price}")" Class="@(offer.Sold ? "sold" : "")"
+                                                  OnClick="() => DoAsync(new BuyCard(index))" />
+                                    }
+                                </div>
+                                <div class="shop-extras">
+                                    @if (shop.Relic is { } relicOffer)
+                                    {
+                                        <button disabled="@(relicOffer.Sold || relicOffer.Price > s.Gold)" @onclick="() => DoAsync(new BuyRelic())">
+                                            @(relicOffer.Sold ? "Verkocht" : $"{relicOffer.Relic.Name} · {relicOffer.Price} goud")
+                                            <small>@relicOffer.Relic.Text</small>
+                                        </button>
+                                    }
+                                    <button disabled="@(shop.RemovalUsed || shop.RemovalPrice > s.Gold)" @onclick="() => PickRemoval(shop)">
+                                        @(shop.RemovalUsed ? "Smid is klaar" : $"Kaart verwijderen · {shop.RemovalPrice} goud")
+                                        <small>Een slanker deck trekt vaker je beste kaarten.</small>
+                                    </button>
+                                </div>
+                                <button class="secondary" @onclick="() => DoAsync(new Leave())">Verder</button>
+                            </section>
+                            break;
+
+                        case RunPhase.Treasure when s.Treasure is { } treasure:
+                            <section class="panel">
+                                <h2>Schat</h2>
+                                @if (!treasure.Opened)
+                                {
+                                    <button class="chest" @onclick="() => DoAsync(new OpenChest())">▣<small>Open de kist</small></button>
+                                }
+                                else
+                                {
+                                    <p class="loot">+@treasure.Gold goud</p>
+                                    @if (treasure.Relic is { } found)
+                                    {
+                                        <p class="loot relic-found"><strong>@found.Name</strong>: @found.Text</p>
+                                    }
+                                    <button @onclick="() => DoAsync(new Leave())">Verder</button>
+                                }
+                            </section>
+                            break;
+
+                        case RunPhase.Won or RunPhase.Lost when s.End is { } end:
+                            <section class="panel end @(end.Won ? "won" : "lost")">
+                                <h2>@(end.Won ? "De Vatenvallei is vrij" : "GECRASHT")</h2>
+                                @if (end.Won)
+                                {
+                                    <p>Je versloeg @end.EnemyName met @s.Hp HP over.</p>
+                                }
+                                else
+                                {
+                                    <p>Op verdieping @end.Floor van @s.Map.Rows. @end.EnemyName had nog @Num(end.EnemyHp)/@Num(end.EnemyMaxHp) HP.</p>
+                                    <div class="near-miss"><div style="width:@(Percent(end.EnemyHp, end.EnemyMaxHp))%"></div></div>
+                                }
+                                <p class="stats">@end.DeckSize kaarten · @end.RelicCount relics · @end.Gold goud</p>
+                                <div class="buttons">
+                                    <button @onclick="() => NewRunAsync(NewSeed())">Nieuwe run</button>
+                                    <button class="secondary" @onclick="() => NewRunAsync(s.Seed)">Zelfde seed</button>
+                                </div>
+                            </section>
+                            break;
+                    }
+                </main>
+            </div>
+        }
+
+        @if (_showDeck)
+        {
+            <DeckPicker Title="Je deck" Deck="s.Deck" OnCancel="() => _showDeck = false" />
+        }
+
+        @if (_picker is { } picker)
+        {
+            <DeckPicker Title="@picker.Title" Hint="@picker.Hint" Deck="s.Deck" Eligible="picker.Eligible" HideIneligible="true"
+                        ShowUpgrade="picker.ShowUpgrade" OnPick="PickedAsync" OnCancel="() => _picker = null" />
+        }
+
+        <div class="toasts">
+            @foreach (var toast in _toasts)
+            {
+                <div class="toast @toast.Class" @key="toast.Id">@toast.Text</div>
+            }
+        </div>
+    }
+</div>

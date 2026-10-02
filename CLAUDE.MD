@@ -17,22 +17,22 @@ Eerst de core game loop: vechten, een beloning kiezen, de map. Geluid, definitie
 - **`docs/`**: kopieën van gedeelde Claude Docs (bronnen in [docs/README.md](docs/README.md)). Pas je hier iets wezenlijks aan, meld dan dat het ook in het brondocument moet.
 - **`spikes/NN-naam/`**: afgesloten of lopende experimenten, elk met een eigen `.sln`, README en CI-workflow, los draaibaar. Een afgesloten spike verandert niet meer; bouw er niet op verder. Een nieuwe spike krijgt een nieuwe map.
 - **`src/` en `tests/` op de root** zijn voor het echte spel en bestaan nog niet. Code uit een spike neem je daar bewust over, niet door de spikemap te verplaatsen of te laten doorgroeien.
-- Spike 1 staat ook in git onder de tag `spike-1`. Spike 2 (`spikes/02-omgieten/`) is gebouwd maar nog niet getest met spelers.
+- Spike 1 staat ook in git onder de tag `spike-1`. Spike 2 (`spikes/02-omgieten/`) en spike 3 (`spikes/03-vatenvallei/`, de hele act met map en beloningen) zijn gebouwd maar nog niet getest met spelers.
 
 ## Commando's
 
-Elke spike draai je vanuit zijn eigen map, bijvoorbeeld `spikes/02-omgieten/`:
+Elke spike draai je vanuit zijn eigen map, bijvoorbeeld `spikes/03-vatenvallei/`:
 
 ```bash
 dotnet test tests/DeckOverflow.Engine.Tests      # wat CI draait
-dotnet run --project src/DeckOverflow.Web        # spike 2: /?gevecht=kolos&seed=255
+dotnet run --project src/DeckOverflow.Web        # spike 3: /?seed=255, of /?gevecht=rekenmeester
 ```
 
 ## Architectuur: wie mag wat
 
 Bewezen in spike 1 en de basis voor het spel. De motor beslist, de stage speelt af. Houd die grens scherp.
 
-- **Motor** (`DeckOverflow.Engine`) kent alle spelregels. Pure C#, geen dependencies, geen `DateTime`, `Task.Delay` of `System.Random`. Status verandert alleen via `Combat.Handle(ICommand)`, dat een lijst `GameEvent`s teruggeeft.
+- **Motor** (`DeckOverflow.Engine`) kent alle spelregels. Pure C#, geen dependencies, geen `DateTime`, `Task.Delay` of `System.Random`. Status verandert alleen via `Combat.Handle(ICommand)` of, voor een hele run, `Run.Handle(ICommand)`; beide geven een lijst `GameEvent`s terug.
 - **Shell** (`DeckOverflow.Web`, Blazor WebAssembly) orkestreert en bevat geen regels. Alleen `StageBridge` praat met JavaScript.
 - **Stage** (`wwwroot/stage/`, PixiJS + GSAP + Howler) zet events om in animatie en geluid. Geen spelregels, en ze leest nooit zelf de spelstatus. Na elke `play` volgt een `sync` met de snapshot als waarheid.
 - **Typeregels zijn echt .NET-gedrag**, geen nabootsing: `ByteRules` gebruikt `unchecked((byte)…)`, `IntRules` een gewone cast. Een nieuw type krijgt een eigen `XxxRules`-klasse.

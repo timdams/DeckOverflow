@@ -1,0 +1,327 @@
+/* Spike 3: de schermen buiten het gevecht. Placeholders: eerst moet de loop leuk zijn. */
+
+:root {
+  --panel: #221d2b;
+  --line: #3d3a4b;
+  --int: #4f8cff;
+  --double: #b18cff;
+  --byte: #ffd166;
+  --red: #e5484d;
+  --green: #5fd068;
+  --cyan: #4cc9f0;
+}
+
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 10px 18px;
+  border-bottom: 3px solid var(--ink);
+  background: var(--panel);
+  font-size: 24px;
+}
+
+.topbar .hp { color: var(--red); }
+.topbar .gold { color: var(--byte); }
+.topbar .floor { color: var(--muted); }
+.topbar .relics { flex: 1; display: flex; gap: 8px; flex-wrap: wrap; }
+
+.relic {
+  font-size: 18px;
+  color: var(--orange-light);
+  border: 2px solid var(--orange);
+  padding: 0 8px;
+  cursor: help;
+}
+
+button.small { padding: 8px 10px; font-size: 10px; }
+
+.panel-area {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-width: 760px;
+  padding: 24px;
+  text-align: center;
+}
+
+.panel.wide { max-width: 1000px; }
+
+.panel h2, .modal h2 {
+  font-family: "Press Start 2P", monospace;
+  font-size: 20px;
+  color: var(--orange);
+  margin: 0;
+}
+
+.panel p { margin: 0; }
+.panel .story { color: #d8d3e6; max-width: 560px; }
+.panel .outcome { color: var(--orange-light); max-width: 560px; }
+.loot { color: var(--byte); font-size: 26px; }
+.relic-found { color: var(--orange-light); font-size: 22px; }
+
+.choices { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+.choices.column { flex-direction: column; align-items: stretch; min-width: 420px; }
+
+.choices button, .shop-extras button, .chest {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.choices button small, .shop-extras button small, .chest small {
+  font-family: "VT323", monospace;
+  font-size: 18px;
+}
+
+.shop-extras { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+
+.chest {
+  font-size: 64px;
+  padding: 18px 40px;
+  animation: rattle 1.2s infinite;
+}
+
+@keyframes rattle {
+  0%, 70%, 100% { transform: rotate(0); }
+  75% { transform: rotate(-4deg); }
+  80% { transform: rotate(4deg); }
+  85% { transform: rotate(-3deg); }
+  90% { transform: rotate(2deg); }
+}
+
+/* ---------------------------------------------------------------- map */
+
+.map-board {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.map-board svg { height: 100%; max-width: 100%; }
+
+.map-board .edge {
+  stroke: var(--line);
+  stroke-width: 4;
+  stroke-dasharray: 2 10;
+  stroke-linecap: round;
+}
+
+.map-board .edge.walked { stroke: var(--orange); stroke-dasharray: none; }
+.map-board .edge.open { stroke: var(--orange-light); }
+
+.map-board .node .disc { fill: var(--panel); stroke: var(--line); stroke-width: 4; }
+.map-board .node .glyph { text-anchor: middle; fill: #fff; pointer-events: none; font-family: "VT323", monospace; }
+.map-board .node.kind-elite .disc { stroke: var(--red); }
+.map-board .node.kind-boss .disc { stroke: var(--red); stroke-width: 6; }
+.map-board .node.kind-rest .disc { stroke: var(--orange); }
+.map-board .node.kind-shop .disc { stroke: var(--byte); }
+.map-board .node.kind-treasure .disc { stroke: var(--byte); }
+.map-board .node.kind-event .disc { stroke: var(--double); }
+.map-board .node.visited { opacity: 0.45; }
+.map-board .node.current { opacity: 1; }
+.map-board .node.current .disc { fill: var(--orange); }
+.map-board .node.reachable { cursor: pointer; }
+.map-board .node.reachable:hover .disc { fill: var(--line); }
+
+.map-board .node .pulse {
+  fill: none;
+  stroke: var(--orange-light);
+  stroke-width: 3;
+  animation: pulse 1.1s infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.9; transform: scale(0.85); }
+  100% { opacity: 0; transform: scale(1.25); }
+}
+
+.legend {
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  list-style: none;
+  margin: 0;
+  padding: 10px 14px;
+  background: var(--panel);
+  border: 3px solid var(--ink);
+  color: var(--muted);
+}
+
+.legend .dot { display: inline-block; width: 22px; text-align: center; color: #fff; }
+
+/* ---------------------------------------------------------------- kaarten */
+
+.card-row { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+
+.card-tile {
+  position: relative;
+  width: 150px;
+  height: 205px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 34px 10px 10px;
+  background: var(--panel);
+  color: #fff;
+  border: 4px solid var(--orange);
+  box-shadow: 0 0 0 3px var(--ink), 0 6px 0 var(--ink);
+}
+
+.card-tile.kind-int { border-color: var(--int); }
+.card-tile.kind-double { border-color: var(--double); }
+.card-tile.kind-byte { border-color: var(--byte); }
+.card-tile:hover:not(:disabled) { background: #2d2638; transform: translateY(-6px); }
+.card-tile.rarity-uncommon { box-shadow: 0 0 0 3px var(--ink), 0 0 14px 2px rgba(76, 201, 240, 0.45), 0 6px 0 var(--ink); }
+.card-tile.rarity-rare { box-shadow: 0 0 0 3px var(--ink), 0 0 18px 4px rgba(255, 209, 102, 0.6), 0 6px 0 var(--ink); }
+.card-tile:disabled { filter: none; opacity: 0.55; }
+.card-tile.preview:disabled { opacity: 1; }
+.card-tile.sold:disabled { opacity: 0.25; }
+
+.card-tile .cost {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  background: var(--orange);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  font-size: 12px;
+}
+
+.card-tile .type-badge { position: absolute; right: 6px; top: 9px; }
+.card-tile .name { font-family: "Press Start 2P", monospace; font-size: 10px; line-height: 1.4; }
+.card-tile .cast { font-size: 18px; }
+.card-tile .cast .type-badge { position: static; }
+.card-tile .text { font-family: "VT323", monospace; font-size: 20px; line-height: 1.05; }
+.card-tile .footer { margin-top: auto; color: var(--byte); font-family: "VT323", monospace; font-size: 22px; }
+
+/* Zelfde kleur en vorm als in de stage: int hoekig, double rond, byte dubbele rand */
+.type-badge {
+  font-family: "Press Start 2P", monospace;
+  font-size: 8px;
+  padding: 3px 5px;
+  color: var(--ink);
+  background: var(--orange);
+}
+
+.type-badge.int { background: var(--int); }
+.type-badge.double { background: var(--double); border-radius: 8px; }
+.type-badge.byte { background: var(--byte); outline: 1px solid var(--ink); outline-offset: -3px; }
+
+/* Beloningen draaien één voor één om */
+.flip-in { animation: flip-in 420ms backwards; animation-delay: var(--delay, 0ms); }
+
+@keyframes flip-in {
+  from { transform: perspective(600px) rotateY(90deg) scale(0.8); opacity: 0; }
+  to { transform: perspective(600px) rotateY(0) scale(1); opacity: 1; }
+}
+
+/* ---------------------------------------------------------------- deck kiezen */
+
+.modal {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(20, 17, 27, 0.92);
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-width: 92vw;
+  max-height: 92vh;
+  overflow: auto;
+  padding: 20px;
+}
+
+.modal .hint { margin: 0; color: var(--muted); }
+.card-grid { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; }
+.pick { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.pick .arrow { color: var(--green); }
+
+/* ---------------------------------------------------------------- meldingen */
+
+.toasts {
+  position: absolute;
+  left: 50%;
+  top: 70px;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.toast {
+  padding: 6px 14px;
+  background: var(--panel);
+  border: 3px solid var(--ink);
+  font-size: 22px;
+  animation: toast 2.6s forwards;
+}
+
+.toast.gold { color: var(--byte); }
+.toast.heal { color: var(--green); }
+.toast.hurt { color: var(--red); }
+.toast.relic { color: var(--orange-light); }
+.toast.rejected { color: var(--muted); }
+
+@keyframes toast {
+  0% { opacity: 0; transform: translateY(-10px) scale(0.8); }
+  8% { opacity: 1; transform: none; }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-14px); }
+}
+
+/* ---------------------------------------------------------------- einde */
+
+.end.won h2 { color: var(--byte); }
+.end.lost h2 { color: var(--red); }
+.end .stats { color: var(--muted); }
+
+/* Bijna gewonnen: hoeveel had de vijand nog? */
+.near-miss {
+  width: 320px;
+  height: 18px;
+  background: var(--ink);
+  border: 3px solid var(--ink);
+}
+
+.near-miss div { height: 100%; background: var(--red); }
+
+/* Waar je nu naartoe kan, moet je in één blik zien */
+.map-board .node.reachable .disc { stroke: var(--orange-light); stroke-width: 6; fill: #3a2a1a; }

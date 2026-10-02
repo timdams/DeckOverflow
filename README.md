@@ -10,6 +10,7 @@ Er staat geen code in beeld: types, overflow, integer deling en operatorvoorrang
 | --- | --- | --- |
 | Spike 1 | Eén gevecht tegen de Byte-Golem: C#-motor in de browser, PixiJS-stage, juice | Afgesloten, zie [spikes/01-byte-golem](spikes/01-byte-golem/) |
 | Spike 2 | Types op elke vijand en aanval, Omgieten als kerngereedschap | Gebouwd, nog niet met spelers getest, zie [spikes/02-omgieten](spikes/02-omgieten/) |
+| Spike 3 | De hele flow van een act: map, gevechten, beloningen, rustvuur, events, winkel, schat en baas | Gebouwd, nog niet met spelers getest, zie [spikes/03-vatenvallei](spikes/03-vatenvallei/) |
 | MVP-demo | Een speelbare Act 1: De Vatenvallei, met map, beloningen, Codex en een eenvoudig docentdashboard | Nog niet gestart |
 
 **Prioriteit nu:** de core game loop. Eerst moet vechten, een beloning kiezen en de map leuk zijn; geluid, definitieve art en polish komen daarna.
@@ -29,7 +30,8 @@ Playtest 1 bevestigde de techniek en dat de golem-ontdekking werkt, maar toonde 
 ├─ docs/                ontwerpdocumenten
 ├─ spikes/
 │  ├─ 01-byte-golem/    afgesloten spike, eigen .sln, draait los (tag spike-1)
-│  └─ 02-omgieten/      types en Omgieten: Vlottende Geest en Tinnen Kolos
+│  ├─ 02-omgieten/      types en Omgieten: Vlottende Geest en Tinnen Kolos
+│  └─ 03-vatenvallei/   een hele act: map, beloningen, rustvuur, events, winkel, baas
 └─ .github/workflows/   CI per onderdeel
 ```
 

@@ -132,8 +132,12 @@ Het eventcontract is de enige afspraak tussen C# en JavaScript. Elk event heeft 
 | `TurnStarted` | turn, energy | "BEURT 2" schuift door het beeld |
 | `PlayRejected` | handIndex, reason | Kaart wiebelt terug, zoemer, grappige reden |
 | `CombatEnded` | won | Banner GEWONNEN of GECRASHT |
+| `IntentAssigned` | enemyId, expressionBefore, value | Toekenning (Zet op 1): de intent wordt overschreven door het nieuwe getal |
+| `ModifierQueued` | label, pending | "+3" springt op bij de energiebol; wat wacht staat ernaast |
+| `ModifiersApplied` | cardId, before, after, expression | De som "(6 + 3) × 2" verschijnt en rekent uit tot 18 |
+| `RelicTriggered` | relicId | De naam van de relic licht op; het effect volgt als gewone events |
 
-De laatste zes events kwamen erbij tijdens het bouwen van de spike. Het patroon bleef hetzelfde: de stage negeert wat ze niet kent.
+Zes events kwamen erbij tijdens het bouwen van spike 1, de laatste vier in spike 3. `IntentRevealed.value` is sinds spike 3 leeg als het totaal verborgen blijft (de Rekenmeester). Het patroon bleef hetzelfde: de stage negeert wat ze niet kent.
 
 ```json
 [
@@ -266,6 +270,34 @@ Nieuw event: `TypeChanged` (targetId, from, to). De vijand smelt en giet zich om
 - Testers kiezen hun aanvalstype bewust; we laten ze hardop denken.
 - Testers vinden zonder hint dat Omgieten plus helen ook op een andere vijand dan de golem werkt.
 - Na de test vragen we: "Voelde dit gewone gevecht als Slay the Spire?" Het antwoord moet nee zijn.
+
+## Spike 3: de hele act
+
+Spike 2 bouwde één gevecht met types en Omgieten. Spike 3 legt de core game loop errond: een map kiezen, vechten, een beloning kiezen, herhalen tot de baas. Gebouwd in [spike 3](../spikes/03-vatenvallei/README.md).
+
+| Erbij | Bewust nog niet |
+| --- | --- |
+| Een korte act: 8 rijen plus de baas, paden die niet kruisen, gegenereerd uit de seed | De volledige Act 1 van 15 knopen en 25 tot 35 minuten |
+| Gevecht, elite, rustvuur, event (De Smeltkroes, Het Lekkende Vat), winkel, schat, baas | Codex, collectie, meta-progressie |
+| HP, goud, deck en relics die doorlopen; 1 kaart uit 3 na elk gevecht | Meerdere vijanden per gevecht |
+| Slijmklodder, Tinnen Ridder, Druppelaar en een eerste Rekenmeester | Bool-schim, Papieren Golem, De Naamloze |
+| Nieuwe kaarten rond toekenning en volgorde: Zet op 1, Voeg toe, Verdubbel, Byteval | Statuseffecten, de beurt als expressie |
+| Vijf relics, verbeteren aan het rustvuur, Omgieten in de Smeltkroes | Zeldzaamheidsglans, kist-anticipatie, pity timer |
+
+### Motor
+
+- **`Run` naast `Combat`, met hetzelfde patroon.** `Run.Handle(ICommand)` geeft events terug en `Run.Snapshot()` is de waarheid voor de shell. Gevechtscommands gaan door naar het lopende gevecht; HP, goud en deck gaan na het gevecht terug naar de run.
+- **De map volgt uit de seed**, loot uit een aparte RNG-stroom en elk gevecht uit een eigen seed per knoop. Zo blijft een run reproduceerbaar zonder dat een extra beloning de map verandert.
+- **Een vijand heeft een patroon van intents**, één per beurt. De Rekenmeester verbergt zijn totaal: hier is rekenen bewust de kern.
+- **Modifiers volgen de volgorde van toekenning:** eerst +3 en dan ×2 is `(6 + 3) × 2`, omgekeerd `6 × 2 + 3`. Dat is het eerste stukje operatorvoorrang buiten de intents.
+
+Nieuwe run-events: `NodeEntered`, `GoldChanged`, `RunHpChanged`, `CardAdded`, `CardRemoved`, `CardTransformed`, `RelicGained`, `RunRejected` en `RunEnded`. De stage negeert ze; de shell toont ze als melding.
+
+### Wat spike 3 moet aantonen
+
+- Testers kiezen hun pad bewust en wegen risico tegen beloning. We laten ze hardop denken op de map.
+- Een beloning voelt als een keuze, en Overslaan wordt soms gekozen.
+- Een run duurt 10 tot 15 minuten, en na verlies klikt de tester zelf op "Nieuwe run".
 
 ## Succescriteria
 
