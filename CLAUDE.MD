@@ -8,20 +8,24 @@ Lees eerst wat je nodig hebt:
 - [docs/game-design-document.md](docs/game-design-document.md): pijlers, kernsysteem, vijanden, kaarten, antipatronen.
 - [docs/spike-design-doc.md](docs/spike-design-doc.md): architectuur, eventcontract, interop, scope spike 2, de weg naar de MVP.
 
+## Prioriteit
+
+Eerst de core game loop: vechten, een beloning kiezen, de map. Geluid, definitieve art en andere polish hebben nu geen prioriteit; placeholders volstaan. Steek er geen tijd in tenzij erom gevraagd wordt, en stel liever vragen over wat de loop leuk maakt.
+
 ## Indeling en wat je waar doet
 
 - **`docs/`**: kopieën van gedeelde Claude Docs (bronnen in [docs/README.md](docs/README.md)). Pas je hier iets wezenlijks aan, meld dan dat het ook in het brondocument moet.
 - **`spikes/NN-naam/`**: afgesloten of lopende experimenten, elk met een eigen `.sln`, README en CI-workflow, los draaibaar. Een afgesloten spike verandert niet meer; bouw er niet op verder. Een nieuwe spike krijgt een nieuwe map.
 - **`src/` en `tests/` op de root** zijn voor het echte spel en bestaan nog niet. Code uit een spike neem je daar bewust over, niet door de spikemap te verplaatsen of te laten doorgroeien.
-- Spike 1 staat ook in git onder de tag `spike-1`.
+- Spike 1 staat ook in git onder de tag `spike-1`. Spike 2 (`spikes/02-omgieten/`) is gebouwd maar nog niet getest met spelers.
 
 ## Commando's
 
-Spike 1 draai je vanuit `spikes/01-byte-golem/`:
+Elke spike draai je vanuit zijn eigen map, bijvoorbeeld `spikes/02-omgieten/`:
 
 ```bash
 dotnet test tests/DeckOverflow.Engine.Tests      # wat CI draait
-dotnet run --project src/DeckOverflow.Web        # /?seed=255 kiest een seed
+dotnet run --project src/DeckOverflow.Web        # spike 2: /?gevecht=kolos&seed=255
 ```
 
 ## Architectuur: wie mag wat

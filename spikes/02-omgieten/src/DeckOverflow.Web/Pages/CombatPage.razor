@@ -1,0 +1,39 @@
+@page "/"
+@implements IAsyncDisposable
+@inject StageBridge Stage
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+
+<div class="combat">
+    <div class="stage-host" @ref="_host"></div>
+
+    @if (_stageReady)
+    {
+        <div class="hud">
+            <span class="seed">@_scenario · seed @_seed</span>
+            <button disabled="@(_busy || IsOver)" @onclick="EndTurnAsync">Einde beurt</button>
+        </div>
+    }
+
+    @if (!_stageReady)
+    {
+        <div class="overlay">
+            <h1>Deck Overflow</h1>
+            <p>spike 2: elk ding heeft een type, en Omgieten verandert het</p>
+            <button disabled="@_starting" @onclick="StartAsync">@(_starting ? "Laden..." : "Speel")</button>
+        </div>
+    }
+    else if (IsOver && !_busy)
+    {
+        <div class="overlay result">
+            <div class="buttons">
+                @if (Won && NextScenario is { } next)
+                {
+                    <button @onclick="() => LoadAsync(next, Scenarios.DefaultSeed)">Volgend gevecht</button>
+                }
+                <button class="@(Won && NextScenario is not null ? "secondary" : "")" @onclick="() => LoadAsync(_scenario, _seed)">Opnieuw</button>
+                <button class="secondary" @onclick="() => LoadAsync(_scenario, NewSeed())">Nieuwe seed</button>
+            </div>
+        </div>
+    }
+</div>

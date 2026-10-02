@@ -310,7 +310,7 @@ Het starterdeck is bewust saai, zodat elke beloning een echte keuze wordt.
 | --- | --- | --- | --- |
 | Zet op 1 | 1 | Zet de aanval van een vijand op 1 voor deze beurt | Toekenning |
 | Voeg toe | 0 | +3 aan je volgende kaart | `+=` |
-| Vlottende Slag | 2 | 4,5 schade, negeert afkappen | `double` |
+| Vlottende Slag | 2 | 4,5 schade; exact op een `double`, een `int`-doelwit kapt af tot 4 | `double` |
 | Inkt | 1 | Zet een tekstwaarde om naar een getal | Parsen |
 | Flip | 0 | Draai een `bool`-toestand om | `bool` |
 | Splitsslag | 2 | Verdeel 7 schade over alle vijanden | Integer deling |

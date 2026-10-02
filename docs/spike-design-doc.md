@@ -253,7 +253,7 @@ Playtest 1 bevestigde de techniek en de golem-ontdekking, maar toonde dat de lin
 | Getypeerde aanvallen in het deck: `int`- en `double`-kaarten | De beurt als expressie |
 | Omgieten naar `byte` en naar `int` | Map, extra vijanden, acts |
 
-Nieuw event: `TypeChanged` (targetId, from, to). De vijand smelt en giet zich om in een nieuwe vorm, met de kleur en het kader van zijn nieuwe type.
+Nieuw event: `TypeChanged` (targetId, from, to). De vijand smelt en giet zich om in een nieuwe vorm, met de kleur en het kader van zijn nieuwe type. Gebouwd in [spike 2](../spikes/02-omgieten/README.md), met extra velden voor HP, max HP en blok na het omgieten.
 
 ### Motor
 
@@ -297,6 +297,8 @@ De MVP-demo is een speelbare Act 1, zoals beschreven in het [Game Design Documen
 | Docent | Geen | Eenvoudig dashboard: Codex-voortgang per student, klas-seed |
 
 Volgorde: eerst de motor uitbreiden met tests, dan de shell-schermen, dan pas de backend. Zo is de demo al lokaal speelbaar voor er een server nodig is.
+
+**Prioriteit:** eerst de core game loop: vechten, een beloning kiezen, de map. Geluid, definitieve art en andere polish wachten tot die loop leuk is; tot dan volstaan de placeholders.
 
 ## Risico's en open vragen
 
