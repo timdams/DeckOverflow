@@ -1,0 +1,63 @@
+name: pages
+
+# Publiceert het spel op de root van de Pages-site, en elke spike die we willen laten testen in een submap.
+# Zo heeft elke playtest een eigen link: /DeckOverflow/ en /DeckOverflow/spike-8/.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - run: dotnet test tests/DeckOverflow.Engine.Tests
+
+      - name: Publish
+        run: |
+          dotnet publish src/DeckOverflow.Web -c Release -o out/game
+          dotnet publish spikes/08-controlekamer/src/DeckOverflow.Web -c Release -o out/spike-8
+
+      - name: Assemble site
+        env:
+          ROOT: /${{ github.event.repository.name }}/
+        run: |
+          mkdir -p site/spike-8
+          cp -r out/game/wwwroot/. site/
+          cp -r out/spike-8/wwwroot/. site/spike-8/
+          sed -i "s|<base href=\"/\" />|<base href=\"${ROOT}\" />|" site/index.html
+          sed -i "s|<base href=\"/\" />|<base href=\"${ROOT}spike-8/\" />|" site/spike-8/index.html
+          # Pages gebruikt de voorgecomprimeerde kopieën niet, en na de sed kloppen ze niet meer.
+          rm -f site/index.html.br site/index.html.gz site/spike-8/index.html.br site/spike-8/index.html.gz
+          # Zonder dit negeert Jekyll de map _framework/ en laadt er niets.
+          touch site/.nojekyll
+          grep -H "base href" site/index.html site/spike-8/index.html
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
