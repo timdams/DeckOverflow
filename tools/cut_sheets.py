@@ -62,11 +62,32 @@ SHEETS_SPEC = [
         "hero-wrench", "hero-screwdriver",
         "hero-sleeves", "hero-toolbox",
     ]),
+    # De vijanden van de drie acts die nog een plaatshouder hadden
+    ("monsters", 5, 2, "actors", "tight", 300, 3, [
+        "splitter", "counter", "type-block", "paper-golem", "typesetter",
+        "ingot", "rounder", "caster", "label", "effective-power",
+    ]),
+    # De ✗-panelen van het register, in de volgorde van XRegister.All
+    ("panels", 5, 2, "panels", "square", 220, 5, [
+        "feed-the-machine", "message-too-long", "divided-to-nothing", "big-number", "bad-text",
+        "again-ariane", "frozen-index", "caster-wraps", "card-hall-cleared", "read-the-manual",
+    ]),
+    # Kaarten van de getypeerde aanval en de Drukkerij, nieuwe relics, de barst in de muur
+    ("cards", 4, 3, "items", "square", 192, 5, [
+        "split", "floating-point", "ink", "read",
+        "measure-twice", "read-the-label", "count-letters", "letter-a",
+        "relic-ink-well", "relic-tally-counter", "relic-coin-mold", "wall-crack",
+    ]),
+    # Nieuwe events, en platen voor de intro, de onthulling en de uitgang
+    ("events", 3, 2, "scenes", "tight", 520, 3, [
+        "copy-machine", "scrap-bin", "rounding-desk",
+        "intro", "reveal", "exit-door",
+    ]),
 ]
 
 # Figuren die op hun vel naar rechts kijken: gespiegeld, zodat ze vanaf rechts de held aankijken.
 # Per tekening, niet per vel: de inspecteur op het bugs-vel keek al naar links.
-FLIP = {"level-256", "flight-501", "the-index", "reckoner", "ghost"}
+FLIP = {"level-256", "flight-501", "the-index", "reckoner", "ghost", "typesetter"}
 
 FILL = 12          # tot dit kanaalverschil met de achtergrond is een pixel achtergrond
 SOFT = (12, 60)    # zachte rand daarboven

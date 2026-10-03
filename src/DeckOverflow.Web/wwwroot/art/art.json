@@ -15,14 +15,14 @@
     "remold-byte": "items/force-fit",
     "set-to-1": "items/wrong-label",
     "byte-trap": "items/squeeze-in",
-    "floating-point": "items/relic-floating-point",
-    "split": "items/heavy-strike",
-    "ink": "items/set-to-1",
-    "read": "items/rev-stamped",
-    "measure-twice": "items/remold",
-    "read-the-label": "items/wrong-label",
-    "count-letters": "items/spare-screw",
-    "letter-a": "items/rev-crossed"
+    "floating-point": "items/floating-point",
+    "split": "items/split",
+    "ink": "items/ink",
+    "read": "items/read",
+    "measure-twice": "items/measure-twice",
+    "read-the-label": "items/read-the-label",
+    "count-letters": "items/count-letters",
+    "letter-a": "items/letter-a"
   },
   "relics": {
     "counter": "items/relic-counter",
@@ -30,9 +30,9 @@
     "scrap-pouch": "items/relic-scrap-pouch",
     "anchor-barrel": "items/relic-anchor-barrel",
     "great-pot": "items/relic-great-pot",
-    "ink-well": "items/relic-floating-point",
-    "tally-counter": "items/relic-counter",
-    "coin-mold": "items/relic-great-pot"
+    "ink-well": "items/relic-ink-well",
+    "tally-counter": "items/relic-tally-counter",
+    "coin-mold": "items/relic-coin-mold"
   },
   "actors": {
     "player": "actors/hero-wrench",
@@ -44,17 +44,17 @@
     "colossus": "actors/flight-501",
     "golem": "actors/level-256",
     "reckoner": "actors/inspector",
-    "ingot": "actors/golem",
-    "rounder": "actors/colossus",
+    "ingot": "actors/ingot",
+    "rounder": "actors/rounder",
     "index": "actors/the-index",
-    "caster": "actors/reckoner",
-    "label": "items/wrong-label",
-    "splitter": "actors/slime",
-    "effective-power": "actors/ghost",
-    "counter": "items/relic-counter",
-    "type-block": "actors/golem",
-    "paper-golem": "actors/knight",
-    "typesetter": "actors/hero-toolbox"
+    "caster": "actors/caster",
+    "label": "actors/label",
+    "splitter": "actors/splitter",
+    "effective-power": "actors/effective-power",
+    "counter": "actors/counter",
+    "type-block": "actors/type-block",
+    "paper-golem": "actors/paper-golem",
+    "typesetter": "actors/typesetter"
   },
   "nodes": {
     "fight": "items/whack",
@@ -71,18 +71,25 @@
     "leaking-barrel": "scenes/leaking-barrel",
     "rest": "scenes/rest",
     "shop": "scenes/shop",
-    "title": "scenes/title"
+    "title": "scenes/title",
+    "copy-machine": "scenes/copy-machine",
+    "scrap-bin": "scenes/scrap-bin",
+    "rounding-desk": "scenes/rounding-desk",
+    "intro": "scenes/intro",
+    "reveal": "scenes/reveal",
+    "exit-door": "scenes/exit-door",
+    "wall-crack": "items/wall-crack"
   },
   "panels": {
-    "feed-the-machine": "items/fill-past-the-line",
-    "message-too-long": "actors/ghost",
-    "divided-to-nothing": "items/hold-firmly",
-    "big-number": "items/hammer-it-in",
-    "bad-text": "items/wrong-label",
-    "again-ariane": "actors/flight-501",
-    "frozen-index": "actors/the-index",
-    "caster-wraps": "actors/reckoner",
-    "card-hall-cleared": "icons/victory",
-    "read-the-manual": "scenes/title"
+    "feed-the-machine": "panels/feed-the-machine",
+    "message-too-long": "panels/message-too-long",
+    "divided-to-nothing": "panels/divided-to-nothing",
+    "big-number": "panels/big-number",
+    "bad-text": "panels/bad-text",
+    "again-ariane": "panels/again-ariane",
+    "frozen-index": "panels/frozen-index",
+    "caster-wraps": "panels/caster-wraps",
+    "card-hall-cleared": "panels/card-hall-cleared",
+    "read-the-manual": "panels/read-the-manual"
   }
 }
