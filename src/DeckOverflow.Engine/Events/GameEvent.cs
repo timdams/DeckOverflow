@@ -38,6 +38,7 @@ namespace DeckOverflow.Engine.Events;
 [JsonDerivedType(typeof(TextReset), nameof(TextReset))]
 [JsonDerivedType(typeof(IntentAssigned), nameof(IntentAssigned))]
 [JsonDerivedType(typeof(ModifierQueued), nameof(ModifierQueued))]
+[JsonDerivedType(typeof(ModifiersScrapped), nameof(ModifiersScrapped))]
 [JsonDerivedType(typeof(ModifiersApplied), nameof(ModifiersApplied))]
 [JsonDerivedType(typeof(RelicTriggered), nameof(RelicTriggered))]
 [JsonDerivedType(typeof(NodeEntered), nameof(NodeEntered))]
@@ -140,6 +141,8 @@ public sealed record IntentAssigned(int EnemyId, string ExpressionBefore, double
 
 /// <summary>Een modifier wacht op je volgende kaart. <paramref name="Pending"/> is alles wat wacht, bv. "+3 ×2".</summary>
 public sealed record ModifierQueued(string Label, string Pending) : GameEvent;
+/// <summary>De wachtende modifiers zijn weggeveegd, voor <paramref name="Cost"/> energie.</summary>
+public sealed record ModifiersScrapped(string Pending, int Cost) : GameEvent;
 
 /// <summary>De wachtende modifiers zijn op een kaart toegepast, in volgorde: "(6 + 3) × 2" wordt 18.</summary>
 public sealed record ModifiersApplied(string CardId, double Before, double After, string Expression) : GameEvent;

@@ -230,6 +230,7 @@ public partial class RunPage
         RunCombatAsync(new PlayCard(handIndex, targetId));
 
     private Task EndTurnAsync() => RunCombatAsync(new EndTurn());
+    private Task ScrapAsync() => RunCombatAsync(new ScrapModifiers());
 
     /// <summary>TIJDELIJK: sneltoets W wint het lopende gevecht meteen.</summary>
     [JSInvokable]

@@ -93,6 +93,11 @@
             <div class="hud">
                 <span class="seed">@S.T("ui.floor", ("floor", s.Floor)) · @S.T("ui.seed", ("seed", s.Seed))</span>
                 <span class="hud-buttons">
+                    @if (_run.CombatSnapshot() is { Modifiers.Count: > 0 } pending)
+                    {
+                        @* Wachtende modifiers wegvegen: nooit vast met tekst die niets kan raken *@
+                        <button class="scrap secondary" disabled="@(_busy || pending.Energy < DeckOverflow.Engine.Combat.Combat.ScrapCost)" title="@S.T("ui.scrap.hint")" @onclick="ScrapAsync">@S.T("ui.scrap", ("cost", DeckOverflow.Engine.Combat.Combat.ScrapCost))</button>
+                    }
                     <button class="end-turn" disabled="@(_busy || s.Phase != RunPhase.Combat)" @onclick="EndTurnAsync"><img src="@ArtStyle.Icon("end-turn")" alt="" />@S.T("ui.end-turn")</button>
                 </span>
             </div>

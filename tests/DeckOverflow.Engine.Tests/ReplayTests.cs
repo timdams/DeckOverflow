@@ -15,7 +15,7 @@ public class ReplayTests
     {
         ICommand[] commands =
         [
-            new PlayCard(2, Combat.EnemyId), new EndTurn(), new DebugWin(), new ChooseNode(4),
+            new PlayCard(2, Combat.EnemyId), new EndTurn(), new ScrapModifiers(), new DebugWin(), new ChooseNode(4),
             new TakeRewardCard(1), new SkipReward(), new ChooseRelic(0), new RestHeal(), new RestUpgrade(3),
             new ChooseEventOption(1, 5), new BuyCard(2), new BuyRelic(), new BuyRemoval(0), new OpenChest(), new Leave()
         ];

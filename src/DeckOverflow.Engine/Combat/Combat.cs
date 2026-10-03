@@ -83,6 +83,7 @@ public sealed class Combat
         {
             case PlayCard play: HandlePlayCard(play); break;
             case EndTurn: HandleEndTurn(); break;
+            case ScrapModifiers: HandleScrap(); break;
             case DebugWin: HandleDebugWin(); break;
             default: throw new ArgumentException($"Onbekend command: {command.GetType().Name}", nameof(command));
         }
@@ -373,6 +374,31 @@ public sealed class Combat
     }
 
     /// <summary>Het getal van deze kaart waarop de modifiers zouden vallen, en het type ervan. Leeg als ze er geen gebruikt.</summary>
+    /// <summary>Wat het kost om de wachtende modifiers weg te vegen.</summary>
+    public const int ScrapCost = 1;
+
+    /// <summary>
+    /// Modifiers wachten tot een kaart ze gebruikt, ook over je beurt heen. Ink tegen een getal maakt van
+    /// elke kaart tekst die niets raakt; zonder deze uitweg zat je dan vast. Wissen kost energie, geen beurt.
+    /// </summary>
+    private void HandleScrap()
+    {
+        if (_modifiers.Count == 0)
+        {
+            Emit(new PlayRejected(-1, "reject.nothing-to-scrap"));
+            return;
+        }
+        if (Energy < ScrapCost)
+        {
+            Emit(new PlayRejected(-1, "reject.no-energy"));
+            return;
+        }
+        Energy -= ScrapCost;
+        string pending = string.Join(" ", _modifiers.Select(Label));
+        _modifiers.Clear();
+        Emit(new ModifiersScrapped(pending, ScrapCost));
+    }
+
     private static (double Amount, ValueKind? Kind)? ModifiedAmount(CardDefinition card) => FindAmount(card.Effect, card.Kind);
 
     private static (double Amount, ValueKind? Kind)? FindAmount(Effect effect, ValueKind? kind) => effect switch

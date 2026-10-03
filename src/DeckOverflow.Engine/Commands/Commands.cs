@@ -10,6 +10,7 @@ namespace DeckOverflow.Engine.Commands;
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
 [JsonDerivedType(typeof(PlayCard), nameof(PlayCard))]
 [JsonDerivedType(typeof(EndTurn), nameof(EndTurn))]
+[JsonDerivedType(typeof(ScrapModifiers), nameof(ScrapModifiers))]
 [JsonDerivedType(typeof(DebugWin), nameof(DebugWin))]
 [JsonDerivedType(typeof(ChooseNode), nameof(ChooseNode))]
 [JsonDerivedType(typeof(TakeRewardCard), nameof(TakeRewardCard))]
@@ -28,6 +29,9 @@ public interface ICommand;
 // Gevecht
 public sealed record PlayCard(int HandIndex, int TargetId) : ICommand;
 public sealed record EndTurn : ICommand;
+
+/// <summary>Veeg alle wachtende modifiers weg, tegen <see cref="Combat.Combat.ScrapCost"/> energie. Zo zit je nooit vast met tekst die niets kan raken.</summary>
+public sealed record ScrapModifiers : ICommand;
 
 /// <summary>TIJDELIJK, om snel te testen: win het lopende gevecht meteen (sneltoets W). Weg voor een playtest.</summary>
 public sealed record DebugWin : ICommand;

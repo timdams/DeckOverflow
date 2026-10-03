@@ -134,6 +134,7 @@ Het eventcontract is de enige afspraak tussen C# en JavaScript. Elk event heeft 
 | `CombatEnded` | won | Banner GEWONNEN of GECRASHT |
 | `IntentAssigned` | enemyId, expressionBefore, value | Toekenning (Zet op 1): de intent wordt overschreven door het nieuwe getal |
 | `ModifierQueued` | label, pending | "+3" springt op bij de energiebol; wat wacht staat ernaast |
+| `ModifiersScrapped` | pending, cost | wat wachtte, valt doorgestreept weg (command `ScrapModifiers`) |
 | `ModifiersApplied` | cardId, before, after, expression | De som "(6 + 3) × 2" verschijnt en rekent uit tot 18 |
 | `RelicTriggered` | relicId | De naam van de relic licht op; het effect volgt als gewone events |
 | `ValueRounded` | targetId, before, after, subject | `Math.Round` of `Convert` rondde af: "2.5 → 2" met de naam eronder (The Rounder, Measure Twice) |

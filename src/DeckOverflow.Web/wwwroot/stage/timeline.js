@@ -711,6 +711,14 @@ const handlers = {
     await wait(200);
   },
 
+  /** De wachtende modifiers zijn weggeveegd: ze vallen weg boven de batterij. */
+  async ModifiersScrapped(S, e) {
+    sfx('click', { volume: 0.6 });
+    floatText(S.layers.fx, `${e.pending} ✗`, 70, 400, { size: 20, rise: -30 });
+    S.setModifiers([]);
+    await wait(200);
+  },
+
   /** De wachtende modifiers vallen op de kaart: de som verschijnt en rekent uit. */
   async ModifiersApplied(S, e, ctx) {
     const p = S.actor(0)?.head() ?? { x: 255, y: 150 };

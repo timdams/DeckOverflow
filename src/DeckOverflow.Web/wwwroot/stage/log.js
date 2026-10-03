@@ -71,6 +71,8 @@ function describe(S, e) {
       return [t('stage.log.assigned', { enemy: who(e.enemyId), before: e.expressionBefore, value: num(e.value) }), COLORS.ink];
     case 'ModifierQueued':
       return [t('stage.log.next-card', { pending: e.pending }), COLORS.ink];
+    case 'ModifiersScrapped':
+      return [t('stage.log.scrapped', { pending: e.pending }), COLORS.ink];
     case 'ModifiersApplied':
       return [`  ${e.expression} = ${num(e.after)}`, COLORS.ink];
     case 'RelicTriggered':

@@ -156,7 +156,7 @@ public sealed class Run
 
         switch (Phase, command)
         {
-            case (RunPhase.Combat, PlayCard or EndTurn or DebugWin): HandleCombat(command); break;
+            case (RunPhase.Combat, PlayCard or EndTurn or ScrapModifiers or DebugWin): HandleCombat(command); break;
             case (RunPhase.Map, ChooseNode c): Enter(c.NodeId); break;
             case (RunPhase.Reward, TakeRewardCard t): TakeReward(t.Index); break;
             case (RunPhase.Reward, SkipReward): BackToMap(); break;
