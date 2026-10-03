@@ -390,6 +390,7 @@ De game is een statische site (Blazor WebAssembly), dus een server is niet nodig
 - **`<base href>` per map.** De site staat onder `/DeckOverflow/`, niet op `/`. De workflow zet de juiste base bij het publiceren, tenzij er later een eigen domein komt.
 - **Geen deep links nodig.** Het spel werkt met querystrings op `/` (`?seed=…`, `?level=…`), dus de gebruikelijke 404-omweg voor SPA's is overbodig.
 - **De repo moet publiek zijn** voor gratis Pages.
+- **`<script type="importmap"></script>` in `index.html`.** .NET 10 zet een fingerprint in de naam van `dotnet.js`; de import map vertaalt die. Lokaal doet de devserver dat, op Pages laadt zonder die regel niets.
 - Pages serveert de Brotli-bestanden van Blazor niet, dus de eerste keer laden is enkele MB zwaarder. Op te lossen met een eigen loader als de laadtijd een probleem blijkt.
 
 ### Accounts: eerst gast, later bewaren
@@ -441,7 +442,7 @@ Het grootste technische risico is de laadtijd van Blazor WebAssembly op schoolla
 - [ ] Licenties van PixiJS, GSAP en Howler nakijken voor gebruik in onderwijs en eventuele verkoop
 - [ ] Placeholder-art en -geluid kiezen (vrije assetpacks of zelf gemaakt)
 - [x] Hosting van de spike: GitHub Pages (beslist op 3 oktober 2026)
-- [ ] Publieke GitHub-repo aanmaken en de Pages-workflow opzetten
+- [x] Publieke GitHub-repo en Pages-workflow: [timdams/DeckOverflow](https://github.com/timdams/DeckOverflow), gepubliceerd op [timdams.github.io/DeckOverflow](https://timdams.github.io/DeckOverflow/) (3 oktober 2026)
 - [ ] Misbruik van gastaccounts: volstaan de limieten van Supabase, of is er een captcha nodig? Een captcha botst met "meteen spelen".
 - [ ] Woordenlijsten voor bijnamen samenstellen en nakijken op ongelukkige combinaties
 - [ ] Privacyverklaring in eenvoudige taal schrijven

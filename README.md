@@ -4,6 +4,8 @@ Een roguelike deckbuilder in de browser waarin de wereld gehoorzaamt aan C#. Het
 
 Er staat geen code in beeld: types, overflow, integer deling en operatorvoorrang zijn de natuurwetten van het spel. Na een gevecht geeft de Codex het concept zijn naam en linkt naar het hoofdstuk in het boek.
 
+**Spelen:** [timdams.github.io/DeckOverflow](https://timdams.github.io/DeckOverflow/) (het spel) en [/spike-8/](https://timdams.github.io/DeckOverflow/spike-8/) (de Controlekamer). Elke push naar `main` publiceert opnieuw via [pages.yml](.github/workflows/pages.yml).
+
 ## Waar staan we
 
 | Fase | Wat | Stand |
