@@ -1,25 +1,51 @@
 # Ontwerpdocumenten
 
-Deze repo is de enige bron voor het ontwerp. Wijzigingen gebeuren hier, in markdown, en gaan mee in git.
+Deze repo is de enige bron voor het ontwerp. De docs zijn modulair: lees wat je nodig hebt, niet alles.
 
-| Document | Waarover |
-| --- | --- |
-| [Game Design Document](game-design-document.md) | Visie, pijlers, kernsysteem (types en Omgieten), loot, afdelingen met elk een eigen spelvorm, de fabrieksplattegrond, de onthulling, Act 1: De Vatenvallei, encounters, Codex, antipatronen |
-| [Spike Design Doc](spike-design-doc.md) | Architectuur motor/shell/stage, eventcontract, interop, Byte-Golem-scenario, succescriteria, de weg naar de MVP, hosting, accounts en data |
-| [Architectuurschema](architectuur.svg) | De motor beslist, de stage speelt af |
-| [Product sheet](product-sheet/product-sheet.html) | A4-pitch voor instellingen en financiers, met [sfeerbeeld](product-sheet/sfeerbeeld.jpg) |
+| Document | Waarover | Lees het als je werkt aan |
+| --- | --- | --- |
+| [visie.md](visie.md) | Visie, pijlers, thema, elites als echte bugs, verslavingsmotor, game feel, antipatronen | elk ontwerp |
+| [architectuur.md](architectuur.md) | Platform, motor/shell/stage, determinisme, eventcontract, interop, technische risico's | code in elke afdeling |
+| [wereld/](wereld/README.md) | Afdelingen, plattegrond, ontgrendelen, mastery, Prikklok, onthulling | de wereld rond de afdelingen |
+| [wereld/codex.md](wereld/codex.md) | De Codex als het boek, over alle afdelingen | Codex-pagina's |
+| [wereld/x-register.md](wereld/x-register.md) | Het ✗-register: achievements, en hoe een afdeling panelen levert | achievements |
+| [wereld/backend.md](wereld/backend.md), [wereld/supabase.md](wereld/supabase.md) | Hosting, accounts, klascode, data; het werkplan van de backend | auth, opslag, klassement |
+| [afdelingen/card-hall/](afdelingen/card-hall/README.md) | De deckbuilder: core loop, kernsysteem, drie acts, kaarten, events | de deckbuilder |
+| [geschiedenis/spikes.md](geschiedenis/spikes.md) | Archief: spike 1 tot 4, succescriteria, de weg naar de MVP | (zelden nodig) |
+| [Architectuurschema](architectuur.svg) | De motor beslist, de stage speelt af | |
+| [Product sheet](product-sheet/product-sheet.html) | A4-pitch voor instellingen en financiers | |
 
-Tot 3 oktober 2026 stonden deze documenten in Claude Docs en een design-canvas ([GDD](https://claude.ai/artifact/5Zz4VdoN9QFaeYZEm1hsa7), [Spike Design Doc](https://claude.ai/artifact/TFfgyB6S5NvBcdx6tExyrj), [product sheet](https://claude.ai/artifact/95YGcMNq95KyYYNkNjmVJu)). Die versies worden niet meer bijgewerkt en lopen achter op de repo.
+**Een nieuwe afdeling** krijgt een map `afdelingen/<naam>/` met een `README.md` (de spelvorm en haar loop), een `todo.md`, een `ideeen.md` en, als de code er is, een `events.md`. Wat ze met de wereld deelt (Codex-pagina's, ✗-panelen), beschrijft ze in haar eigen map en registreert ze in de gedeelde systemen.
 
-## Stand van zaken tegenover spike 1
+**Hoe je de docs leest.** Ze mengen wat gebouwd is met wat nog ontwerp is. Een sectie of regel met **Gebouwd** beschrijft het spel zoals het nu draait; de rest is richting.
 
-- **Eventcontract:** de 15 events uit het Spike Design Doc staan zo in [GameEvent.cs](../spikes/01-byte-golem/src/DeckOverflow.Engine/Events/GameEvent.cs).
-- **Solution-structuur:** het doc noemt nog `TypedValue` en `Turn`. De spike kwam zonder uit; de werkelijke structuur staat in de [README van spike 1](../spikes/01-byte-golem/README.md#structuur).
-- **Spike 2** is gebouwd in [spikes/02-omgieten](../spikes/02-omgieten/). In plaats van een aparte `DoubleRules` beslist het type van het doelwit in de motor zelf, en `CastRules` doet de conversies. `TypeChanged` kreeg extra velden; de keuzes staan in de [README van spike 2](../spikes/02-omgieten/README.md#keuzes-tijdens-spike-2).
-- **Techniekkeuze:** het GDD laat Blazor tegenover een JavaScript-engine nog open. De spike koos een combinatie: de motor in Blazor WebAssembly, de stage in PixiJS.
+## Stand van zaken
+
+Op 3 oktober 2026 is **The Card Hall** speelbaar: de deckbuilder met drie acts, één per hoofdstuk (H2, H3, H4), van titelscherm tot eindscherm. Wat erin zit:
+
+- **Drie acts** van 6 rijen plus een baas, elk met eigen vijanden, elites, baas en nieuwe kaarten. Een run kan ook in act 2 of 3 starten.
+- **23 vijanden** (de Bottomless Jug meegeteld), waarvan 6 elites (echte bugs) en 3 bazen. **25 kaarten**, **8 relics**, **6 events**.
+- **De getypeerde aanval**: je aanval is een waarde met een type die door modifiers stroomt, met echte C#-regels. Modifiers wachten over je beurt heen en zijn weg te vegen met Scrap.
+- **Bewuste intents** die rekenen met jouw blok, kaarten, energie of HP.
+- **De Codex**: 15 pagina's, geordend per hoofdstuk, met jouw moment als mini-animatie en een link naar het boek.
+- **Het ✗-register**: 11 panelen.
+- **De wereld**: teases, de onthulling en de fabrieksplattegrond met zes afdelingen. Alleen de Card Hall is echt speelbaar; de Controlekamer is een los prototype (spike 8).
+- **Score van een run** en een dagelijkse seed in de motor; accounts en klascodes in Supabase. Het klassement zelf (de Prikklok) is nog niet aangesloten.
+- **Tijdelijk:** de sneltoets W wint het lopende gevecht. Die moet eruit voor een playtest.
+
+Nog niet met spelers getest. Eén bevinding van de ontwikkelaar zelf: Ink tegen een getal zette een run vast (opgelost met Scrap).
+
+## Beslist
+
+Kort, met de datum; de uitwerking staat in het document van het onderwerp.
+
+- 2 oktober 2026: Blazor WebAssembly met PixiJS; de AI-art in handleidingstijl is definitief; runlengte afgestemd op een lesblok.
+- 3 oktober 2026: elke afdeling krijgt haar eigen spelvorm rond één plattegrond; de Card Hall heeft drie acts, één per hoofdstuk; startpunten met vijf keer 1 uit 3; de Codex is het boek; het vangnet voor de onthulling na 5 gestarte runs; de score van een run; Scrap voor wachtende modifiers; een afdeling ontgrendel je zelf; een docent maakt alleen een klascode voor het klassement, niets anders; gemonteerd is drie gewonnen runs of de elite; de eerste voltooide dagelijkse run telt.
 
 ## Product sheet
 
 Open `product-sheet.html` in een browser. Afdrukken naar pdf geeft één A4-pagina. Het lettertype komt van Google Fonts; offline valt het terug op systeemfonts.
 
 Nog in te vullen: `[DATUM]` (prototype en roadmap), `[EMAIL]`, `[BEDRAG]`, `[PRIJS per instelling / jaar]`, `[MARKTOMVANG]` en het cijfer over uitval of slaagpercentage in het eerste jaar. Het sfeerbeeld is met AI gegenereerd en geen definitieve art.
+
+Tot 3 oktober 2026 stonden de documenten in Claude Docs en een design-canvas. Die versies worden niet meer bijgewerkt.

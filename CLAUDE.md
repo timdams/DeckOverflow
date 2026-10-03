@@ -2,11 +2,15 @@
 
 Roguelike deckbuilder in de browser waarin de wereld gehoorzaamt aan C#. Doelgroep: eerstejaars programmeren, gebaseerd op *Zie Scherp Scherper*. Deze repo is de projectrepo voor het hele spel: ontwerp, spikes en later de game zelf.
 
-Lees eerst wat je nodig hebt:
+## Modulair: lees alleen wat bij je taak hoort
 
-- [README.md](README.md): stand van zaken en indeling.
-- [docs/game-design-document.md](docs/game-design-document.md): pijlers, kernsysteem, vijanden, kaarten, antipatronen.
-- [docs/spike-design-doc.md](docs/spike-design-doc.md): architectuur, eventcontract, interop, scope spike 2, de weg naar de MVP.
+De docs (en straks de code) zijn opgesplitst in **de wereld** en **één module per afdeling** (factory), zodat je context klein blijft. Lees niet alles; begin bij [docs/README.md](docs/README.md) en kies:
+
+- **Altijd nuttig:** [docs/visie.md](docs/visie.md) (pijlers, antipatronen) en [docs/architectuur.md](docs/architectuur.md) (motor/shell/stage, eventcontract).
+- **De wereld** ([docs/wereld/](docs/wereld/README.md)): plattegrond, ontgrendelen, mastery, Prikklok, onthulling, de [Codex](docs/wereld/codex.md), het [✗-register](docs/wereld/x-register.md), de [backend](docs/wereld/backend.md) (auth, klascode, Supabase). Todo's in [docs/wereld/todo.md](docs/wereld/todo.md).
+- **Een afdeling** ([docs/afdelingen/](docs/afdelingen/)): elk in een eigen map met `README.md`, `todo.md`, `ideeen.md`, `events.md` en een eigen `CLAUDE.md` met de regels die alleen daar gelden. Nu alleen [The Card Hall](docs/afdelingen/card-hall/README.md), de deckbuilder: lees bij werk daaraan eerst [haar CLAUDE.md](docs/afdelingen/card-hall/CLAUDE.md).
+
+Houd het zo: wat voor één afdeling geldt, schrijf je in haar map, niet in de wereld-docs of hier. Een nieuwe afdeling krijgt een nieuwe map; ze deelt alleen via de wereld (Codex, ✗-register, voortgang).
 
 ## Prioriteit
 
@@ -14,8 +18,8 @@ Eerst de core game loop: vechten, een beloning kiezen, de map. Geluid, definitie
 
 ## Indeling en wat je waar doet
 
-- **`todo.md`**: wat bewust is uitgesteld. Lees het bij de start van een taak, werk eraan als het gevraagd wordt, en vul het aan als je zelf iets uitstelt of een gat vindt dat je niet meteen dicht. Haal eruit wat af is.
-- **`docs/`**: het ontwerp (GDD, Spike Design Doc, product sheet). Deze repo is de enige bron; Claude Docs worden niet meer gebruikt of bijgewerkt. Schrijf ontwerpwijzigingen rechtstreeks hier.
+- **`todo.md` per module**: wat bewust is uitgesteld, in [docs/wereld/todo.md](docs/wereld/todo.md) en in de map van elke afdeling. Lees de todo van je module bij de start van een taak, werk eraan als het gevraagd wordt, en vul hem aan als je zelf iets uitstelt of een gat vindt dat je niet meteen dicht. Haal eruit wat af is. De `todo.md` op de root is alleen een wegwijzer.
+- **`docs/`**: het ontwerp, modulair (zie hierboven), plus de product sheet. Deze repo is de enige bron; Claude Docs worden niet meer gebruikt of bijgewerkt. Schrijf ontwerpwijzigingen rechtstreeks in het document van de module.
 - **`spikes/NN-naam/`**: afgesloten of lopende experimenten, elk met een eigen `.sln`, README en CI-workflow, los draaibaar. Een afgesloten spike verandert niet meer; bouw er niet op verder. Een nieuwe spike krijgt een nieuwe map.
 - **`src/` en `tests/` op de root** zijn het echte spel, overgenomen uit spike 7 op 2 oktober 2026. Nieuw werk gebeurt daar. Code uit een spike neem je bewust over, niet door de spikemap te verplaatsen of te laten doorgroeien.
 - **`art/sheets/` en `tools/cut_sheets.py`**: de gegenereerde tekenvellen en het script dat ze in losse tekeningen snijdt. Nieuwe art komt van hetzelfde model met het manualvel als referentie.
@@ -40,22 +44,21 @@ Bewezen in spike 1 en de basis voor het spel. De motor beslist, de stage speelt 
 - **Stage** (`wwwroot/stage/`, PixiJS + GSAP + Howler) zet events om in animatie en geluid. Geen spelregels, en ze leest nooit zelf de spelstatus. Na elke `play` volgt een `sync` met de snapshot als waarheid.
 - **Typeregels zijn echt .NET-gedrag**, geen nabootsing: `ByteRules` gebruikt `unchecked((byte)…)`, `IntRules` een gewone cast. Een nieuw type krijgt een eigen `XxxRules`-klasse.
 - **Elke regel die iets bijzonders doet, meldt het met een eigen event.** Dat is de haak voor juice en de Codex.
-- **Events zijn klein en plat**: ids en getallen, polymorf geserialiseerd met `[JsonDerivedType]`. Een nieuw event komt ook in de tabel in het Spike Design Doc en in de handlers van de stage. De stage negeert onbekende types.
+- **Events zijn klein en plat**: ids en getallen, polymorf geserialiseerd met `[JsonDerivedType]`. Een nieuw event komt ook in de `events.md` van zijn afdeling en in de handlers van de stage. De stage negeert onbekende types.
 - **Determinisme:** een eigen RNG met seed (PCG32), vastgepind met een test op de eerste getallen. Faalt die, dan veranderen alle bestaande seeds; pas de verwachte waarden niet zomaar aan.
 - **Geen CDN:** libraries en fonts staan in `wwwroot/lib` en `wwwroot/fonts`, zodat het spel ook op een schoolnetwerk of GitHub Pages draait.
 - Juice-getallen staan in `juice.js`. Stel de feel daar af, niet in de handlers.
 
-## Ontwerpregels die code raken
+## Ontwerpregels die code raken, in elke afdeling
 
-Uit het GDD. Een wijziging die hiertegen ingaat, eerst voorleggen.
+Uit [docs/visie.md](docs/visie.md). Een wijziging die hiertegen ingaat, eerst voorleggen. Regels die alleen voor één afdeling gelden, staan in haar eigen `CLAUDE.md`.
 
-- **C# is natuurkunde.** Regels zijn altijd consistent en buigen nooit voor de les of voor de speler: als `int` afkapt, kapt `int` altijd af.
-- **Geen code in beeld in Act 1.** Kaarten tonen getallen, letters en woorden. Echte C# verschijnt pas in de Codex.
-- **Eerst ervaren, dan benoemen.** Geen tutorialschermen of uitleg vooraf. In de game heet casting "Omgieten"; het woord "cast" verschijnt pas in de Codex.
-- **Rekenen is gereedschap, nooit de taak.** Intents tonen standaard het totaal; alleen de Rekenmeester verbergt het.
-- **Geen gamification:** geen vragen als poort, geen punten of badges, geen echt geld of FOMO-timers.
-- **Compilefout of exception:** een kaart op een ongeldig doelwit weigert. Alleen runtimefouten ontploffen.
-- Elk gevecht moet op meerdere manieren te winnen zijn. Begrijpen maakt het efficiënter, niet verplicht.
+- **C# is natuurkunde.** Regels zijn altijd consistent en buigen nooit voor de les of voor de speler: als `int` afkapt, kapt `int` altijd af, in elke afdeling.
+- **Eerst ervaren, dan benoemen.** Geen tutorialschermen of uitleg vooraf. De echte naam van een concept verschijnt pas in de Codex.
+- **Geen gamification:** geen vragen als poort, geen punten of badges voor leren, geen echt geld of FOMO-timers.
+- **Compilefout of exception:** een ongeldige zet weigert. Alleen runtimefouten ontploffen.
+- Elk gevecht of elke puzzel moet op meerdere manieren te winnen zijn. Begrijpen maakt het efficiënter, niet verplicht.
+- **De docent maakt alleen een klascode** (voor het klassement). Een afdeling ontgrendel je zelf.
 
 ## Conventies
 
@@ -63,4 +66,4 @@ Uit het GDD. Een wijziging die hiertegen ingaat, eerst voorleggen.
 - Een nieuwe kaart, vijand, relic of event krijgt zijn tekst in `en.json`; `StringsTests` faalt anders. Een nieuwe relic is een klasse met haken (`Relic`), geen `if` in `Combat` of `Run`.
 - .NET 10, nullable aan, `sealed record` voor commands, events en snapshots.
 - Nieuwe regels en scenario's krijgen een xUnit-test.
-- Elke wijziging aan het spel (een vijand, kaart, relic, regel of getal) toets je af aan de Codex (`CodexCatalog`, `codex.*` in `en.json`) en de ✗-panelen (`XRegister`, `xpanel.*`): kloppen de tekst, de code en de getallen nog, en kan het moment of paneel nog gebeuren? Pas ze mee aan, en meld in je samenvatting wat je controleerde, ook als er niets hoefde te veranderen.
+- Elke wijziging aan het spel (een vijand, kaart, relic, regel of getal, in welke afdeling ook) toets je af aan de Codex (`CodexCatalog`, `codex.*` in `en.json`) en de ✗-panelen (`XRegister`, `xpanel.*`): kloppen de tekst, de code en de getallen nog, en kan het moment of paneel nog gebeuren? Pas ze mee aan, en meld in je samenvatting wat je controleerde, ook als er niets hoefde te veranderen.

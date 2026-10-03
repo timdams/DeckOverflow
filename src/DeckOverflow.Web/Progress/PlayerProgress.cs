@@ -3,7 +3,7 @@ using DeckOverflow.Web.World;
 
 namespace DeckOverflow.Web.Progress;
 
-/// <summary>De drie toestanden van een onderdeel op de onderdelenlijst (GDD, mastery).</summary>
+/// <summary>De drie toestanden van een onderdeel op de onderdelenlijst (docs/wereld/README.md, mastery).</summary>
 [JsonConverter(typeof(JsonStringEnumConverter<PartState>))]
 public enum PartState { InBag, Unpacked, Assembled }
 
@@ -26,7 +26,7 @@ public sealed class PlayerProgress
     /// <summary>Hoe ver elke Codex-pagina gelezen is.</summary>
     public Dictionary<string, int> CodexRead { get; init; } = [];
 
-    /// <summary>Gemonteerde onderdelen. Wanneer een onderdeel gemonteerd is, ligt nog niet vast (GDD, open vraag).</summary>
+    /// <summary>Gemonteerde onderdelen. Gemonteerd: het moment in een gewonnen gevecht in drie verschillende runs, of de elite van het concept verslaan (docs/wereld/README.md, mastery). Nog niet gebouwd.</summary>
     public HashSet<string> Assembled { get; init; } = [];
 
     /// <summary>Ontgrendelde afdelingen. De Card Hall staat altijd open en hoort hier niet in.</summary>

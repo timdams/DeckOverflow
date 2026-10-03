@@ -18,7 +18,7 @@ Er staat geen code in beeld: types, overflow, integer deling en operatorvoorrang
 | Spike 6 | De handleiding: het hele spel als montagehandleiding zonder woorden. Zwart op papier, kleur alleen voor types, een explosietekening als een vijand sterft | Gebouwd, nog niet met spelers getest, zie [spikes/06-handleiding](spikes/06-handleiding/) |
 | Spike 7 | Niet volgens de handleiding: een eigen thema. Kaarten zijn overtredingen van de handleiding, elites zijn echte bugs (Level 256, Flight 501) met hun verhaal in de Codex | Gebouwd, nog niet met spelers getest, zie [spikes/07-fabriek](spikes/07-fabriek/) |
 | Spike 8 | De Controlekamer (H5): regels opstellen voor een automaat en toekijken. De eerste afdeling die geen deckbuilder is, met vijf gevechten en goto fail als elite | Gebouwd, nog niet met spelers getest, zie [spikes/08-controlekamer](spikes/08-controlekamer/) |
-| MVP-demo | Een afgewerkte Act 1 (H2 en H3): runs over acts met startpunten, de patch, Codex-pagina's en een lichte backend zonder accounts | Gestart: `src/` en `tests/` op de root, overgenomen uit spike 7. Het plan staat in het [Spike Design Doc](docs/spike-design-doc.md#van-spikes-naar-src) |
+| MVP-demo | Een afgewerkte Act 1 (H2 en H3): runs over acts met startpunten, de patch, Codex-pagina's en een lichte backend zonder accounts | Gestart: `src/` en `tests/` op de root, overgenomen uit spike 7. Het plan staat in [de geschiedenis van de spikes](docs/geschiedenis/spikes.md#van-spikes-naar-src) |
 
 **Prioriteit nu:** de core game loop. Eerst moet vechten, een beloning kiezen en de map leuk zijn; geluid, definitieve art en polish komen daarna.
 
@@ -26,8 +26,10 @@ Playtest 1 bevestigde de techniek en dat de golem-ontdekking werkt, maar toonde 
 
 ## Documenten
 
-- [Game Design Document](docs/game-design-document.md): visie, pijlers, kernsysteem, Act 1, encounters, kaarten, Codex, antipatronen.
-- [Spike Design Doc](docs/spike-design-doc.md): architectuur, eventcontract, interop, succescriteria, de weg naar de MVP.
+- [docs/README.md](docs/README.md): het overzicht van alle docs, de stand van zaken en wat beslist is.
+- [Visie](docs/visie.md) en [architectuur](docs/architectuur.md): voor elke afdeling.
+- [De wereld](docs/wereld/README.md): plattegrond, Codex, ✗-register, backend.
+- [The Card Hall](docs/afdelingen/card-hall/README.md): de deckbuilder.
 - [Product sheet](docs/product-sheet/product-sheet.html): A4-pitch voor instellingen.
 - [Overzicht en bronnen](docs/README.md).
 
@@ -69,4 +71,4 @@ Het spel zelf staat in `src/` en `tests/` op de root, overgenomen uit spike 7. D
 
 ![De motor beslist, de stage speelt af](docs/architectuur.svg)
 
-Een C#-regelmotor zonder UI of tijd neemt commands aan en geeft events terug. Een Blazor WebAssembly-shell orkestreert, en een JavaScript-stage (PixiJS, GSAP, Howler) speelt de events af als animatie en geluid. Spike 1 heeft deze opbouw bewezen; details staan in het [Spike Design Doc](docs/spike-design-doc.md#architectuur).
+Een C#-regelmotor zonder UI of tijd neemt commands aan en geeft events terug. Een Blazor WebAssembly-shell orkestreert, en een JavaScript-stage (PixiJS, GSAP, Howler) speelt de events af als animatie en geluid. Spike 1 heeft deze opbouw bewezen; details staan in [architectuur.md](docs/architectuur.md#motor-shell-en-stage).

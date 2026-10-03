@@ -1,6 +1,6 @@
 # Supabaseplan
 
-Werkplan om de backend van Deck Overflow op te zetten. Het ontwerp staat in het [Spike Design Doc](docs/spike-design-doc.md#hosting-accounts-en-data); dit bestand is de uitvoering ervan, stap voor stap. Opgesteld op 3 oktober 2026.
+Werkplan om de backend van Deck Overflow op te zetten. Het ontwerp staat in [backend.md](backend.md); dit bestand is de uitvoering ervan, stap voor stap. Opgesteld op 3 oktober 2026.
 
 ## Beslist
 
@@ -15,7 +15,7 @@ Werkplan om de backend van Deck Overflow op te zetten. Het ontwerp staat in het 
 
 Af op 3 oktober 2026.
 
-1. **Lokale voortgang.** `IProgressStore` in `src/DeckOverflow.Web/Progress/`, met `LocalProgressStore` op `localStorage` (één sleutel `deckoverflow.progress`, één JSON-blok `PlayerProgress`). De losse sleutels van vroeger worden bij de eerste start overgenomen. Bewaart: Codex-pagina's en leesstand, ✗-panelen, ontgrendelde afdelingen (met hoe en wanneer), gemonteerde onderdelen, startpunt, aantal runs, intro en onthulling. Een onderdeel is een Codex-pagina: uitgepakt = pagina open, dus geen aparte lijst; `Assembled` blijft leeg tot het GDD vastlegt wanneer iets gemonteerd is. `Departments.IsOpen` leest nu de ontgrendelingen, klaar voor `how = teacher`.
+1. **Lokale voortgang.** `IProgressStore` in `src/DeckOverflow.Web/Progress/`, met `LocalProgressStore` op `localStorage` (één sleutel `deckoverflow.progress`, één JSON-blok `PlayerProgress`). De losse sleutels van vroeger worden bij de eerste start overgenomen. Bewaart: Codex-pagina's en leesstand, ✗-panelen, ontgrendelde afdelingen (met hoe en wanneer), gemonteerde onderdelen, startpunt, aantal runs, intro en onthulling. Een onderdeel is een Codex-pagina: uitgepakt = pagina open, dus geen aparte lijst; `Assembled` blijft leeg tot het gemonteerd-zijn gebouwd is (beslist in README.md, mastery). `Departments.IsOpen` leest nu de ontgrendelingen, klaar voor `how = teacher`.
 2. **Commando's serialiseerbaar.** `ICommand` heeft `[JsonDerivedType]` zoals `GameEvent`; `Run.Replay(seed, commands, setup)` speelt een opname opnieuw af. `ReplayTests`: een bot speelt een run, de commandolijst gaat door JSON, het opnieuw afspelen geeft exact dezelfde snapshot. De score is `Run.Score` (`RunScore`); `ReplayTests` controleert dat opnieuw afspelen dezelfde score geeft.
 3. **Dagelijkse seed.** `DailySeed.For(DateOnly)` in de motor: FNV-1a 64 bit over `yyyy-MM-dd`. De shell geeft de UTC-datum mee, de motor kent geen klok. Vastgepind in `ReplayTests`.
 
@@ -130,8 +130,8 @@ Een gastaccount omzetten ("Bewaar je fabriek"): `PUT /auth/v1/user` met adres en
 
 ## Stap 8: docs bijwerken
 
-- Spike Design Doc: tabellen, functies, en inloggen met gebruikersnaam of e-mail zonder Edge Function.
-- GDD: de Prikklok.
+- [backend.md](backend.md) (vroeger het Spike Design Doc): tabellen, functies, en inloggen met gebruikersnaam of e-mail zonder Edge Function.
+- [README.md](README.md#prikklok-het-klassement) (vroeger het GDD): de Prikklok.
 - Privacyverklaring in eenvoudige taal.
 
 ## Open vragen
