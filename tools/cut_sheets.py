@@ -66,7 +66,7 @@ SHEETS_SPEC = [
 
 # Figuren die op hun vel naar rechts kijken: gespiegeld, zodat ze vanaf rechts de held aankijken.
 # Per tekening, niet per vel: de inspecteur op het bugs-vel keek al naar links.
-FLIP = {"level-256", "flight-501", "the-index", "reckoner"}
+FLIP = {"level-256", "flight-501", "the-index", "reckoner", "ghost"}
 
 FILL = 12          # tot dit kanaalverschil met de achtergrond is een pixel achtergrond
 SOFT = (12, 60)    # zachte rand daarboven
