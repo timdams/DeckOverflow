@@ -972,3 +972,11 @@ a.play-big.as-link { display: inline-block; text-decoration: none; font-size: 18
 .account-error { color: #b3261e; font-weight: 700; }
 .account button.danger { background: #b3261e; color: var(--white); }
 .reveal-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: flex-end; align-self: stretch; padding: 0 28px; }
+
+/* ---------------------------------------------------------------- platen bij intro, onthulling, uitgang */
+
+.story-card .story-art { width: 160px; height: auto; align-self: center; margin-bottom: 4px; }
+.reveal-card .reveal-art { display: block; width: 100%; max-height: 300px; object-fit: contain; background: var(--paper); border-bottom: 3px solid var(--ink); padding: 14px 0; }
+.end-scene { width: 200px; height: auto; }
+.wall-crack { display: inline-flex; align-items: center; gap: 10px; }
+.wall-crack .crack-art { width: 44px; height: 44px; }

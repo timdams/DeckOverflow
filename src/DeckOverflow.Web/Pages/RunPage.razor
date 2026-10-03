@@ -57,7 +57,7 @@
             @if (CrackVisible)
             {
                 @* Het vangnet: na genoeg runs barst de muur vanzelf, ook zonder de laatste baas te verslaan *@
-                <button class="wall-crack" @onclick="@(() => Reveal("crack"))">@S.T("ui.reveal.crack-button")</button>
+                <button class="wall-crack" @onclick="@(() => Reveal("crack"))"><ArtImage Src="@Art.Scene("wall-crack")" Class="crack-art" />@S.T("ui.reveal.crack-button")</button>
             }
         </div>
         }
@@ -66,6 +66,7 @@
             @* Eén keer, voor de eerste run: het thema in drie zinnen, geen regels *@
             <div class="modal">
                 <div class="modal-body story-card">
+                    <ArtImage Src="@Art.Scene("intro")" Class="story-art" />
                     <h2>@S.T("ui.intro.title")</h2>
                     <p>@S.T("ui.intro.1")</p>
                     <p>@S.T("ui.intro.2")</p>
@@ -302,7 +303,15 @@
 
                         case RunPhase.Won or RunPhase.Lost when s.End is { } end:
                             <section class="panel end @(end.Won ? "won" : "lost")">
-                                <img class="end-art" src="@ArtStyle.Icon(end.Won ? "victory" : "crash")" alt="" />
+                                @if (end.Won && Art.Scene("exit-door") is { } exit)
+                                {
+                                    @* Uitgespeeld: het figuurtje stapt door de deur, het boek gaat verder *@
+                                    <img class="end-scene" src="@exit" alt="" />
+                                }
+                                else
+                                {
+                                    <img class="end-art" src="@ArtStyle.Icon(end.Won ? "victory" : "crash")" alt="" />
+                                }
                                 <h2>@S.T(end.Won ? "ui.end.won" : "ui.end.lost")</h2>
                                 @if (end.Won)
                                 {
@@ -376,7 +385,7 @@
         @* De onthulling: de muur van de Gieterij scheurt open, en achter de Card Hall gaat de fabriek verder *@
         <div class="modal">
             <div class="modal-body act-card reveal-card">
-                <img class="act-art" src="@ArtStyle.Wide("act-mold-works")" alt="" />
+                <ArtImage Src="@Art.Scene("reveal")" Class="reveal-art" />
                 <span class="act-kicker">@S.T("ui.reveal.kicker")</span>
                 <h2>@S.T("ui.reveal.title")</h2>
                 <p>@S.T(_revealReason == "won" ? "ui.reveal.won" : "ui.reveal.crack")</p>
