@@ -1,0 +1,32 @@
+@inject Strings S
+@inject ArtStyle Art
+
+@* Je relics op een rij: tekening, naam en wat ze doen, in de volgorde waarin je ze kreeg. *@
+
+<div class="modal" @onclick="OnClose">
+    <div class="modal-body relic-book" @onclick:stopPropagation="true">
+        <h2>@S.T("ui.relics.title")</h2>
+        @if (Relics.Count == 0)
+        {
+            <p class="hint">@S.T("ui.relics.empty")</p>
+        }
+        <ul class="relic-list">
+            @foreach (var relic in Relics)
+            {
+                <li>
+                    <ArtImage Src="@Art.Relic(relic.Id)" Class="relic-art" Fallback="◆" />
+                    <div>
+                        <strong>@S.Relic(relic.Id)</strong>
+                        <p>@S.T(relic.Text)</p>
+                    </div>
+                </li>
+            }
+        </ul>
+        <button class="secondary" @onclick="OnClose">@S.T("ui.close")</button>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<RelicInfo> Relics { get; set; } = [];
+    [Parameter] public EventCallback OnClose { get; set; }
+}

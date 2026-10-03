@@ -51,6 +51,7 @@ public partial class RunPage
     private bool _starting;
     private bool _busy;
     private bool _showDeck;
+    private bool _showRelics;
     private int _startAct = 1;
 
     /// <summary>Alles wat over runs heen blijft: Codex, panelen, ontgrendelde afdelingen, de onthulling.</summary>

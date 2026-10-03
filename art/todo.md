@@ -10,6 +10,11 @@ Tekeningen die het spel nog mist, over alle afdelingen heen, zodat ze samen in �
 | `flip` | kaart (`cards`) | Card Hall | Een hand die een tweestandenschakelaar omzet | geen tekening |
 | `remainder` | kaart (`cards`) | Card Hall | Een deling waarbij een klein restje uit de machine valt | geen tekening |
 | `after-midnight` | ✗-paneel (`panels`) | Card Hall | Het figuurtje dat wacht bij een klok die middernacht slaat, een kalender die van 99 naar 100 springt | geen tekening |
+| `ternary-plate` | relic (`relics`) | Card Hall | Een schildplaat met een vraagteken en twee pijlen die uit elkaar gaan (een splitsing) | een ◆ |
+| `metronome` | relic (`relics`) | Card Hall | Een metronoom waarvan de wijzer op elke derde tik een vonk geeft | een ◆ |
+| `overflow-valve` | relic (`relics`) | Card Hall | Een ventiel op een overlopend vat, met een bliksemschicht die eruit spuit | een ◆ |
+| `tryparse-glove` | relic (`relics`) | Card Hall | Een dikke werkhandschoen die een etiket met krabbels vasthoudt zonder dat het ontploft | een ◆ |
+| `half-shim` | relic (`relics`) | Card Hall | Een dun opvulplaatje (shim) met een half schroefje | een ◆ |
 
 ## Liggen klaar, nog niet gebruikt
 

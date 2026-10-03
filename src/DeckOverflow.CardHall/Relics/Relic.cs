@@ -23,6 +23,9 @@ public abstract class Relic
     /// <summary>Blok waarmee je elk gevecht begint.</summary>
     public virtual double BlockAtCombatStart => 0;
 
+    /// <summary>Blok bij de start van een gevecht, als het van je HP afhangt. Standaard <see cref="BlockAtCombatStart"/>.</summary>
+    public virtual double BlockAtCombatStartFor(int hp, int maxHp) => BlockAtCombatStart;
+
     /// <summary>Goud uit gevechten wordt vermenigvuldigd met deze factor, afgerond met <c>Math.Round</c>.</summary>
     public virtual double GoldFactor => 1.0;
 
@@ -46,6 +49,18 @@ public abstract class Relic
         damage = 0;
         return false;
     }
+
+    /// <summary>Extra energie bij de start van beurt <paramref name="turn"/> (vanaf beurt 2).</summary>
+    public virtual int EnergyAtTurnStart(int turn) => 0;
+
+    /// <summary>Extra energie als een vijand omklapt (overflow).</summary>
+    public virtual int EnergyOnEnemyOverflow => 0;
+
+    /// <summary>Read gebruikt <c>int.TryParse</c>: tekst die geen getal is, wordt 0 in plaats van een crash.</summary>
+    public virtual bool ParsesSafely => false;
+
+    /// <summary>Komt bij elke treffer van een aanval die een getal is, vóór de typeregels van het doelwit.</summary>
+    public virtual double BonusPerHit => 0;
 
     /// <summary>Voortgang voor relics die tellen, bv. "1.5/3". Leeg voor de rest.</summary>
     public virtual string? Counter => null;

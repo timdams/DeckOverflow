@@ -19,8 +19,15 @@ public static class RelicCatalog
     public const string InkWell = "ink-well";
     public const string TallyCounter = "tally-counter";
     public const string CoinMold = "coin-mold";
+    public const string TernaryPlate = "ternary-plate";
+    public const string Metronome = "metronome";
+    public const string OverflowValve = "overflow-valve";
+    public const string TryParseGlove = "tryparse-glove";
+    public const string HalfShim = "half-shim";
 
-    public static readonly IReadOnlyList<string> All = [Counter, InkWell, FloatingPoint, ScrapPouch, AnchorBarrel, GreatPot, TallyCounter, CoinMold];
+    public static readonly IReadOnlyList<string> All =
+        [Counter, InkWell, FloatingPoint, ScrapPouch, AnchorBarrel, GreatPot, TallyCounter, CoinMold,
+         TernaryPlate, Metronome, OverflowValve, TryParseGlove, HalfShim];
 
     /// <summary>Een vers exemplaar, zonder status uit een vorig gevecht.</summary>
     public static Relic Create(string id) => id switch
@@ -33,6 +40,11 @@ public static class RelicCatalog
         InkWell => new InkWellRelic(),
         TallyCounter => new TallyCounterRelic(),
         CoinMold => new CoinMoldRelic(),
+        TernaryPlate => new TernaryPlateRelic(),
+        Metronome => new MetronomeRelic(),
+        OverflowValve => new OverflowValveRelic(),
+        TryParseGlove => new TryParseGloveRelic(),
+        HalfShim => new HalfShimRelic(),
         _ => throw new ArgumentException($"Onbekende relic: {id}", nameof(id))
     };
 
@@ -128,4 +140,49 @@ public sealed class CoinMoldRelic : Relic
 
     public override string Id => RelicCatalog.CoinMold;
     public override double GoldFactor => Factor;
+}
+
+/// <summary>Blok bij de start van elk gevecht: <c>hp &lt; maxHp / 2 ? 10 : 4</c>. Een voorwaardelijke expressie, met een deling van gehele getallen.</summary>
+public sealed class TernaryPlateRelic : Relic
+{
+    public const int Low = 10;
+    public const int High = 4;
+
+    public override string Id => RelicCatalog.TernaryPlate;
+    public override TextRef Text => TextRef.Of("relic.ternary-plate.text", ("low", Low), ("high", High));
+    public override double BlockAtCombatStartFor(int hp, int maxHp) => hp < maxHp / 2 ? Low : High;
+}
+
+/// <summary>Elke beurt waarvoor <c>turn % 3 == 0</c> geldt: 1 energie extra. Modulo als ritme.</summary>
+public sealed class MetronomeRelic : Relic
+{
+    public override string Id => RelicCatalog.Metronome;
+    public override int EnergyAtTurnStart(int turn) => turn % 3 == 0 ? 1 : 0;
+}
+
+/// <summary>Klapt een vijand om, dan krijg je 2 energie. Overflow als beloning.</summary>
+public sealed class OverflowValveRelic : Relic
+{
+    public const int Energy = 2;
+
+    public override string Id => RelicCatalog.OverflowValve;
+    public override TextRef Text => TextRef.Of("relic.overflow-valve.text", ("amount", Energy));
+    public override int EnergyOnEnemyOverflow => Energy;
+}
+
+/// <summary>Read gebruikt <c>int.TryParse</c>: tekst die geen getal is, wordt 0. Geen crash, maar ook geen schade.</summary>
+public sealed class TryParseGloveRelic : Relic
+{
+    public override string Id => RelicCatalog.TryParseGlove;
+    public override bool ParsesSafely => true;
+}
+
+/// <summary>+0.5 op elke treffer. Op een <c>int</c>-vijand kapt dat weg (en voedt het de Scrap Pouch); op een <c>double</c> telt het.</summary>
+public sealed class HalfShimRelic : Relic
+{
+    public const double Bonus = 0.5;
+
+    public override string Id => RelicCatalog.HalfShim;
+    public override TextRef Text => TextRef.Of("relic.half-shim.text", ("amount", Bonus));
+    public override double BonusPerHit => Bonus;
 }

@@ -21,7 +21,20 @@
 .topbar .hp, .topbar .gold { display: inline-flex; align-items: center; gap: 6px; }
 .topbar .hp img, .topbar .gold img { width: 28px; height: 28px; }
 .topbar .floor { color: var(--muted); font-weight: 400; }
-.topbar .relics { flex: 1; display: flex; gap: 8px; flex-wrap: wrap; }
+/* Relics: alleen icoontjes, de hele strook is een knop naar het overzicht */
+.topbar .relics {
+  flex: 1; display: flex; align-items: center; gap: 4px; flex-wrap: wrap;
+  background: none; border: none; box-shadow: none; padding: 0; min-height: 0; cursor: pointer; justify-content: flex-start;
+}
+.topbar .relics:disabled { cursor: default; }
+.topbar .relics:hover:not(:disabled) .relic-icon { transform: translateY(-2px); }
+.relic-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; border: 1.5px solid var(--ink); border-radius: 50%; background: var(--white);
+  transition: transform 0.12s;
+}
+.relic-icon .art-img { width: 24px; height: 24px; }
+.relics-label { margin-left: 6px; font-size: 13px; font-weight: 400; color: var(--muted); }
 
 .relic {
   display: inline-flex;
@@ -482,7 +495,7 @@ button.small { padding: 6px 12px; font-size: 12px; }
 .codex-tab.leak { margin-bottom: 14px; }
 
 /* Het boek dekt het titelscherm volledig af, anders schemert de titeltekening door */
-.modal:has(.codex-book), .modal:has(.xregister) { background: var(--paper); }
+.modal:has(.codex-book), .modal:has(.xregister), .modal:has(.picker), .modal:has(.deck-view), .modal:has(.relic-book) { background: var(--paper); }
 
 /* ---- Codex: duidelijk dat er meer te lezen is ---- */
 
@@ -994,3 +1007,63 @@ a.play-big.as-link { display: inline-block; text-decoration: none; font-size: 18
 .pouch li { display: flex; align-items: baseline; gap: 10px; }
 .pouch small { color: var(--muted); }
 .pouch .tag-step { display: inline-grid; place-items: center; width: 24px; height: 24px; flex: none; font-size: 12px; font-weight: 800; color: var(--white); background: var(--zss); border: 2px solid var(--ink); border-radius: 50%; }
+
+/* ---------- Relic-overzicht ---------- */
+.relic-book { max-width: 560px; }
+.relic-list { list-style: none; margin: 0 0 14px; padding: 0; display: flex; flex-direction: column; gap: 10px; text-align: left; }
+.relic-list li { display: flex; gap: 12px; align-items: center; border-bottom: 1px dashed var(--muted); padding-bottom: 8px; }
+.relic-list .relic-art { width: 48px; height: 48px; flex: none; }
+.relic-list p { margin: 2px 0 0; }
+
+/* ---------- Deck bekijken: gelijke kaarten op een stapel ---------- */
+.deck-view { max-width: 1000px; }
+.deck-summary { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; margin: 0 0 8px; }
+.deck-summary .type-badge.none { background: var(--white); color: var(--ink); border: 1.5px solid var(--ink); }
+.card-grid.compact { gap: 22px 14px; max-height: 64vh; overflow-y: auto; padding-bottom: 22px; }
+.card-grid.compact .card-tile { font-size: 12px; }
+.stack { position: relative; }
+.stack.many::before {
+  content: ""; position: absolute; inset: 0; transform: translate(6px, 6px);
+  border: 2px solid var(--ink); border-radius: 12px; background: var(--white); z-index: -1;
+}
+.stack { z-index: 0; }
+.stack-count {
+  position: absolute; left: 50%; bottom: -12px; transform: translateX(-50%); z-index: 2;
+  background: var(--ink); color: var(--white); border-radius: 12px; padding: 1px 8px; font-weight: 700; font-size: 14px;
+}
+
+/* ---------- Kiezen uit je deck: lijst links, kaart rechts ---------- */
+.picker { max-width: 860px; width: 92vw; }
+.picker-layout { display: grid; grid-template-columns: minmax(200px, 260px) 1fr; gap: 18px; align-items: start; margin-bottom: 12px; }
+.picker-list { list-style: none; margin: 0; padding: 0 4px 0 0; max-height: 56vh; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+.picker-row {
+  width: 100%; display: flex; align-items: center; gap: 8px; text-align: left;
+  padding: 6px 10px; min-height: 0; font-size: 14px; font-weight: 400; box-shadow: 2px 2px 0 var(--ink);
+  border-left-width: 6px;
+}
+.picker-row.kind-int { border-left-color: var(--int); }
+.picker-row.kind-double { border-left-color: var(--double); }
+.picker-row.kind-byte { border-left-color: var(--byte); }
+.picker .picker-row.selected, .picker .picker-row.selected:hover:not(:disabled) { background: var(--ink); color: var(--white); }
+.picker-row .row-cost {
+  flex: none; width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+  border: 1.5px solid currentColor; font-weight: 700; font-size: 12px;
+}
+.picker-row .row-name { flex: 1; font-weight: 700; }
+.picker-row .row-count { color: var(--muted); }
+.picker-row.selected .row-count { color: var(--white); }
+.picker-row .row-change { font-size: 12px; color: var(--zss); font-weight: 700; }
+.picker-preview { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.preview-cards { display: flex; align-items: center; gap: 12px; }
+.preview-cards .arrow { font-size: 30px; font-weight: 700; }
+.card-tile.upgraded { box-shadow: 0 0 0 3px var(--zss), 3px 3px 0 var(--ink); }
+.change-line { margin: 0; text-align: center; max-width: 420px; }
+.change-line .change-cost { display: inline-block; margin-right: 8px; font-weight: 700; color: var(--zss); }
+.change-line mark { background: #ffe7b8; color: var(--ink); padding: 0 2px; border-radius: 3px; font-weight: 700; }
+
+@media (max-width: 640px) {
+  .picker-layout { grid-template-columns: 1fr; }
+  .picker-list { max-height: 30vh; }
+  .preview-cards { flex-direction: column; }
+  .preview-cards .arrow { transform: rotate(90deg); }
+}

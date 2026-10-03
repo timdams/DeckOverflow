@@ -1,31 +1,73 @@
 @inject Strings S
 
-@* Kies een kaart uit je deck, bv. om te verbeteren, om te gieten of te verwijderen. *@
+@* Kies een kaart uit je deck: om te verbeteren, om te gieten of te verwijderen.
+   Links een compacte lijst met gelijke kaarten samen, rechts de gekozen kaart groot,
+   bij verbeteren als voor → na met wat verandert gemarkeerd. Pas de knop bevestigt. *@
 
 <div class="modal" @onclick="OnCancel">
-    <div class="modal-body" @onclick:stopPropagation="true">
+    <div class="modal-body picker" @onclick:stopPropagation="true">
         <h2>@Title</h2>
         @if (Hint is not null)
         {
             <p class="hint">@Hint</p>
         }
-        <div class="card-grid">
-            @for (int i = 0; i < Deck.Count; i++)
-            {
-                int index = i;
-                bool eligible = Eligible is null || Eligible.Contains(index);
-                if (!eligible && HideIneligible) continue;
-                var card = Deck[index];
-                <div class="pick">
-                    <CardTile Card="card" Disabled="@(!eligible || OnPick is null)" OnClick="() => OnPick!(index)" />
-                    @if (ShowUpgrade && card.Upgrade is { } up)
+
+        <div class="picker-layout">
+            <ul class="picker-list">
+                @foreach (var group in _groups)
+                {
+                    var g = group;
+                    bool changes = ShowUpgrade && g.Card.Upgrade is not null;
+                    <li>
+                        <button class="picker-row @(g == _selected ? "selected" : "") kind-@KindOf(g.Card)" @onclick="() => _selected = g">
+                            <span class="row-cost">@g.Card.Cost</span>
+                            <span class="row-name">@S.Card(g.Card.Id)</span>
+                            @if (g.Count > 1)
+                            {
+                                <span class="row-count">×@g.Count</span>
+                            }
+                            @if (changes && g.Card.Upgrade!.Cost != g.Card.Cost)
+                            {
+                                <span class="row-change">@g.Card.Cost → @g.Card.Upgrade.Cost ⚡</span>
+                            }
+                        </button>
+                    </li>
+                }
+            </ul>
+
+            <div class="picker-preview">
+                @if (_selected is { } sel)
+                {
+                    <div class="preview-cards">
+                        <CardTile Card="sel.Card" Disabled="true" Class="preview" />
+                        @if (ShowUpgrade && sel.Card.Upgrade is { } up)
+                        {
+                            <span class="arrow">→</span>
+                            <CardTile Card="up" Disabled="true" Class="preview upgraded" />
+                        }
+                    </div>
+                    @if (ShowUpgrade && sel.Card.Upgrade is { } after)
                     {
-                        <span class="arrow">↓</span>
-                        <CardTile Card="up" Disabled="true" Class="preview" />
+                        <p class="change-line">
+                            @if (after.Cost != sel.Card.Cost)
+                            {
+                                <span class="change-cost">@S.T("ui.picker.cost", ("before", sel.Card.Cost), ("after", after.Cost))</span>
+                            }
+                            <span>@DeckGroups.MarkChanges(S.T(sel.Card.Text), S.T(after.Text))</span>
+                        </p>
                     }
-                </div>
-            }
+                    @if (OnPick is not null)
+                    {
+                        <button class="play-big" @onclick="ConfirmAsync">@(ConfirmLabel ?? S.T("ui.picker.confirm"))</button>
+                    }
+                }
+                else
+                {
+                    <p class="hint">@S.T("ui.picker.select")</p>
+                }
+            </div>
         </div>
+
         <button class="secondary" @onclick="OnCancel">@S.T(OnPick is null ? "ui.close" : "ui.cancel")</button>
     </div>
 </div>
@@ -39,8 +81,26 @@
     [Parameter] public IReadOnlyList<int>? Eligible { get; set; }
     [Parameter] public bool HideIneligible { get; set; }
     [Parameter] public bool ShowUpgrade { get; set; }
+    [Parameter] public string? ConfirmLabel { get; set; }
 
     /// <summary>Leeg: alleen bekijken.</summary>
     [Parameter] public Func<int, Task>? OnPick { get; set; }
     [Parameter] public EventCallback OnCancel { get; set; }
+
+    private IReadOnlyList<DeckGroup> _groups = [];
+    private DeckGroup? _selected;
+
+    protected override void OnParametersSet()
+    {
+        _groups = DeckGroups.Of(Deck, S.Card, Eligible);
+        // De eerste kaart staat al klaar, zodat één klik op de knop volstaat
+        _selected = _groups.FirstOrDefault(g => g.Card.Id == _selected?.Card.Id) ?? _groups.FirstOrDefault();
+    }
+
+    private async Task ConfirmAsync()
+    {
+        if (_selected is { } g && OnPick is not null) await OnPick(g.Indexes[0]);
+    }
+
+    private static string KindOf(CardInfo card) => card.Kind?.ToString().ToLowerInvariant() ?? "none";
 }

@@ -51,7 +51,17 @@ Het starterdeck is bewust saai, zodat elke beloning een echte keuze wordt.
 
 Molded Bolts en Molded Parts zijn de omgegoten versies van de Floating-kaarten (event De Smeltkroes).
 
-**Gebouwde relics (8):** Counter (elke derde kaart kost 0), Floating Point (eerste Floating-kaart kost 0), Scrap Pouch (bewaart wat afkappen verliest en vuurt het af), Anchor Barrel (blok bij de start), Great Pot (max HP), Ink Well (eerste Ink of Read kost 0), Tally Counter (heel `++count` na elk gewonnen gevecht), Coin Mold (50% meer goud, afgerond met `Math.Round`).
+**Gebouwde relics (13):** Counter (elke derde kaart kost 0), Floating Point (eerste Floating-kaart kost 0), Scrap Pouch (bewaart wat afkappen verliest en vuurt het af), Anchor Barrel (blok bij de start), Great Pot (max HP), Ink Well (eerste Ink of Read kost 0), Tally Counter (heel `++count` na elk gewonnen gevecht), Coin Mold (50% meer goud, afgerond met `Math.Round`).
+
+Erbij op 3 oktober 2026, elk rond één C#-regel:
+
+| Relic | Effect | Concept |
+| --- | --- | --- |
+| Ternary Plate | Blok bij de start: `hp < maxHp / 2 ? 10 : 4`. Met 24 van 49 HP krijg je 4, want `49 / 2` is 24 | voorwaardelijke expressie, deling van gehele getallen |
+| Metronome | Elke beurt met `turn % 3 == 0`: 1 energie extra | modulo |
+| Overflow Valve | Klapt een vijand om: 2 energie. Synergie met Fill Past the Line en Squeeze In | overflow |
+| TryParse Glove | Read gebruikt `int.TryParse`: ongeldige tekst wordt 0 in plaats van een crash. Alleen je eigen aanval; Read the Label op een vijand crasht nog gewoon, anders zou 0 HP hem meteen doden | `int.TryParse` |
+| Half Shim | +0.5 op elke treffer. Op een `int`-vijand kapt het weg (en vult het de Scrap Pouch), op een `double` telt het, op tekst plakt `"6.5"` drie tekens | afkappen, `double` |
 
 **Oorspronkelijk ontwerp.** De tabellen hieronder zijn de eerste kaartenlijst. Flip, Voorsprong, Snelle Steek, Haakjes en Etiketmaker wachten op hun vijanden.
 

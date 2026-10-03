@@ -294,6 +294,11 @@ public sealed class Combat
         _cardsThisTurn = 0;
         _damageThisTurn = 0;
         Energy = _setup.MaxEnergy;
+        foreach (Relic r in _relics.Where(r => r.EnergyAtTurnStart(Turn) > 0))
+        {
+            Energy += r.EnergyAtTurnStart(Turn);
+            Emit(new RelicTriggered(r.Id));
+        }
         if (_player.Block > 0)
         {
             Emit(new BlockExpired(PlayerId, _player.Block));
@@ -331,6 +336,12 @@ public sealed class Combat
             case DamageEffect d:
             {
                 (TypedValue perHit, int hitFactor) = Modify(card, d.Amount, card.Kind);
+                double bonus = _relics.Sum(r => r.BonusPerHit);
+                if (bonus > 0 && !perHit.IsText)
+                {
+                    perHit = perHit.Plus(TypedValue.Double(bonus));
+                    foreach (Relic r in _relics.Where(r => r.BonusPerHit > 0)) Emit(new RelicTriggered(r.Id));
+                }
                 for (int hit = 0; hit < d.Hits * hitFactor && !target.IsDead; hit++)
                 {
                     if (!Lands(target)) continue;
@@ -492,6 +503,7 @@ public sealed class Combat
                 ModifierOp.Add => ($"{expression} + {lit}", () => value.Plus(m.Operand)),
                 ModifierOp.Multiply => ($"{grouped} × {lit}", () => value.Times(m.Operand)),
                 ModifierOp.Divide => ($"{grouped} / {lit}", () => value.DividedBy(m.Operand)),
+                ModifierOp.Parse when SafeParse => ($"int.TryParse({expression})", (Func<TypedValue>)(() => value.TryParse())),
                 ModifierOp.Parse => ($"int.Parse({expression})", (Func<TypedValue>)(() => value.Parse())),
                 _ => throw new ArgumentOutOfRangeException(nameof(m.Op))
             };
@@ -530,6 +542,9 @@ public sealed class Combat
     }
 
     // ---------- Relics ----------
+
+    /// <summary>Read gebruikt <c>int.TryParse</c> als een relic dat zegt (TryParse Glove).</summary>
+    private bool SafeParse => _relics.Any(r => r.ParsesSafely);
 
     /// <summary>Wat een kaart nu kost. Bij twee relics die haar gratis kunnen maken, wint de eerste in de catalogus.</summary>
     private int CostOf(CardDefinition card) => FreeingRelic(card) is null ? card.Cost : 0;
@@ -682,6 +697,14 @@ public sealed class Combat
                 break;
         }
 
+        if (wrapped && target.IsEnemy)
+        {
+            foreach (Relic r in _relics.Where(r => r.EnergyOnEnemyOverflow > 0))
+            {
+                Energy += r.EnergyOnEnemyOverflow;
+                Emit(new RelicTriggered(r.Id));
+            }
+        }
         if (target.IsDead) Emit(new CombatantDied(target.Id));
         return wrapped;
     }

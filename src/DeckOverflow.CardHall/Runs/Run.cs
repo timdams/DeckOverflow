@@ -320,7 +320,7 @@ public sealed class Run
 
     private void StartCombat(string enemy, int nodeId)
     {
-        double block = _relics.Sum(id => RelicCatalog.Create(id).BlockAtCombatStart);
+        double block = _relics.Sum(id => RelicCatalog.Create(id).BlockAtCombatStartFor(Hp, MaxHp));
         var setup = new CombatSetup(
             Scenarios.Player(Hp, MaxHp, block),
             Bestiary.Create(enemy),

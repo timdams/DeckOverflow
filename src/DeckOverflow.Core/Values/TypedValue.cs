@@ -75,6 +75,13 @@ public readonly record struct TypedValue(ValueKind Kind, double Number, string T
         if (!IsText) throw new CompileError("int.Parse needs a string");
         return Int(int.Parse(Text, NumberStyles.Integer, Inv));
     }
+
+    /// <summary><c>int.TryParse</c>: geen exception, maar 0 als de tekst geen <c>int</c> is.</summary>
+    public TypedValue TryParse()
+    {
+        if (!IsText) throw new CompileError("int.TryParse needs a string");
+        return Int(int.TryParse(Text, NumberStyles.Integer, Inv, out int n) ? n : 0);
+    }
 }
 
 /// <summary>Code die in C# niet zou compileren. In het spel weigert de kaart dan, en kost ze niets.</summary>

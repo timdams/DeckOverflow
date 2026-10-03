@@ -1,0 +1,54 @@
+@using DeckOverflow.Core.Values
+@inject Strings S
+
+@* Je deck bekijken: gelijke kaarten samen met een teller, gesorteerd op kost,
+   en bovenaan in één regel wat erin zit: hoeveel kaarten van elk type. *@
+
+<div class="modal" @onclick="OnClose">
+    <div class="modal-body deck-view" @onclick:stopPropagation="true">
+        <h2>@S.T("ui.your-deck")</h2>
+        <p class="deck-summary">
+            <span>@S.T("ui.deck.summary", ("count", Deck.Count), ("avg", AverageCost))</span>
+            @foreach (var (kind, count) in Kinds)
+            {
+                <span class="type-badge @kind">@kind @count</span>
+            }
+            @if (Untyped > 0)
+            {
+                <span class="type-badge none">@S.T("ui.deck.other", ("count", Untyped))</span>
+            }
+        </p>
+
+        <div class="card-grid compact">
+            @foreach (var group in _groups)
+            {
+                <div class="stack @(group.Count > 1 ? "many" : "")">
+                    <CardTile Card="group.Card" Disabled="true" Class="preview" />
+                    @if (group.Count > 1)
+                    {
+                        <span class="stack-count">×@group.Count</span>
+                    }
+                </div>
+            }
+        </div>
+
+        <button class="secondary" @onclick="OnClose">@S.T("ui.close")</button>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<CardInfo> Deck { get; set; } = [];
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private IReadOnlyList<DeckGroup> _groups = [];
+
+    protected override void OnParametersSet() => _groups = DeckGroups.Of(Deck, S.Card);
+
+    private string AverageCost => Deck.Count == 0 ? "0" : Deck.Average(c => c.Cost).ToString("0.0", System.Globalization.CultureInfo.InvariantCulture);
+
+    private IEnumerable<(string Kind, int Count)> Kinds =>
+        Deck.Where(c => c.Kind is not null).GroupBy(c => c.Kind!.Value).OrderBy(g => g.Key)
+            .Select(g => (g.Key.ToString().ToLowerInvariant(), g.Count()));
+
+    private int Untyped => Deck.Count(c => c.Kind is null);
+}
