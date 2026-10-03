@@ -14,6 +14,7 @@ Eerst de core game loop: vechten, een beloning kiezen, de map. Geluid, definitie
 
 ## Indeling en wat je waar doet
 
+- **`todo.md`**: wat bewust is uitgesteld. Lees het bij de start van een taak, werk eraan als het gevraagd wordt, en vul het aan als je zelf iets uitstelt of een gat vindt dat je niet meteen dicht. Haal eruit wat af is.
 - **`docs/`**: het ontwerp (GDD, Spike Design Doc, product sheet). Deze repo is de enige bron; Claude Docs worden niet meer gebruikt of bijgewerkt. Schrijf ontwerpwijzigingen rechtstreeks hier.
 - **`spikes/NN-naam/`**: afgesloten of lopende experimenten, elk met een eigen `.sln`, README en CI-workflow, los draaibaar. Een afgesloten spike verandert niet meer; bouw er niet op verder. Een nieuwe spike krijgt een nieuwe map.
 - **`src/` en `tests/` op de root** zijn het echte spel, overgenomen uit spike 7 op 2 oktober 2026. Nieuw werk gebeurt daar. Code uit een spike neem je bewust over, niet door de spikemap te verplaatsen of te laten doorgroeien.
