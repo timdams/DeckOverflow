@@ -342,6 +342,16 @@ Alleen de Vatenvallei wordt nu gebouwd. De tabel is een richting, geen belofte: 
 
 De plattegrond verschijnt pas na [de onthulling](#de-onthulling). Tussen de afdelingen zit geen wereld om rond te lopen, maar één scherm: de plattegrond van de fabriek, getekend als het eerste blad van een montagehandleiding. Elke afdeling is een genummerde stap, en elk nummer is een hoofdstuk van het boek. Vier eisen: overzichtelijk, afdelingen ontgrendelen, mastery per afdeling tonen, en toegang tot klassement en achievements.
 
+**Gebouwd op 3 oktober 2026.** De plattegrond, de onthulling en een deel van de teases staan in het spel:
+
+- De afdelingen zijn genummerd naar het eerste hoofdstuk: ② The Card Hall (H2 tot H4, speelbaar), ⑤ The Control Room (H5, de gambit-spike als prototype), ⑥ The Conveyor Belt, ⑦ The Tool Wall, ⑧ The Warehouse en ⑨ The Blueprint Office (H9 en verder), die laatste vier nog in de doos.
+- De onderdelen van een afdeling zijn de Codex-pagina's van haar hoofdstukken. De tekening van een afdeling wordt grijs-naar-ingekt naarmate er meer onderdelen uitgepakt zijn; onder de helft krijgt ze de sticker *loose parts*.
+- De Controlekamer gaat open als de laatste baas van de Card Hall valt. Wie de onthulling via het vangnet kreeg, ziet ze nog dicht.
+- De Prikklok staat er al, uitgeschakeld tot er een backend is.
+- Onthulling: de laatste baas van de Card Hall verslaan, of het vangnet na **5 gestarte runs** (een barst op het titelscherm die je zelf aanklikt). De docent volgt later met de klascode.
+- Teases die er al zijn: het paginanummer op de map (`p. 2 / 18`), een gestippelde deur met een 5, een zin op het doodscherm (*Behind the door marked 5, something rattles.*) en de dichtgeniete Codex-tabbladen. De onderdelen die nergens voor dienen en de vreemde vijand met een regel als intent wachten nog.
+- Voor het ontwikkelen toont `?world` de plattegrond, ook voor de onthulling.
+
 ### Eén scherm
 
 - In het midden de plattegrond, met de afdelingen in de volgorde van het boek. Aan de rand drie vaste knoppen: de **Codex**, de **Prikklok** (klassement) en het **✗-register** (achievements).
@@ -760,5 +770,5 @@ Beslist op 3 oktober 2026: elke afdeling krijgt de spelvorm die past bij haar ho
 - [ ] Spelvorm voor OOP kiezen: tower defense of eigen kaarten ontwerpen
 - [ ] Wat ontgrendelt een afdeling precies: de baas van de vorige, of al een bepaald aantal gemonteerde onderdelen?
 - [ ] Plattegrond als papieren mock testen: begrijpt een student zonder uitleg waar er te oefenen valt?
-- [ ] Vangnet voor de onthulling afstellen: na hoeveel runs of hoeveel speeltijd gaat de muur vanzelf open?
+- [x] Vangnet voor de onthulling: na 5 gestarte runs (3 oktober 2026); speeltijd telt nog niet mee
 - [ ] Teases testen: merken studenten het paginanummer, de deur en de onderdelen op, en worden ze er nieuwsgierig van?

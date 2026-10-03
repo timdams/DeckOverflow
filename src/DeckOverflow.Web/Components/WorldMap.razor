@@ -1,0 +1,112 @@
+@using DeckOverflow.Engine.Codex
+@using DeckOverflow.Web.World
+@inject Strings S
+
+@* De fabrieksplattegrond, na de onthulling: elke afdeling is een genummerde stap, zoals in een handleiding.
+   Hoe meer onderdelen (Codex-pagina's van haar hoofdstukken) uitgepakt, hoe meer van de afdeling ingekt.
+   Een dichte afdeling is gestippeld: nog in de doos. Geen cijfers of percentages: een fabriek die af raakt. *@
+
+<div class="world">
+    <header class="world-head">
+        <h1 class="title-word small">Deck <span>Overflow</span></h1>
+        <p class="hint">@S.T("ui.world.title")</p>
+    </header>
+
+    <div class="world-floor">
+        @foreach (var d in Departments.All)
+        {
+            bool open = Departments.IsOpen(d, CardHallCleared);
+            double progress = Progress(d);
+            bool loose = open && Parts(d).Any() && progress < 0.5;
+            <button class="department @(open ? "open" : "boxed") @(d.Key == _selected?.Key ? "selected" : "")"
+                    style="--inked: @(open ? (0.25 + 0.75 * progress).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) : "0")"
+                    @onclick="() => _selected = d">
+                <span class="step">@d.Step</span>
+                @if (open && d.Art is not null)
+                {
+                    <img class="dept-art" src="@d.Art" alt="" />
+                }
+                else
+                {
+                    <span class="dept-box" aria-hidden="true"></span>
+                }
+                <strong>@S.T($"ui.world.{d.Key}.name")</strong>
+                <small>@(open ? S.T($"ui.world.{d.Key}.genre") : S.T("ui.world.locked"))</small>
+                @if (loose)
+                {
+                    <span class="sticker">@S.T("ui.world.loose")</span>
+                }
+            </button>
+        }
+    </div>
+
+    @if (_selected is { } sel)
+    {
+        bool open = Departments.IsOpen(sel, CardHallCleared);
+        <aside class="dept-panel">
+            <h2>@S.T($"ui.world.{sel.Key}.name")</h2>
+            <p>@(open ? S.T($"ui.world.{sel.Key}.text") : S.T("ui.world.locked"))</p>
+
+            @if (Parts(sel).Any())
+            {
+                <h3>@S.T("ui.world.parts")</h3>
+                <ul class="parts">
+                    @foreach (var part in Parts(sel))
+                    {
+                        bool unpacked = Pages.ContainsKey(part.Key);
+                        <li class="@(unpacked ? "unpacked" : "bagged")">@(unpacked ? S.T($"codex.{part.Key}.name") : S.T("ui.codex.locked"))</li>
+                    }
+                </ul>
+            }
+
+            <div class="dept-actions">
+                @if (sel.Key == Departments.CardHall)
+                {
+                    <button class="play-big" disabled="@Starting" @onclick="() => OnStart.InvokeAsync(1)">@S.T("ui.play")</button>
+                    @for (int act = 2; act <= ReachedAct; act++)
+                    {
+                        int start = act;
+                        <button class="title-button" disabled="@Starting" @onclick="() => OnStart.InvokeAsync(start)">@S.T("ui.start-at", ("act", start))</button>
+                    }
+                }
+                else if (open && sel.Url is { } url)
+                {
+                    <a class="play-big as-link" href="@url">@S.T("ui.world.prototype")</a>
+                }
+                else if (sel.Key == Departments.ControlRoom)
+                {
+                    <p class="hint">@S.T("ui.world.needs-card-hall")</p>
+                }
+            </div>
+        </aside>
+    }
+
+    <nav class="world-tools">
+        <button class="title-button" @onclick="OnCodex">@S.T("ui.codex") · @Pages.Count</button>
+        <button class="title-button" disabled title="@S.T("ui.world.soon")">@S.T("ui.world.punch-clock")</button>
+        <button class="title-button" @onclick="OnXRegister">@S.T("ui.xregister") · @PanelCount</button>
+    </nav>
+</div>
+
+@code {
+    [Parameter] public bool CardHallCleared { get; set; }
+    [Parameter, EditorRequired] public IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> Pages { get; set; } = default!;
+    [Parameter] public int ReachedAct { get; set; } = 1;
+    [Parameter] public int PanelCount { get; set; }
+    [Parameter] public bool Starting { get; set; }
+    [Parameter] public EventCallback<int> OnStart { get; set; }
+    [Parameter] public EventCallback OnCodex { get; set; }
+    [Parameter] public EventCallback OnXRegister { get; set; }
+
+    private Department? _selected = Departments.All[0];
+
+    /// <summary>De onderdelen van een afdeling: de Codex-pagina's van haar hoofdstukken.</summary>
+    private static IEnumerable<CodexEntry> Parts(Department d) =>
+        CodexCatalog.All.Where(e => e.Chapter is { } c && d.Chapters.Contains(c));
+
+    private double Progress(Department d)
+    {
+        var parts = Parts(d).ToList();
+        return parts.Count == 0 ? 0 : (double)parts.Count(p => Pages.ContainsKey(p.Key)) / parts.Count;
+    }
+}

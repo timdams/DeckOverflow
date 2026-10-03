@@ -12,6 +12,13 @@
 
     @if (_run is null || _snap is null)
     {
+        @if (_revealed)
+        {
+            <WorldMap CardHallCleared="_cardHallCleared" Pages="_codex" ReachedAct="_reachedAct" PanelCount="_xpanels.Count"
+                      Starting="_starting" OnStart="StartAsync" OnCodex="() => OpenCodex(null)" OnXRegister="() => _showXRegister = true" />
+        }
+        else
+        {
         @* Het titelscherm: de sfeerplaat rechts, die links in het papier wegvloeit; titel en knoppen links *@
         <div class="title-screen">
             <div class="title-art-wide" style="background-image: url('@ArtStyle.Wide("title")')" aria-hidden="true"></div>
@@ -41,7 +48,13 @@
                     </div>
                 }
             </div>
+            @if (CrackVisible)
+            {
+                @* Het vangnet: na genoeg runs barst de muur vanzelf, ook zonder de laatste baas te verslaan *@
+                <button class="wall-crack" @onclick="@(() => Reveal("crack"))">@S.T("ui.reveal.crack-button")</button>
+            }
         </div>
+        }
         @if (_showIntro)
         {
             @* Eén keer, voor de eerste run: het thema in drie zinnen, geen regels *@
@@ -104,6 +117,12 @@
                                     <span>@S.T("ui.act", ("act", s.Act), ("name", S.T($"act.{s.ActKey}")))</span>
                                 </div>
                                 <MapBoard Map="s.Map" OnChoose="ChooseNodeAsync" />
+                                @if (!_revealed)
+                                {
+                                    @* Teases: een paginanummer zoals in een handleiding, en een gestippelde deur met een 5 *@
+                                    <span class="page-number">@S.T("ui.tease.page", ("chapter", s.Act + 1))</span>
+                                    <span class="dashed-door" aria-hidden="true"><span>5</span></span>
+                                }
                             </div>
                             break;
 
@@ -287,12 +306,20 @@
                                 {
                                     <p>@S.T("ui.end.lost.text", ("floor", end.Floor), ("rows", s.Map.Rows), ("enemy", end.EnemyKey ?? ""), ("enemyHp", Num(end.EnemyHp)), ("enemyMax", Num(end.EnemyMaxHp)))</p>
                                     <div class="near-miss"><div style="width:@(Percent(end.EnemyHp, end.EnemyMaxHp))%"></div></div>
+                                    @if (!_revealed && s.Seed % 2 == 0)
+                                    {
+                                        <p class="tease">@S.T("ui.tease.rattle")</p>
+                                    }
                                 }
                                 <p class="stats">@S.T("ui.end.stats", ("deck", end.DeckSize), ("relics", end.RelicCount), ("gold", end.Gold))</p>
                                 @NewPages()
                                 <div class="buttons">
                                     <button @onclick="() => NewRunAsync(NewSeed())">@S.T("ui.new-run")</button>
                                     <button class="secondary" @onclick="() => NewRunAsync(s.Seed)">@S.T("ui.same-seed")</button>
+                                    @if (_revealed)
+                                    {
+                                        <button class="secondary" @onclick="BackToFloor">@S.T("ui.world.back")</button>
+                                    }
                                 </div>
                             </section>
                             break;
@@ -336,6 +363,20 @@
             <DeckPicker Title="@picker.Title" Hint="@picker.Hint" Deck="s.Deck" Eligible="picker.Eligible" HideIneligible="true"
                         ShowUpgrade="picker.ShowUpgrade" OnPick="PickedAsync" OnCancel="() => _picker = null" />
         }
+    }
+
+    @if (_showReveal)
+    {
+        @* De onthulling: de muur van de Gieterij scheurt open, en achter de Card Hall gaat de fabriek verder *@
+        <div class="modal">
+            <div class="modal-body act-card reveal-card">
+                <img class="act-art" src="@ArtStyle.Wide("act-mold-works")" alt="" />
+                <span class="act-kicker">@S.T("ui.reveal.kicker")</span>
+                <h2>@S.T("ui.reveal.title")</h2>
+                <p>@S.T(_revealReason == "won" ? "ui.reveal.won" : "ui.reveal.crack")</p>
+                <button class="play-big" @onclick="BackToFloor">@S.T("ui.reveal.go")</button>
+            </div>
+        </div>
     }
 
     @* Een verdiend ✗-paneel springt vanaf de onderkant op, in een eigen kader; een klik opent het register *@

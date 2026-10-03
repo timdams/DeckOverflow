@@ -26,6 +26,10 @@ public partial class RunPage
     [SupplyParameterFromQuery(Name = "fight")]
     public string? FightQuery { get; set; }
 
+    /// <summary>Voor het ontwikkelen: <c>?world</c> toont de plattegrond, ook voor de onthulling.</summary>
+    [SupplyParameterFromQuery(Name = "world")]
+    public string? WorldQuery { get; set; }
+
     [Inject] private HttpClient Http { get; set; } = default!;
 
     /// <summary>Waar de startpunten in de browser staan: de hoogste act die je ooit bereikte.</summary>
@@ -42,6 +46,14 @@ public partial class RunPage
 
     /// <summary>De intro is al eens getoond.</summary>
     private const string IntroKey = "deckoverflow.intro-seen";
+
+    /// <summary>De onthulling gebeurde: de plattegrond vervangt het titelscherm.</summary>
+    private const string RevealedKey = "deckoverflow.revealed";
+    private const string CardHallClearedKey = "deckoverflow.card-hall-cleared";
+    private const string RunsKey = "deckoverflow.runs";
+
+    /// <summary>Het vangnet: na zoveel gestarte runs barst de muur vanzelf.</summary>
+    private const int CrackAfterRuns = 5;
 
     private ElementReference _host;
     private DotNetObjectReference<RunPage>? _self;
@@ -66,6 +78,13 @@ public partial class RunPage
     private bool _showIntro;
     /// <summary>Een act die net begon: de actkaart staat open tot je verdergaat.</summary>
     private int? _actCard;
+    private bool _revealed;
+    private bool _cardHallCleared;
+    private int _runsStarted;
+    private bool _showReveal;
+    private string _revealReason = "won";
+
+    private bool CrackVisible => !_revealed && _runsStarted >= CrackAfterRuns;
 
     /// <summary>Een verdiend paneel dat net opsprong.</summary>
     private sealed record PanelPopup(int Id, string Key);
@@ -112,6 +131,9 @@ public partial class RunPage
         }
 
         _introSeen = await JS.InvokeAsync<string?>("deckOverflow.load", IntroKey) is not null;
+        _revealed = WorldQuery is not null || await JS.InvokeAsync<string?>("deckOverflow.load", RevealedKey) is not null;
+        _cardHallCleared = await JS.InvokeAsync<string?>("deckOverflow.load", CardHallClearedKey) is not null;
+        _runsStarted = int.TryParse(await JS.InvokeAsync<string?>("deckOverflow.load", RunsKey), out int runs) ? runs : 0;
         _codexRead = await LoadJsonAsync<Dictionary<string, int>>(CodexReadKey) ?? [];
         foreach (string panel in await LoadJsonAsync<List<string>>(XPanelsKey) ?? []) _xpanels.Add(panel);
         StateHasChanged();
@@ -151,6 +173,11 @@ public partial class RunPage
             : new RunSetup(StartAct: _startAct);
         _run = Run.Start(seed, setup);
         _snap = _run.Snapshot();
+        if (FightQuery is null)
+        {
+            _runsStarted++;
+            await JS.InvokeVoidAsync("deckOverflow.save", RunsKey, _runsStarted.ToString(CultureInfo.InvariantCulture));
+        }
         // Elke run begint met de kaart van zijn act, behalve op de testroute ?fight=
         _actCard = FightQuery is null ? _run.Act.Number : null;
         _picker = null;
@@ -192,6 +219,7 @@ public partial class RunPage
         await RememberActAsync(events);
         await RememberCodexAsync(events);
         await RememberXPanelsAsync(events);
+        await RememberRunEndAsync(events);
 
         // Een nieuw gevecht: de stage begint met een schone lei
         if (_snap.Phase == RunPhase.Combat && before.Phase != RunPhase.Combat)
@@ -262,12 +290,48 @@ public partial class RunPage
             if (_snap.Phase != RunPhase.Combat) ShowToasts(events);
             await RememberCodexAsync(events);
             await RememberXPanelsAsync(events);
+            await RememberRunEndAsync(events);
         }
         finally
         {
             _busy = false;
             await InvokeAsync(StateHasChanged);
         }
+    }
+
+    /// <summary>
+    /// De laatste baas van de Card Hall viel: de Controlekamer gaat open, en wie de fabriek
+    /// nog niet zag, krijgt de onthulling.
+    /// </summary>
+    private async Task RememberRunEndAsync(IEnumerable<GameEvent> events)
+    {
+        if (!events.OfType<RunEnded>().Any(e => e.Won)) return;
+        if (!_cardHallCleared)
+        {
+            _cardHallCleared = true;
+            await JS.InvokeVoidAsync("deckOverflow.save", CardHallClearedKey, "1");
+        }
+        if (!_revealed) await RevealAsync("won");
+    }
+
+    private void Reveal(string reason) => _ = RevealAsync(reason);
+
+    private async Task RevealAsync(string reason)
+    {
+        _revealReason = reason;
+        _revealed = true;
+        _showReveal = true;
+        await JS.InvokeVoidAsync("deckOverflow.save", RevealedKey, reason);
+        StateHasChanged();
+    }
+
+    /// <summary>Terug naar de plattegrond: de run is voorbij of de onthulling is gezien.</summary>
+    private void BackToFloor()
+    {
+        _showReveal = false;
+        _run = null;
+        _snap = null;
+        _actCard = null;
     }
 
     /// <summary>Een nieuwe act bereikt: die wordt een startpunt voor volgende runs.</summary>
