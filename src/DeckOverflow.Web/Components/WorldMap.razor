@@ -22,9 +22,10 @@
                     style="--inked: @(open ? (0.25 + 0.75 * progress).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) : "0")"
                     @onclick="() => _selected = d">
                 <span class="step">@d.Step</span>
-                @if (open && d.Art is not null)
+                @if (d.Art is not null)
                 {
-                    <img class="dept-art" src="@d.Art" alt="" />
+                    @* Een open afdeling inkt in met haar onderdelen; een dichte is een vage, gestippelde schets *@
+                    <img class="dept-art @(open ? "" : "sketch")" src="@d.Art" alt="" />
                 }
                 else
                 {

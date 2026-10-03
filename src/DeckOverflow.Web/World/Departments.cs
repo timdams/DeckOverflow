@@ -21,12 +21,12 @@ public static class Departments
     /// <summary>In de volgorde van het boek. Alleen de Card Hall en (als prototype) de Controlekamer zijn speelbaar.</summary>
     public static readonly IReadOnlyList<Department> All =
     [
-        new(CardHall, 2, [2, 3, 4], Playable: true, Art: "art/wide/title.webp"),
-        new(ControlRoom, 5, [5], Playable: true, Url: "spike-8/", Art: "art/actors/colossus.png"),
-        new("conveyor-belt", 6, [6], Playable: false),
-        new("tool-wall", 7, [7], Playable: false),
-        new("warehouse", 8, [8], Playable: false),
-        new("blueprints", 9, [9, 10, 11, 12, 13, 14, 15, 16, 17], Playable: false),
+        new(CardHall, 2, [2, 3, 4], Playable: true, Art: "art/departments/card-hall.png"),
+        new(ControlRoom, 5, [5], Playable: true, Url: "spike-8/", Art: "art/departments/control-room.png"),
+        new("conveyor-belt", 6, [6], Playable: false, Art: "art/departments/conveyor-belt.png"),
+        new("tool-wall", 7, [7], Playable: false, Art: "art/departments/tool-wall.png"),
+        new("warehouse", 8, [8], Playable: false, Art: "art/departments/warehouse.png"),
+        new("blueprints", 9, [9, 10, 11, 12, 13, 14, 15, 16, 17], Playable: false, Art: "art/departments/blueprints.png"),
     ];
 
     /// <summary>

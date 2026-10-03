@@ -78,6 +78,11 @@ SHEETS_SPEC = [
         "measure-twice", "read-the-label", "count-letters", "letter-a",
         "relic-ink-well", "relic-tally-counter", "relic-coin-mold", "wall-crack",
     ]),
+    # De afdelingen op de fabrieksplattegrond, in de volgorde van Departments.All
+    ("departments", 3, 2, "departments", "tight", 400, 3, [
+        "card-hall", "control-room", "conveyor-belt",
+        "tool-wall", "warehouse", "blueprints",
+    ]),
     # Nieuwe events, en platen voor de intro, de onthulling en de uitgang
     ("events", 3, 2, "scenes", "tight", 520, 3, [
         "copy-machine", "scrap-bin", "rounding-desk",
