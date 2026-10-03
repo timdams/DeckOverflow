@@ -21,7 +21,8 @@ public static class XRegister
     public const string AgainAriane = "again-ariane";
     public const string FrozenIndex = "frozen-index";
     public const string DividedToNothing = "divided-to-nothing";
-    public const string FactoryCleared = "factory-cleared";
+    /// <summary>De laatste baas van de Card Hall (de deckbuilder, H2 tot H4), niet van de hele fabriek.</summary>
+    public const string CardHallCleared = "card-hall-cleared";
 
     /// <summary>Niet door de motor herkend maar door de shell: een Codex-pagina tot het einde lezen.</summary>
     public const string ReadTheManual = "read-the-manual";
@@ -39,7 +40,7 @@ public static class XRegister
         new(AgainAriane),
         new(FrozenIndex, Hidden: true),
         new(CasterWraps, Hidden: true),
-        new(FactoryCleared),
+        new(CardHallCleared),
         new(ReadTheManual, Hidden: true),
     ];
 
@@ -80,8 +81,8 @@ public static class XRegister
         if (events.OfType<AttackLaunched>().Any(a => a.SourceId == Combat.Combat.EnemyId && a.Value == 0 && a.Expression.Contains(" / ")))
             yield return DividedToNothing;
 
-        // De hele fabriek: de baas van de laatste act verslagen
+        // De Card Hall uitgespeeld: de baas van de laatste act van de deckbuilder
         if (events.OfType<RunEnded>().Any(r => r.Won))
-            yield return FactoryCleared;
+            yield return CardHallCleared;
     }
 }
