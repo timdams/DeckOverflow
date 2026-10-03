@@ -26,6 +26,12 @@ Nog open voor de sync: de Codex-getallen (de waarden van het eerste moment) en d
 - Organisatie opvragen, project `deck-overflow` in `eu-central-1`, gratis plan. Kosten bevestigen met Tim.
 - URL en publieke (anon/publishable) sleutel noteren. Die sleutel mag publiek; row level security beschermt de data.
 
+**Gedaan op 3 oktober 2026.** Project `deck-overflow` (ref `bcrpupqzwmauqowtygae`), `eu-central-1`, gratis plan, Postgres 17.
+
+- URL: `https://bcrpupqzwmauqowtygae.supabase.co`
+- Publishable key: `sb_publishable_7O_mrhrwHyUrurdYaBsYug_yu99XI63` (de nieuwe vorm; de legacy anon-JWT bestaat ook maar gebruiken we niet)
+- Het databasewachtwoord en de service-sleutel staan nergens in de repo.
+
 ## Stap 2: Auth instellen
 
 - **Anonieme logins aan.**
@@ -33,6 +39,8 @@ Nog open voor de sync: de Codex-getallen (de waarden van het eerste moment) en d
 - Site-URL `https://timdams.github.io/DeckOverflow/`, redirects ook voor `http://localhost:*`.
 - Rate limits voor anonieme logins nakijken (open vraag captcha, zie onder).
 - Wachtwoord minimum 8 tekens.
+
+**Gedaan op 3 oktober 2026** in het dashboard. De limiet op anonieme logins stond op 30 per uur per IP-adres. Een school zit achter één IP, dus een tweede klas die in hetzelfde uur start, kreeg geen gastaccount meer. Voorstel: 150 per uur, nog geen captcha. Weigert Supabase toch, dan speelt de client lokaal verder en probeert later opnieuw (stap 5).
 
 ## Stap 3: schema (migraties)
 
@@ -60,6 +68,14 @@ Synchroniseren: `updated_at` wint, maar een toestand gaat nooit terug (`assemble
 - `delete_my_account()`: verwijdert `auth.users` voor `auth.uid()`; de rest volgt via cascade.
 
 Na de migraties: de security advisors van Supabase draaien en alles oplossen.
+
+**Stand op 3 oktober 2026:** de migraties staan in `supabase/migrations/`, met dezelfde versienummers als op het project. `schema`, `nicknames` en `functions` zijn uitgevoerd via de connector. `delete_account` is met de hand uitgevoerd in de SQL-editor (de connector weigert een functie die uit `auth.users` verwijdert) en staat dus niet in de migratiegeschiedenis van Supabase. De security advisors melden twee soorten waarschuwingen die bij het ontwerp horen: security-definer-functies die aangemelde spelers mogen uitvoeren (dat is de API, elke functie controleert zelf wie belt) en policies die ook voor gasten gelden (gasten zijn de gewone spelers). Getest op een lokale Postgres 18 met een nagebootste `auth`: een gast kan geen klas maken, klasgenoten zien elkaars bijnaam en scores maar niet elkaars voortgang, de docent ziet de voortgang van de klas, een buitenstaander ziet niets, een toestand gaat nooit terug, `verified` en een seed van morgen kan de client niet schrijven, een unlock met `how = teacher` kan pas na de vrijgave, en `delete_my_account` ruimt alles op via cascade. Afwijkingen van de tabel hierboven:
+
+- `progress` heeft een kolom `values jsonb`: de getallen van het eerste moment op de Codex-pagina. Ze blijven staan zoals ook de toestand nooit teruggaat.
+- De hulpfuncties voor de policies en de trigger staan in een schema `private`, buiten de REST-API.
+- Rechten per kolom: een eigenaar kan alleen `name` en `released_departments` van een klas wijzigen, een speler bij een score alleen `department`, `seed_date`, `commands` en `claimed_score` invullen.
+- Een score kan alleen voor vandaag of gisteren (UTC), voor een run die over middernacht loopt.
+- Zonder sessie (rol `anon`) kan je niets, ook het histogram niet: elke speler heeft minstens een gastsessie.
 
 ## Stap 4: inloggen met een gebruikersnaam
 
@@ -101,7 +117,7 @@ Een gastaccount omzetten ("Bewaar je fabriek"): `PUT /auth/v1/user` met e-mail e
 ## Open vragen
 
 - **Klasnaam is vrije tekst die leerlingen zien.** Dat botst met "vrije tekst die anderen zien, bestaat niet". Voorstel: de docent typt ze, alleen leden zien ze, en dat is aanvaardbaar omdat een docent geregistreerd is. Of: de naam ook genereren.
-- **Captcha** tegen misbruik van gastaccounts: eerst kijken of de rate limits volstaan.
+- **Captcha** tegen misbruik van gastaccounts: voorlopig niet. De limiet staat per IP (standaard 30 per uur, voorstel 150); opnieuw bekijken als er misbruik opduikt.
 - **Mag een speler in meer dan één klas?** Het schema laat het toe; de schermen hoeven het niet.
 
 ## Woordenlijsten voor bijnamen
