@@ -22,11 +22,17 @@ public sealed record ConvertEffect(ValueKind To) : Effect;
 /// <summary>Toekenning: de aanval van de vijand wordt deze beurt <paramref name="Value"/>, wat er ook stond.</summary>
 public sealed record SetAttackEffect(int Value) : Effect;
 
-/// <summary>Verandert het getal op je volgende kaart. De volgorde van modifiers telt.</summary>
-public sealed record ModifierEffect(ModifierOp Op, int Amount) : Effect;
+/// <summary>
+/// Verandert de waarde van je volgende kaart, met echte C#-operatoren op een waarde met een type.
+/// De volgorde van modifiers telt. <paramref name="DoubleHits"/>: de kaart slaat twee keer zo vaak (Split).
+/// </summary>
+public sealed record ModifierEffect(ModifierOp Op, TypedValue Operand, bool DoubleHits = false) : Effect
+{
+    public ModifierEffect(ModifierOp op, int amount) : this(op, TypedValue.Int(amount)) { }
+}
 
 /// <summary>Twee effecten na elkaar op hetzelfde doelwit.</summary>
 public sealed record ComboEffect(Effect First, Effect Then) : Effect;
 
 [JsonConverter(typeof(JsonStringEnumConverter<ModifierOp>))]
-public enum ModifierOp { Add, Multiply }
+public enum ModifierOp { Add, Multiply, Divide, Parse }

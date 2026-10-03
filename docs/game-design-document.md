@@ -132,6 +132,7 @@ Een aanval is geen kaal getal: het is een waarde met een type, die door je modif
 - **Het totaal staat groot, de expressie klein.** Net als bij een intent past het totaal zich live aan terwijl je kaarten overweegt, en tijdens het spelen wordt de expressie stap voor stap uitgerekend. De speler hoeft niets zelf te rekenen.
 - **Tekst raakt geen getal.** Een tekstaanval op een getal-vijand compileert niet (`hp - "42"`), dus de kaart weigert. Eerst Read spelen.
 - **Begrijpen is de sterkste strategie.** Met getallen is 1 + 2 maar 3; als tekst wordt het 12. Wie tekst aan elkaar plakt en pas dan omzet, slaat het hardst (het archetype Schrijver). Op een `byte`-vijand loopt `"300"` dan weer over.
+- **Gebouwd op 3 oktober 2026:** Split, Floating Point, Ink en Read. Modifiers blijven wachten tot je volgende kaart, ook over je beurt heen. Read is zeldzaam en kost 2, want Ink, Spare Screw en Read maken van één Whack `int.Parse(6 + "1" + 3)`, 613 schade. Letterkaarten (`'A' + 1`) wachten nog: een `char` is meteen 65 of meer, en dat moet eerst gebalanceerd worden.
 - **Read is eigenlijk `int.Parse`**, dus H4. Net als Omgieten ervaar je het in act 1 onder een wereldnaam, en geeft de Codex het in act 2 zijn echte naam.
 - **Geen Scratch-probleem.** De deckbuilder is één spelvorm binnen een grotere wereld, dus hij mag dicht tegen code aan zitten. Je bouwt wel altijd één aanval met hooguit een paar modifiers, geen programma. De vraag aan de speler blijft: hoe maak ik dit getal zo groot (of zo klein) mogelijk?
 
@@ -508,9 +509,11 @@ Het starterdeck is bewust saai, zodat elke beloning een echte keuze wordt.
 | Zet op 1 | 1 | Zet de aanval van een vijand op 1 voor deze beurt | Toekenning |
 | Voeg toe | 0 | +3 aan je volgende kaart | `+=` |
 | Vlottende Slag | 2 | 4,5 schade; exact op een `double`, een `int`-doelwit kapt af tot 4 | `double` |
-| Inkt | 1 | Zet een tekstwaarde om naar een getal | Parsen |
+| Floating Point | 0 | `× 1.0`: je volgende aanval wordt een `double` (verbeterd: `× 1.5`) | Type van een expressie |
+| Ink | 1 | `+ "1"`: tekst plakt aan je volgende aanval; tekst raakt geen getal | `string` en `+` |
+| Read (zeldzaam) | 2 | `int.Parse(…)` op je volgende aanval. Ongeldige tekst geeft een `FormatException` en kost je de beurt | Parsen, ervaren in act 1 |
 | Flip | 0 | Draai een `bool`-toestand om | `bool` |
-| Splitsslag | 2 | Verdeel 7 schade over alle vijanden | Integer deling |
+| Split | 0 | `/ 2`, maar je volgende kaart slaat twee keer: `9 / 2` is twee keer 4 (verbeterd: `/ 2.0`, twee keer 4.5) | Integer deling |
 | Voorsprong | 1 | Kracht +1, dan slaan | `++i` |
 | Herstel | 1 | +6 HP op een doelwit naar keuze | Overflow (als je het doorhebt) |
 

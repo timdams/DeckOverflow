@@ -19,8 +19,11 @@ public static class CardText
         CastEffect => TextRef.Of("effect.cast"),
         ConvertEffect => TextRef.Of("effect.convert"),
         SetAttackEffect s => TextRef.Of("effect.set-attack", ("value", s.Value)),
-        ModifierEffect { Op: ModifierOp.Add } m => TextRef.Of("effect.add", ("amount", m.Amount)),
-        ModifierEffect m => TextRef.Of("effect.multiply", ("amount", m.Amount)),
+        ModifierEffect { Op: ModifierOp.Add } m => TextRef.Of("effect.add", ("amount", m.Operand.Literal)),
+        ModifierEffect { Op: ModifierOp.Multiply } m => TextRef.Of("effect.multiply", ("amount", m.Operand.Literal)),
+        ModifierEffect { Op: ModifierOp.Divide, DoubleHits: true } m => TextRef.Of("effect.split", ("amount", m.Operand.Literal)),
+        ModifierEffect { Op: ModifierOp.Divide } m => TextRef.Of("effect.divide", ("amount", m.Operand.Literal)),
+        ModifierEffect { Op: ModifierOp.Parse } => TextRef.Of("effect.parse"),
         ComboEffect { First: CastEffect, Then: HealEffect h } => TextRef.Of("effect.cast-heal", ("amount", h.Amount)),
         _ => throw new NotSupportedException($"Geen tekst voor {effect.GetType().Name}.")
     };

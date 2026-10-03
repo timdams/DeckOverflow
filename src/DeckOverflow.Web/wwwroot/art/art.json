@@ -14,7 +14,12 @@
     "remold-int": "items/force-fit",
     "remold-byte": "items/force-fit",
     "set-to-1": "items/wrong-label",
-    "byte-trap": "items/squeeze-in"
+    "byte-trap": "items/squeeze-in",
+    "floating-point": "items/relic-floating-point",
+    "split": "items/heavy-strike",
+    "ink": "items/set-to-1",
+    "read": "items/rev-stamped",
+    "measure-twice": "items/remold"
   },
   "relics": {
     "counter": "items/relic-counter",

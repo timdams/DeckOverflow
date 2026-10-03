@@ -140,6 +140,7 @@ Het eventcontract is de enige afspraak tussen C# en JavaScript. Elk event heeft 
 | `ValueGrew` | targetId, before, factor, raw, after | "× 1.05" boven de vijand, HP rolt op; een afgekapt restje volgt als `ValueTruncated` (The Index) |
 | `ConversionCrashed` | targetId, to, value | `Convert` paste niet: "OverflowException", de vijand schudt, zijn intent vervaagt |
 | `AttackSkipped` | enemyId | De vijand crashte vorige beurt en valt niet aan |
+| `ExceptionThrown` | exception, expression | Je getypeerde aanval crashte, bv. `int.Parse(2.5 + "1")`: de naam van de exception, en je beurt eindigt |
 
 Run-events, die de stage negeert en de shell als melding toont, kwamen erbij met de acts: `ActCompleted` (act) na de baas van een act, en `ActStarted` (act) bij een nieuwe act, die ook een startpunt wordt.
 

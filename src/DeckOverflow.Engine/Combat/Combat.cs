@@ -23,7 +23,7 @@ public sealed class Combat
     private readonly Combatant _enemy;
     private readonly Deck _deck;
     private readonly List<Relic> _relics;
-    private readonly List<(ModifierOp Op, int Amount)> _modifiers = [];
+    private readonly List<ModifierEffect> _modifiers = [];
     private List<GameEvent> _events = [];
     private int _seq;
 
@@ -86,7 +86,7 @@ public sealed class Combat
         _deck.DiscardCount,
         [View(_player, intent: null), View(_enemy, _enemy.IsDead ? null : CurrentIntent)],
         Outcome,
-        [.. _modifiers.Select(m => Label(m.Op, m.Amount))],
+        [.. _modifiers.Select(Label)],
         [.. _relics.Select(r => new RelicView(r.Id, r.Counter))]);
 
     // ---------- Commands ----------
@@ -121,11 +121,51 @@ public sealed class Combat
             return;
         }
 
+        if (card.Effect is ModifierEffect { Op: ModifierOp.Parse } && !_modifiers.Any(m => m.Operand.IsText))
+        {
+            Emit(new PlayRejected(play.HandIndex, "reject.nothing-to-read"));
+            return;
+        }
+
+        // De getypeerde aanval: eerst uitrekenen wat de modifiers van deze kaart maken.
+        // Compileert het niet, dan weigert de kaart. Crasht het, dan kost het je de beurt.
+        Exception? crash = null;
+        if (_modifiers.Count > 0 && ModifiedAmount(card) is { } input)
+        {
+            try
+            {
+                if (Evaluate(input.Amount, input.Kind).Value.IsText)
+                {
+                    Emit(new PlayRejected(play.HandIndex, "reject.text-not-number"));
+                    return;
+                }
+            }
+            catch (CompileError)
+            {
+                Emit(new PlayRejected(play.HandIndex, "reject.type-error"));
+                return;
+            }
+            catch (Exception e) when (e is FormatException or OverflowException or DivideByZeroException)
+            {
+                crash = e;
+            }
+        }
+
         Energy -= cost;
         _deck.DiscardFromHand(play.HandIndex);
         Emit(new CardPlayed(card.Id, PlayerId, target.Id));
         PayRelics(card);
         _cardsPlayed++;
+
+        if (crash is not null)
+        {
+            // Nog geen catch in act 1: een exception beëindigt gewoon je beurt
+            string expression = Evaluate(ModifiedAmount(card)!.Value.Amount, ModifiedAmount(card)!.Value.Kind, describeOnly: true).Expression;
+            _modifiers.Clear();
+            Emit(new ExceptionThrown(crash.GetType().Name, expression));
+            HandleEndTurn();
+            return;
+        }
 
         Apply(card, card.Effect, target);
         FireRelics();
@@ -196,12 +236,14 @@ public sealed class Combat
         switch (effect)
         {
             case DamageEffect d:
-                double perHit = Modify(card, d.Amount);
-                for (int hit = 0; hit < d.Hits && !target.IsDead; hit++) DealDamage(target, perHit, fromPlayer: true);
+            {
+                (double perHit, int hitFactor) = Modify(card, d.Amount, card.Kind);
+                for (int hit = 0; hit < d.Hits * hitFactor && !target.IsDead; hit++) DealDamage(target, perHit, fromPlayer: true);
                 break;
+            }
 
-            case BlockEffect b: GainBlock(target, Modify(card, b.Amount)); break;
-            case HealEffect h: Heal(target, (int)Modify(card, h.Amount)); break;
+            case BlockEffect b: GainBlock(target, Modify(card, b.Amount, ValueKind.Int).Value); break;
+            case HealEffect h: Heal(target, (int)Modify(card, h.Amount, ValueKind.Int).Value); break;
 
             // Een combo giet niet om naar wat hij al is, maar doet de rest wel
             case CastEffect c when target.Kind != c.To: Cast(target, c.To); break;
@@ -230,38 +272,69 @@ public sealed class Combat
 
     private void QueueModifier(ModifierEffect m)
     {
-        _modifiers.Add((m.Op, m.Amount));
-        Emit(new ModifierQueued(Label(m.Op, m.Amount), string.Join(" ", _modifiers.Select(x => Label(x.Op, x.Amount)))));
+        _modifiers.Add(m);
+        Emit(new ModifierQueued(Label(m), string.Join(" ", _modifiers.Select(Label))));
     }
 
-    /// <summary>
-    /// Past de wachtende modifiers in volgorde toe op het getal van deze kaart:
-    /// eerst +3 en dan ×2 geeft (6 + 3) × 2, omgekeerd 6 × 2 + 3.
-    /// </summary>
-    private double Modify(CardDefinition card, double amount)
-    {
-        if (_modifiers.Count == 0) return amount;
+    /// <summary>Het getal van deze kaart waarop de modifiers zouden vallen, en het type ervan. Leeg als ze er geen gebruikt.</summary>
+    private static (double Amount, ValueKind? Kind)? ModifiedAmount(CardDefinition card) => FindAmount(card.Effect, card.Kind);
 
-        double value = amount;
+    private static (double Amount, ValueKind? Kind)? FindAmount(Effect effect, ValueKind? kind) => effect switch
+    {
+        DamageEffect d => (d.Amount, kind),
+        BlockEffect b => (b.Amount, ValueKind.Int),
+        HealEffect h => (h.Amount, ValueKind.Int),
+        ComboEffect c => FindAmount(c.First, kind) ?? FindAmount(c.Then, kind),
+        _ => null
+    };
+
+    /// <summary>
+    /// Rekent de wachtende modifiers in volgorde uit op een waarde met een type, met echte C#:
+    /// eerst +3 en dan ×2 geeft (6 + 3) × 2, en <c>7 / 2</c> is 3 maar <c>7.0 / 2</c> is 3.5.
+    /// Met <paramref name="describeOnly"/> stopt het bij de eerste fout en geeft het alleen de expressie tot daar.
+    /// </summary>
+    private (TypedValue Value, int HitFactor, string Expression) Evaluate(double amount, ValueKind? kind, bool describeOnly = false)
+    {
+        TypedValue value = TypedValue.OfCard(amount, kind);
         string expression = Num(amount);
-        foreach ((ModifierOp op, int by) in _modifiers)
+        int hitFactor = 1;
+
+        foreach (ModifierEffect m in _modifiers)
         {
-            switch (op)
+            string lit = m.Operand.Literal;
+            string grouped = expression.Contains('+') || expression.Contains('-') ? $"({expression})" : expression;
+            (expression, Func<TypedValue> step) = m.Op switch
             {
-                case ModifierOp.Add:
-                    value += by;
-                    expression = $"{expression} + {by}";
-                    break;
-                case ModifierOp.Multiply:
-                    value *= by;
-                    expression = expression.Contains('+') ? $"({expression}) × {by}" : $"{expression} × {by}";
-                    break;
+                ModifierOp.Add => ($"{expression} + {lit}", () => value.Plus(m.Operand)),
+                ModifierOp.Multiply => ($"{grouped} × {lit}", () => value.Times(m.Operand)),
+                ModifierOp.Divide => ($"{grouped} / {lit}", () => value.DividedBy(m.Operand)),
+                ModifierOp.Parse => ($"int.Parse({expression})", (Func<TypedValue>)(() => value.Parse())),
+                _ => throw new ArgumentOutOfRangeException(nameof(m.Op))
+            };
+            if (m.DoubleHits) hitFactor *= 2;
+
+            if (describeOnly)
+            {
+                try { value = step(); }
+                catch (Exception) { break; }
+            }
+            else
+            {
+                value = step();
             }
         }
+        return (value, hitFactor, expression);
+    }
 
+    /// <summary>Past de wachtende modifiers toe op het getal van deze kaart. Al gecontroleerd bij het spelen.</summary>
+    private (double Value, int HitFactor) Modify(CardDefinition card, double amount, ValueKind? kind)
+    {
+        if (_modifiers.Count == 0) return (amount, 1);
+
+        var (value, hitFactor, expression) = Evaluate(amount, kind);
         _modifiers.Clear();
-        Emit(new ModifiersApplied(card.Id, amount, value, expression));
-        return value;
+        Emit(new ModifiersApplied(card.Id, amount, value.Number, expression));
+        return (value.Number, hitFactor);
     }
 
     // ---------- Relics ----------
@@ -471,7 +544,14 @@ public sealed class Combat
 
     private static string Num(double value) => value.ToString(CultureInfo.InvariantCulture);
 
-    private static string Label(ModifierOp op, int amount) => op == ModifierOp.Add ? $"+{amount}" : $"×{amount}";
+    /// <summary>Kort en zonder spaties, want de stage splitst de wachtende modifiers op een spatie: +3, ×1.0, /2, +"1".</summary>
+    private static string Label(ModifierEffect m) => m.Op switch
+    {
+        ModifierOp.Add => $"+{m.Operand.Literal}",
+        ModifierOp.Multiply => $"×{m.Operand.Literal}",
+        ModifierOp.Divide => m.DoubleHits ? $"/{m.Operand.Literal}(×2)" : $"/{m.Operand.Literal}",
+        _ => "int.Parse"
+    };
 
     private static CombatantView View(Combatant c, Intent? intent) => new(
         c.Id, c.Key, c.Kind, c.Hp, c.MaxHp, c.Block, c.IsEnemy,

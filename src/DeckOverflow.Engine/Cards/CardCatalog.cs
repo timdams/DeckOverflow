@@ -49,6 +49,27 @@ public static class CardCatalog
     public static readonly CardDefinition DoubleUp =
         new("double-up", 1, TargetMode.Self, new ModifierEffect(ModifierOp.Multiply, 2), Rarity: Rarity.Uncommon);
 
+    // ---------- De getypeerde aanval: H2 (deling, double) en H3 (tekst) ----------
+
+    /// <summary><c>× 1.0</c>: je volgende aanval wordt een double, zodat een deling haar decimalen houdt.</summary>
+    public static readonly CardDefinition FloatingPoint =
+        new("floating-point", 0, TargetMode.Self, new ModifierEffect(ModifierOp.Multiply, TypedValue.Double(1.0)), Rarity: Rarity.Common);
+
+    /// <summary><c>/ 2</c>, maar twee keer: <c>7 / 2</c> is twee keer 3, <c>7.0 / 2</c> twee keer 3.5.</summary>
+    public static readonly CardDefinition Split =
+        new("split", 0, TargetMode.Self, new ModifierEffect(ModifierOp.Divide, TypedValue.Int(2), DoubleHits: true), Rarity: Rarity.Common);
+
+    /// <summary><c>+ "1"</c>: tekst plakt. <c>7 + "1"</c> is <c>"71"</c>, maar tekst raakt geen getal.</summary>
+    public static readonly CardDefinition Ink =
+        new("ink", 1, TargetMode.Self, new ModifierEffect(ModifierOp.Add, TypedValue.String("1")), Rarity: Rarity.Uncommon);
+
+    /// <summary>
+    /// <c>int.Parse(…)</c>: tekst wordt een getal. Ongeldige tekst crasht, en je beurt eindigt.
+    /// Zeldzaam en duur: samen met Ink en Spare Screw maakt ze van een Whack honderden schade.
+    /// </summary>
+    public static readonly CardDefinition Read =
+        new("read", 2, TargetMode.Self, new ModifierEffect(ModifierOp.Parse, default), Rarity: Rarity.Rare);
+
     public static readonly CardDefinition ByteTrap =
         new("byte-trap", 2, TargetMode.Enemy, new ComboEffect(new CastEffect(ValueKind.Byte), new HealEffect(6)), Rarity: Rarity.Rare);
 
@@ -66,6 +87,7 @@ public static class CardCatalog
     [
         FloatingStrike, HeavyStrike, FloatingRain, ThickShield, Mend, RemoldInt, RemoldByte,
         SetTo1, Add, DoubleUp,
+        FloatingPoint, Split, Ink, Read,
         ByteTrap
     ];
 
@@ -99,6 +121,11 @@ public static class CardCatalog
         DoubleUp with { Id = "double-up+", Cost = 0 },
         ByteTrap with { Id = "byte-trap+", Cost = 1 },
         MeasureTwice with { Id = "measure-twice+", Cost = 0 },
+        // Split+ deelt door 2.0: een double, dus geen verlies meer aan de deling van gehele getallen
+        Split with { Id = "split+", Effect = new ModifierEffect(ModifierOp.Divide, TypedValue.Double(2.0), DoubleHits: true) },
+        FloatingPoint with { Id = "floating-point+", Effect = new ModifierEffect(ModifierOp.Multiply, TypedValue.Double(1.5)) },
+        Ink with { Id = "ink+", Cost = 0 },
+        Read with { Id = "read+", Cost = 1 },
     }.ToDictionary(c => c.BaseId);
 
     /// <summary>De verbeterde versie, of null als de kaart niet (meer) beter kan.</summary>

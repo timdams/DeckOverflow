@@ -605,6 +605,19 @@ const handlers = {
     await wait(420);
   },
 
+  /** Je aanval crashte tijdens het uitrekenen: de naam van de exception, en je beurt is voorbij. */
+  async ExceptionThrown(S, e) {
+    const p = S.actor(0)?.head() ?? { x: 255, y: 150 };
+    sfx('glitch');
+    shake(S.shaker, juice.shakePx.large);
+    S.flashScreen(0.3);
+    floatText(S.layers.fx, t('stage.exception', { exception: e.exception }), p.x, p.y - 70, { size: 24, rise: 30, holdMs: 900 });
+    floatText(S.layers.fx, e.expression, p.x, p.y - 36, { size: 14, rise: 30, holdMs: 900, color: COLORS.muted });
+    floatText(S.layers.fx, t('stage.turn-lost'), p.x, p.y - 10, { size: 12, rise: 30, holdMs: 900, color: COLORS.muted });
+    S.setModifiers([]);
+    await wait(900);
+  },
+
   /** De vijand crashte vorige beurt: geen aanval. */
   async AttackSkipped(S, e) {
     const a = S.actor(e.enemyId);

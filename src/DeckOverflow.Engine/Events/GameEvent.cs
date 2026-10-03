@@ -29,6 +29,7 @@ namespace DeckOverflow.Engine.Events;
 [JsonDerivedType(typeof(ValueGrew), nameof(ValueGrew))]
 [JsonDerivedType(typeof(ConversionCrashed), nameof(ConversionCrashed))]
 [JsonDerivedType(typeof(AttackSkipped), nameof(AttackSkipped))]
+[JsonDerivedType(typeof(ExceptionThrown), nameof(ExceptionThrown))]
 [JsonDerivedType(typeof(IntentAssigned), nameof(IntentAssigned))]
 [JsonDerivedType(typeof(ModifierQueued), nameof(ModifierQueued))]
 [JsonDerivedType(typeof(ModifiersApplied), nameof(ModifiersApplied))]
@@ -95,6 +96,12 @@ public sealed record ValueGrew(int TargetId, double Before, double Factor, doubl
 
 /// <summary><c>Convert</c> paste niet: een <c>OverflowException</c>. Het doelwit slaat zijn volgende aanval over.</summary>
 public sealed record ConversionCrashed(int TargetId, ValueKind To, double Value) : GameEvent;
+
+/// <summary>
+/// Je aanval crashte tijdens het uitrekenen, bv. <c>int.Parse("2.51")</c>: een <c>FormatException</c>.
+/// Er is nog geen catch, dus je beurt eindigt.
+/// </summary>
+public sealed record ExceptionThrown(string Exception, string Expression) : GameEvent;
 
 /// <summary>De vijand slaat zijn aanval over, bv. na een crash.</summary>
 public sealed record AttackSkipped(int EnemyId) : GameEvent;
