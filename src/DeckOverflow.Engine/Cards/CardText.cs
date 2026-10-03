@@ -19,6 +19,7 @@ public static class CardText
         CastEffect => TextRef.Of("effect.cast"),
         ConvertEffect => TextRef.Of("effect.convert"),
         ParseEffect => TextRef.Of("effect.parse-enemy"),
+        LengthEffect => TextRef.Of("effect.length"),
         SetAttackEffect s => TextRef.Of("effect.set-attack", ("value", s.Value)),
         ModifierEffect { Op: ModifierOp.Add } m => TextRef.Of("effect.add", ("amount", m.Operand.Literal)),
         ModifierEffect { Op: ModifierOp.Multiply } m => TextRef.Of("effect.multiply", ("amount", m.Operand.Literal)),

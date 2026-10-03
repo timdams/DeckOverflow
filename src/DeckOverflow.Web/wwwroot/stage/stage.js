@@ -516,7 +516,8 @@ function createActor(c) {
         barLag.scale.x = ratio;
         return;
       }
-      hpText.text = `${num(value)}/${num(a.max)}`;
+      // Een char toont zijn teken én zijn getal: '0' is 48
+      hpText.text = a.kind === 'Char' ? `'${String.fromCharCode(Math.max(0, value))}' ${num(value)}/${num(a.max)}` : `${num(value)}/${num(a.max)}`;
       const ratio = Math.max(0, Math.min(1, value / a.max));
       barFill.scale.x = ratio;
       if (ratio < barLag.scale.x) {

@@ -14,6 +14,8 @@ public sealed record CombatantSetup(string Key, ValueKind Kind, double Hp, doubl
 /// <param name="GrowthAfterAttack">Na zijn aanval wordt zijn HP <c>HP * factor</c>, volgens de regels van zijn type. 0 is geen groei.</param>
 /// <param name="TypeCycle">Na zijn aanval giet hij zichzelf om naar het volgende type in deze lijst.</param>
 /// <param name="CrashLength">Alleen voor een <c>string</c>: vanaf deze lengte crasht zijn tekst, en valt hij om (Effective Power).</param>
+/// <param name="ResetTextEvery">Om de zoveel beurten wordt hij opnieuw tekst, met <paramref name="ResetTemplate"/> (The Typesetter).</param>
+/// <param name="ResetTemplate">String interpolatie: <c>{0}</c> wordt de schade die hij die beurt kreeg.</param>
 public sealed record EnemySetup(
     CombatantSetup Stats,
     IReadOnlyList<Intent> Pattern,
@@ -23,7 +25,9 @@ public sealed record EnemySetup(
     double GrowthAfterAttack = 0,
     IReadOnlyList<ValueKind>? TypeCycle = null,
     int CrashLength = 0,
-    bool StopsHealingOnOverflow = false);
+    bool StopsHealingOnOverflow = false,
+    int ResetTextEvery = 0,
+    string? ResetTemplate = null);
 
 /// <param name="Relics">Ids uit <see cref="Relics.RelicCatalog"/> die in dit gevecht meespelen.</param>
 public sealed record CombatSetup(

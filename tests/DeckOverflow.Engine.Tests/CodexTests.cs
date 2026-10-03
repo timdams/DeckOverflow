@@ -10,7 +10,7 @@ namespace DeckOverflow.Tests;
 
 /// <summary>
 /// De Codex: een pagina gaat pas open als een regel in een gevecht iets deed, met de getallen van dat moment.
-/// Eerst ervaren, dan benoemen: "Casting" opent pas in act 2.
+/// Eerst ervaren, dan benoemen: "Casting" opent pas in act 3.
 /// </summary>
 public class CodexTests
 {
@@ -77,16 +77,16 @@ public class CodexTests
     }
 
     [Fact]
-    public void In_act_2_opent_omgieten_de_pagina_casting()
+    public void In_de_Gieterij_opent_omgieten_de_pagina_casting()
     {
-        var run = Run.Start(255, new RunSetup(Hp: 400, Map: ActMap.Path((NodeKind.Boss, Bestiary.Caster)), StartAct: 2));
+        var run = Run.Start(255, new RunSetup(Hp: 400, Map: ActMap.Path((NodeKind.Boss, Bestiary.Caster)), StartAct: Acts.MoldWorks.Number));
         for (int i = 0; i < Run.DraftRounds; i++) run.Handle(new SkipReward());
         run.Handle(new ChooseRelic(0));
         run.Handle(new ChooseNode(0));
 
         var events = run.WinCombat();
 
-        // The Caster giet zichzelf om: in act 2 mag die regel zijn naam krijgen
+        // The Caster giet zichzelf om: in act 3 mag die regel zijn naam krijgen
         var casting = events.OfType<CodexUnlocked>().Single(u => u.Key == CodexCatalog.Casting);
         Assert.Equal("caster", casting.Values["target"]);
     }

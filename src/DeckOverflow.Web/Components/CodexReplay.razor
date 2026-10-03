@@ -66,12 +66,13 @@
             {
                 // De teller rolt op tot 255, bevriest, en klapt om
                 int before = Int("before"), added = Int("added");
+                int max = Values.ContainsKey("max") ? Int("max") : 255;
                 yield return new($"{before} + {added}", "code", 250);
                 yield return new(before.ToString(CultureInfo.InvariantCulture), "num", 400);
-                int stride = Math.Max(1, (255 - before) / 8);
-                for (int n = before + stride; n < 255; n += stride)
+                int stride = Math.Max(1, (max - before) / 8);
+                for (long n = (long)before + stride; n < max; n += stride)
                     yield return new(n.ToString(CultureInfo.InvariantCulture), "num", 90, Replace: true);
-                yield return new("255", "num freeze", 120, Replace: true);
+                yield return new(max.ToString(CultureInfo.InvariantCulture), "num freeze", 120, Replace: true);
                 yield return new("↻", "wrap", 500);
                 yield return new(V("after"), "num stamp", 350);
                 break;
@@ -119,8 +120,14 @@
 
             case CodexCatalog.StringLength:
                 yield return new($"\"{Shorten(V("text"))}\"", "code", 250);
-                yield return new($"{V("length")}/{V("limit")}", "num", 600);
-                yield return new("crash", "glitch", 500);
+                yield return new(".Length", "muted", 600);
+                yield return new(V("length"), "stamp", 400);
+                break;
+
+            case CodexCatalog.CharIsNumber:
+                yield return new(V("expression"), "code", 250);
+                yield return new("=", "muted", 600);
+                yield return new(V("value"), "stamp", 350);
                 break;
 
             case CodexCatalog.Casting:

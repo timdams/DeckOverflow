@@ -24,19 +24,29 @@ public sealed record ActDefinition(
 
 public static class Acts
 {
-    /// <summary>Act 1: H2 en H3. Types, afkappen, overflow, expressies.</summary>
+    /// <summary>Act 1: H2. Types, afkappen, overflow, deling, voorrang.</summary>
     public static readonly ActDefinition VatValley = new(
         1, "vat-valley", Bestiary.Reckoner,
         EasyPool: [Bestiary.Slime, Bestiary.Knight],
         NormalPool: [Bestiary.Knight, Bestiary.Ghost, Bestiary.Dripper, Bestiary.Splitter],
-        ElitePool: [Bestiary.Golem, Bestiary.EffectivePower],
+        ElitePool: [Bestiary.Golem, Bestiary.Counter],
         Events: [Adventures.Crucible, Adventures.LeakingBarrel, Adventures.CopyMachine, Adventures.ScrapBin],
         EarlyEvent: Bestiary.Jug,
         NewCards: CardCatalog.RewardPool);
 
-    /// <summary>Act 2, De Gieterij (in het spel: The Mold Works): H4. Expliciet omzetten: cast, Convert, afronden.</summary>
+    /// <summary>Act 2, De Drukkerij (in het spel: The Print Shop): H3. Tekst: string plakt, char is een getal, Length.</summary>
+    public static readonly ActDefinition PrintShop = new(
+        2, "print-shop", Bestiary.Typesetter,
+        EasyPool: [Bestiary.TypeBlock, Bestiary.PaperGolem],
+        NormalPool: [Bestiary.TypeBlock, Bestiary.PaperGolem, Bestiary.Ghost, Bestiary.Splitter],
+        ElitePool: [Bestiary.EffectivePower],
+        Events: [Adventures.CopyMachine, Adventures.ScrapBin, Adventures.LeakingBarrel, Adventures.Crucible],
+        EarlyEvent: null,
+        NewCards: [CardCatalog.CountLetters, CardCatalog.LetterA]);
+
+    /// <summary>Act 3, De Gieterij (in het spel: The Mold Works): H4. Expliciet omzetten: cast, Convert, afronden.</summary>
     public static readonly ActDefinition MoldWorks = new(
-        2, "mold-works", Bestiary.Caster,
+        3, "mold-works", Bestiary.Caster,
         EasyPool: [Bestiary.Ingot, Bestiary.Rounder],
         NormalPool: [Bestiary.Rounder, Bestiary.Label, Bestiary.Ingot, Bestiary.Knight, Bestiary.Ghost],
         ElitePool: [Bestiary.Colossus, Bestiary.Index],
@@ -44,7 +54,7 @@ public static class Acts
         EarlyEvent: null,
         NewCards: [CardCatalog.MeasureTwice, CardCatalog.ReadTheLabel]);
 
-    public static readonly IReadOnlyList<ActDefinition> All = [VatValley, MoldWorks];
+    public static readonly IReadOnlyList<ActDefinition> All = [VatValley, PrintShop, MoldWorks];
 
     public static ActDefinition Get(int number) =>
         All.FirstOrDefault(a => a.Number == number) ?? throw new ArgumentOutOfRangeException(nameof(number), $"Act {number} bestaat niet.");

@@ -543,7 +543,7 @@ Het starterdeck is bewust saai, zodat elke beloning een echte keuze wordt.
 
 ## Act 2: De Drukkerij
 
-Ontwerp van 3 oktober 2026, nog te bouwen. Act 2 dekt hoofdstuk 3 van Zie Scherp Scherper: tekst gebruiken in code. Het boek behandelt `char` (één teken, een Unicode-getal), `string` (een reeks `char`s), escape characters, strings samenvoegen en interpolatie, en vreemde tekens tonen. In het Engelse spel heet de act **The Print Shop**: een drukkerij vol losse letterblokjes, etiketten en berichten. Elk letterblokje is een getal, en dat is de kern van de act.
+Gebouwd op 3 oktober 2026. Act 2 dekt hoofdstuk 3 van Zie Scherp Scherper: tekst gebruiken in code. Het boek behandelt `char` (één teken, een Unicode-getal), `string` (een reeks `char`s), escape characters, strings samenvoegen en interpolatie, en vreemde tekens tonen. In het Engelse spel heet de act **The Print Shop**: een drukkerij vol losse letterblokjes, etiketten en berichten. Elk letterblokje is een getal, en dat is de kern van de act.
 
 | Concept | Waar het in de game zit |
 | --- | --- |
@@ -566,13 +566,13 @@ Daarnaast blijven vijanden uit act 1 in de pool, want de regels van eerdere acts
 ### Elites
 
 - **Effective Power** verhuist van act 1 naar hier: een bericht dat crasht vanaf 32 tekens. Plakken is de bedoeling, en `"2.5"` plakt drie tekens.
-- Een tweede elite is nog open. Kandidaat: **Y2K**, jaartallen opgeslagen als twee tekens, `"99"` + 1 werd `"00"`.
+- Een tweede elite is nog open. Kandidaat: **Y2K**, jaartallen opgeslagen als twee tekens, `"99"` + 1 werd `"00"`. Tot dan heeft act 2 één elite.
 
 ### Baas: The Typesetter
 
 Een figuur van de fabriek die zinnen zet met losse letters. Zijn HP is een zin, bijvoorbeeld `"THE MANUAL IS ALWAYS RIGHT"`. Tekst kan je niet doodslaan: elke treffer plakt eraan vast, zoals bij elke `string`. Met de nieuwe kaart **Count Letters** wordt zijn HP de `Length` van zijn zin: 26. Wie eerst slaat en dan telt, vecht tegen een langere zin.
 
-Elke drie beurten zet hij een nieuwe zin met string interpolatie: `$"YOU HIT ME {schade} TIMES"`, met de getallen van jouw laatste beurt erin. Daarna is hij weer tekst, en moet je opnieuw tellen. De puzzel: tel op het juiste moment, en sla hard tussen twee zinnen in.
+Elke drie beurten zet hij een nieuwe zin met string interpolatie: `$"YOU HIT ME FOR {schade}. I WROTE IT DOWN, WORD FOR WORD."`, met de schade van jouw laatste beurt erin. Daarna is hij weer tekst, en moet je opnieuw tellen. De puzzel: tel op het juiste moment, en sla hard tussen twee zinnen in. Zonder Count Letters is er een tweede uitweg: plakken tot de zin 120 tekens lang is, dan crasht ze, net als bij Effective Power.
 
 ### Nieuwe kaarten
 
@@ -585,9 +585,9 @@ De letterkaart is bewust zeldzaam en duur: een `char` is meteen 65 of meer.
 
 ### Wat er verschuift
 
-- **Act 1 wordt puur H2.** Ink en Read blijven in de pool van act 1 (tekst ervaren voor je hem benoemt), maar Effective Power verhuist naar act 2. Act 1 krijgt een tweede elite: **The Counter** (de weergaventeller van Gangnam Style, 2014, `int`-overflow).
+- **Act 1 wordt puur H2.** Ink en Read blijven in de pool van act 1 (tekst ervaren voor je hem benoemt), maar Effective Power verhuist naar act 2. Act 1 krijgt een tweede elite: **The Counter** (de weergaventeller van Gangnam Style, 2014). Hij begint 30 onder `int.MaxValue` en telt elke beurt 9 op; wie hem heelt of lang genoeg overleeft, ziet hem unchecked omklappen naar min twee miljard.
 - **De Gieterij wordt act 3**, met dezelfde inhoud.
-- **Codex:** String concatenation en String length gaan open in act 2; een nieuwe pagina **Char is a number** voor Type Block en de letterkaart.
+- **Codex:** String concatenation en String length gaan open vanaf act 2, Casting, Convert, Math.Round en Parsing vanaf act 3. Er is een nieuwe pagina **A char is a number** voor Type Block en de letterkaart. De pagina Integer overflow geldt nu voor `byte` én `int`, en String length ook voor Count Letters.
 - **Er komt één nieuwe actplaat** via imagen.
 
 ## Act 3: De Gieterij

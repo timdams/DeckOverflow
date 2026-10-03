@@ -50,7 +50,7 @@ public static class XRegister
         var died = events.OfType<CombatantDied>().Any(d => d.TargetId == Combat.Combat.EnemyId);
 
         // Een vijand helen tot hij omklapt en sterft
-        if (died && events.OfType<ValueOverflowed>().Any(o => o.TargetId == Combat.Combat.EnemyId && o.After == 0))
+        if (died && events.OfType<ValueOverflowed>().Any(o => o.TargetId == Combat.Combat.EnemyId && o.After <= 0))
             yield return FeedTheMachine;
 
         // Effective Power in één kaart van zijn volle bericht tot de crash

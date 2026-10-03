@@ -194,7 +194,7 @@ public partial class RunPage
 
     /// <summary>Voor <c>?fight=</c>: het starterdeck plus de kaarten die de puzzelvijanden nodig hebben.</summary>
     private static IReadOnlyList<CardDefinition> TestDeck =>
-        [.. CardCatalog.StarterDeck(), CardCatalog.RemoldByte, CardCatalog.MeasureTwice, CardCatalog.ReadTheLabel, CardCatalog.Ink, CardCatalog.Read];
+        [.. CardCatalog.StarterDeck(), CardCatalog.RemoldByte, CardCatalog.MeasureTwice, CardCatalog.ReadTheLabel, CardCatalog.CountLetters, CardCatalog.LetterA, CardCatalog.Ink, CardCatalog.Read];
 
     private static ActMap SingleFight(string enemy)
     {

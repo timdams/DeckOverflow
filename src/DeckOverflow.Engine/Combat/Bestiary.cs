@@ -18,6 +18,12 @@ public static class Bestiary
     public const string Reckoner = "reckoner";
     public const string Splitter = "splitter";
     public const string EffectivePower = "effective-power";
+    public const string Counter = "counter";
+
+    // Act 2: de Drukkerij
+    public const string TypeBlock = "type-block";
+    public const string PaperGolem = "paper-golem";
+    public const string Typesetter = "typesetter";
 
     // Act 2: de Gieterij
     public const string Ingot = "ingot";
@@ -27,11 +33,11 @@ public static class Bestiary
     public const string Label = "label";
 
     /// <summary>Alle elites, over de acts heen. Welke elite in welke act zit, staat in <see cref="Runs.Acts"/>.</summary>
-    public static readonly IReadOnlyList<string> Elites = [Colossus, Golem, EffectivePower, Index];
+    public static readonly IReadOnlyList<string> Elites = [Colossus, Golem, Counter, EffectivePower, Index];
 
-    public static readonly IReadOnlyList<string> Bosses = [Reckoner, Caster];
+    public static readonly IReadOnlyList<string> Bosses = [Reckoner, Typesetter, Caster];
 
-    public static readonly IReadOnlyList<string> All = [Slime, Knight, Ghost, Dripper, Jug, Colossus, Golem, Reckoner, Splitter, EffectivePower, Ingot, Rounder, Index, Caster, Label];
+    public static readonly IReadOnlyList<string> All = [Slime, Knight, Ghost, Dripper, Jug, Colossus, Golem, Reckoner, Splitter, Counter, EffectivePower, TypeBlock, PaperGolem, Typesetter, Ingot, Rounder, Index, Caster, Label];
 
     public static bool Exists(string? key) => key is not null && All.Contains(key);
 
@@ -66,6 +72,34 @@ public static class Bestiary
             new CombatantSetup(EffectivePower, ValueKind.String, Hp: 1, MaxHp: 1, Text: "effective. Power"),
             [new("8 + 4", 8 + 4), new("30 / 2", 30 / 2), new("3 * 3", 3 * 3)],
             CrashLength: 32),
+
+        // The Counter (YouTube, 2014): de weergaventeller van Gangnam Style naderde int.MaxValue.
+        // Hij telt elke beurt op; wie hem heelt of lang genoeg overleeft, ziet hem omklappen naar negatief.
+        Counter => new(
+            new CombatantSetup(Counter, ValueKind.Int, Hp: int.MaxValue - 30, MaxHp: int.MaxValue),
+            [new("9 + 9", 9 + 9), new("25 / 2", 25 / 2), new("7 * 2", 7 * 2)],
+            HealAfterAttack: 9),
+
+        // ---------- Act 2: de Drukkerij ----------
+
+        // Zijn HP is het teken '0': er staat een 0, maar het is 48. Een cijferteken is geen cijfer.
+        TypeBlock => new(
+            new CombatantSetup(TypeBlock, ValueKind.Char, Hp: '0', MaxHp: '0'),
+            [new("3 + 3", 3 + 3), new("16 / 3", 16 / 3)]),
+
+        // Valt aan met tekst die hij plakt en dan pas omzet: "1" + 2 is 12, 1 + 2 is 3
+        PaperGolem => new(
+            new CombatantSetup(PaperGolem, ValueKind.Int, Hp: 32, MaxHp: 32),
+            [new("\"1\" + 2", int.Parse("1" + 2)), new("1 + 2", 1 + 2)]),
+
+        // Zijn HP is een zin. Count Letters maakt er de Length van; om de drie beurten zet hij een nieuwe
+        // zin met string interpolatie. Wie lang genoeg plakt, ziet de zin crashen (een tweede uitweg).
+        Typesetter => new(
+            new CombatantSetup(Typesetter, ValueKind.String, Hp: 1, MaxHp: 1, Text: "THE MANUAL IS ALWAYS RIGHT. FOLLOW EVERY STEP."),
+            [new("6 + 6", 6 + 6), new("3 * 5", 3 * 5), new("40 / 3", 40 / 3)],
+            CrashLength: 120,
+            ResetTextEvery: 3,
+            ResetTemplate: "YOU HIT ME FOR {0}. I WROTE IT DOWN, WORD FOR WORD."),
 
         // Deling van gehele getallen als verdediging: zonder blok 30, met 5 blok nog 5
         Splitter => new(

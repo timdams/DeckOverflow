@@ -19,6 +19,9 @@ public sealed record CastEffect(ValueKind To) : Effect;
 /// </summary>
 public sealed record ConvertEffect(ValueKind To) : Effect;
 
+/// <summary>De <c>Length</c> van de tekst van een vijand wordt zijn HP, als <c>int</c>.</summary>
+public sealed record LengthEffect : Effect;
+
 /// <summary><c>int.Parse</c> op een vijand: zijn tekst-HP wordt een getal. Ongeldige tekst crasht, en je beurt eindigt.</summary>
 public sealed record ParseEffect : Effect;
 

@@ -15,6 +15,7 @@ public readonly record struct TypedValue(ValueKind Kind, double Number, string T
     public static TypedValue Int(int value) => new(ValueKind.Int, value, "");
     public static TypedValue Double(double value) => new(ValueKind.Double, value, "");
     public static TypedValue String(string value) => new(ValueKind.String, 0, value);
+    public static TypedValue Char(char value) => new(ValueKind.Char, value, "");
 
     /// <summary>Het getal op een kaart: een Vlottende kaart vuurt een double af, de rest een int.</summary>
     public static TypedValue OfCard(double amount, ValueKind? kind) =>
@@ -26,6 +27,7 @@ public readonly record struct TypedValue(ValueKind Kind, double Number, string T
     public string Literal => Kind switch
     {
         ValueKind.String => $"\"{Text}\"",
+        ValueKind.Char => $"'{(char)Number}'",
         ValueKind.Double => Number % 1 == 0 ? Number.ToString("0.0", Inv) : Number.ToString(Inv),
         _ => ((int)Number).ToString(Inv)
     };
@@ -34,11 +36,15 @@ public readonly record struct TypedValue(ValueKind Kind, double Number, string T
     private string Concat => Kind switch
     {
         ValueKind.String => Text,
+        ValueKind.Char => ((char)Number).ToString(),
         ValueKind.Double => Number.ToString(Inv),
         _ => ((int)Number).ToString(Inv)
     };
 
-    private bool BothInt(TypedValue other) => Kind == ValueKind.Int && other.Kind == ValueKind.Int;
+    /// <summary>Een <c>char</c> rekent mee als geheel getal: <c>'A' + 1</c> is 66, een <c>int</c>.</summary>
+    private bool BothInt(TypedValue other) => IsWholeNumber && other.IsWholeNumber;
+
+    private bool IsWholeNumber => Kind is ValueKind.Int or ValueKind.Char;
 
     /// <summary><c>+</c>: tekst plakt, twee ints blijven een int (en lopen unchecked over), anders een double.</summary>
     public TypedValue Plus(TypedValue other)

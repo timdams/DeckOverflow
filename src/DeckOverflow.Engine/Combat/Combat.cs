@@ -38,6 +38,8 @@ public sealed class Combat
     private int _cardsPlayed;
     /// <summary>Kaarten deze beurt: een variabele voor bewuste intents.</summary>
     private int _cardsThisTurn;
+    /// <summary>Schade op de vijand deze beurt, voor de interpolatie van The Typesetter.</summary>
+    private double _damageThisTurn;
     /// <summary>Per Codex-pagina het eerste moment in dit gevecht waarop die regel iets deed.</summary>
     private readonly Dictionary<string, CodexMoment> _moments = [];
 
@@ -139,7 +141,7 @@ public sealed class Combat
             return;
         }
 
-        if (card.Effect is ParseEffect && target.Kind != ValueKind.String)
+        if (card.Effect is ParseEffect or LengthEffect && target.Kind != ValueKind.String)
         {
             Emit(new PlayRejected(play.HandIndex, "reject.not-text"));
             return;
@@ -259,10 +261,18 @@ public sealed class Combat
             if (cycle[_typeCycleIndex] != _enemy.Kind) Cast(_enemy, cycle[_typeCycleIndex]);
             if (CheckOutcome()) return;
         }
+        if (_setup.Enemy.ResetTextEvery > 0 && Turn % _setup.Enemy.ResetTextEvery == 0 && _setup.Enemy.ResetTemplate is { } template)
+        {
+            // String interpolatie: de schade van jouw beurt komt in zijn nieuwe zin
+            _enemy.Kind = ValueKind.String;
+            _enemy.Text = string.Format(CultureInfo.InvariantCulture, template, Num(_damageThisTurn));
+            Emit(new TextReset(EnemyId, _enemy.Text));
+        }
 
         // Nieuwe beurt
         Turn++;
         _cardsThisTurn = 0;
+        _damageThisTurn = 0;
         Energy = _setup.MaxEnergy;
         if (_player.Block > 0)
         {
@@ -325,6 +335,8 @@ public sealed class Combat
             case ConvertEffect c when target.Kind != c.To: Convert(target, c.To); break;
             case ConvertEffect: break;
             case ParseEffect: break;
+            case LengthEffect when target.Kind == ValueKind.String: CountLetters(target); break;
+            case LengthEffect: break;
 
             case SetAttackEffect s: AssignAttack(s.Value); break;
             case ModifierEffect m: QueueModifier(m); break;
@@ -412,6 +424,8 @@ public sealed class Combat
             Moment(CodexCatalog.StringConcat, ("expression", expression), ("value", value.Number));
         if (_modifiers.Any(m => m.Op == ModifierOp.Parse))
             Moment(CodexCatalog.Parse, ("text", expression), ("value", value.Number));
+        if (_modifiers.Any(m => m.Operand.Kind == ValueKind.Char) && !value.IsText)
+            Moment(CodexCatalog.CharIsNumber, ("expression", expression), ("value", value.Number));
         _modifiers.Clear();
         Emit(new ModifiersApplied(card.Id, amount, value.Number, expression));
         return (value, hitFactor);
@@ -501,6 +515,9 @@ public sealed class Combat
         // Spelregel: schade stopt op 0. Underflow van byte is een mechaniek voor later.
         target.Hp = Math.Max(0, before - damage);
         Emit(new DamageDealt(target.Id, damage, before, target.Hp));
+        if (target.IsEnemy) _damageThisTurn += damage;
+        if (target.Kind == ValueKind.Char)
+            Moment(CodexCatalog.CharIsNumber, ("expression", $"'{(char)before}' - {Num(damage)}"), ("value", $"'{(char)target.Hp}' ({Num(target.Hp)})"));
 
         if (target.IsDead) Emit(new CombatantDied(target.Id));
     }
@@ -541,13 +558,24 @@ public sealed class Combat
                 if (overflowed)
                 {
                     Emit(new ValueOverflowed(target.Id, (int)before, amount, result, byte.MaxValue));
-                    Moment(CodexCatalog.Overflow, ("target", target.Key), ("before", (int)before), ("added", amount), ("after", (int)result));
+                    Moment(CodexCatalog.Overflow, ("target", target.Key), ("type", "byte"), ("max", (int)byte.MaxValue), ("before", (int)before), ("added", amount), ("after", (int)result));
                 }
                 else
                 {
                     Emit(new Healed(target.Id, amount, result));
                 }
                 break;
+
+            // Een int loopt unchecked over voorbij int.MaxValue, zoals de weergaventeller van Gangnam Style bijna deed
+            case ValueKind.Int when before + amount > int.MaxValue:
+            {
+                int wrappedHp = unchecked((int)before + amount);
+                target.Hp = wrappedHp;
+                wrapped = true;
+                Emit(new ValueOverflowed(target.Id, (int)before, amount, wrappedHp, int.MaxValue));
+                Moment(CodexCatalog.Overflow, ("target", target.Key), ("type", "int"), ("max", int.MaxValue), ("before", (int)before), ("added", amount), ("after", wrappedHp));
+                break;
+            }
 
             default:
                 // Spelregel: helen gaat niet boven max HP
@@ -599,7 +627,7 @@ public sealed class Combat
         if (limit > 0 && target.Text.Length >= limit)
         {
             Emit(new TextCrashed(target.Id, target.Text.Length, limit));
-            Moment(CodexCatalog.StringLength, ("text", target.Text), ("length", target.Text.Length), ("limit", limit));
+            Moment(CodexCatalog.StringLength, ("text", target.Text), ("length", target.Text.Length));
             target.Kind = ValueKind.Int;
             target.Text = null;
             target.Hp = 0;
@@ -630,6 +658,15 @@ public sealed class Combat
         Emit(new TextParsed(target.Id, "int.Parse", text, value, ValueKind.Int));
         Moment(CodexCatalog.Parse, ("text", $"int.Parse(\"{text}\")"), ("value", value));
         return true;
+    }
+
+    /// <summary>Count Letters: de <c>Length</c> van zijn tekst wordt zijn HP, als <c>int</c>.</summary>
+    private void CountLetters(Combatant target)
+    {
+        string text = target.Text!;
+        BecomeNumber(target, text.Length, ValueKind.Int);
+        Emit(new TextCounted(target.Id, text, text.Length));
+        Moment(CodexCatalog.StringLength, ("text", text), ("length", text.Length));
     }
 
     private static void BecomeNumber(Combatant target, double value, ValueKind to)

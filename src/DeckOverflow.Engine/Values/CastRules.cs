@@ -75,5 +75,6 @@ public static class CastRules
         _ => baseMax
     };
 
-    public static bool IsWhole(ValueKind kind) => kind is ValueKind.Int or ValueKind.Byte;
+    /// <summary>Een <c>char</c> is ook een geheel getal: <c>'0'</c> is 48.</summary>
+    public static bool IsWhole(ValueKind kind) => kind is ValueKind.Int or ValueKind.Byte or ValueKind.Char;
 }

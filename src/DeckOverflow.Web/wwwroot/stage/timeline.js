@@ -660,6 +660,27 @@ const handlers = {
     await wait(400);
   },
 
+  /** Count Letters: de tekst wordt een getal, zo groot als ze lang is. */
+  async TextCounted(S, e) {
+    const a = S.actor(e.targetId);
+    const head = a.head();
+    sfx('click', { volume: 0.7 });
+    floatText(S.layers.fx, t('stage.counted', { length: e.length }), head.x, head.y - 60, { size: 20, rise: 24, holdMs: 600 });
+    a.data = { ...a.data, text: null };
+    await wait(420);
+  },
+
+  /** The Typesetter zet een nieuwe zin: hij is weer tekst. */
+  async TextReset(S, e) {
+    const a = S.actor(e.targetId);
+    const head = a.head();
+    sfx('tick', { volume: 0.7 });
+    floatText(S.layers.fx, t('stage.new-sentence'), head.x, head.y - 60, { size: 18, rise: 24, holdMs: 600 });
+    a.data = { ...a.data, text: e.text };
+    a.setHp(a.hp);
+    await wait(420);
+  },
+
   /** De vijand crashte vorige beurt: geen aanval. */
   async AttackSkipped(S, e) {
     const a = S.actor(e.enemyId);

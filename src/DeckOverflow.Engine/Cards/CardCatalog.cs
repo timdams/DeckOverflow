@@ -86,6 +86,19 @@ public static class CardCatalog
     public static readonly CardDefinition ReadTheLabel =
         new("read-the-label", 1, TargetMode.Enemy, new ParseEffect(), Rarity: Rarity.Common);
 
+    // ---------- Act 2: de Drukkerij ----------
+
+    /// <summary><c>.Length</c>: een tekstvijand wordt een getal, zo groot als zijn tekst lang is.</summary>
+    public static readonly CardDefinition CountLetters =
+        new("count-letters", 1, TargetMode.Enemy, new LengthEffect(), Rarity: Rarity.Common);
+
+    /// <summary>
+    /// <c>+ 'A'</c>: een <c>char</c> is een getal, dus <c>6 + 'A'</c> is 71. Op tekst plakt hij als letter.
+    /// Zeldzaam en duur, want een letter is meteen 65 of meer.
+    /// </summary>
+    public static readonly CardDefinition LetterA =
+        new("letter-a", 2, TargetMode.Self, new ModifierEffect(ModifierOp.Add, TypedValue.Char('A')), Rarity: Rarity.Rare);
+
     /// <summary>Wat je in act 1 na een gevecht, in de winkel of in een kist kan vinden.</summary>
     public static readonly IReadOnlyList<CardDefinition> RewardPool =
     [
@@ -126,6 +139,8 @@ public static class CardCatalog
         ByteTrap with { Id = "byte-trap+", Cost = 1 },
         MeasureTwice with { Id = "measure-twice+", Cost = 0 },
         ReadTheLabel with { Id = "read-the-label+", Cost = 0 },
+        CountLetters with { Id = "count-letters+", Cost = 0 },
+        LetterA with { Id = "letter-a+", Cost = 1 },
         // Split+ deelt door 2.0: een double, dus geen verlies meer aan de deling van gehele getallen
         Split with { Id = "split+", Effect = new ModifierEffect(ModifierOp.Divide, TypedValue.Double(2.0), DoubleHits: true) },
         FloatingPoint with { Id = "floating-point+", Effect = new ModifierEffect(ModifierOp.Multiply, TypedValue.Double(1.5)) },
@@ -166,7 +181,7 @@ public static class CardCatalog
     /// <summary>Elke kaart die in een run kan opduiken, ook verbeterd en omgegoten. Voor tests.</summary>
     public static IEnumerable<CardDefinition> Everything()
     {
-        var all = StarterDeck().Concat(RewardPool).Append(MeasureTwice).Append(ReadTheLabel).Distinct().ToList();
+        var all = StarterDeck().Concat(RewardPool).Append(MeasureTwice).Append(ReadTheLabel).Append(CountLetters).Append(LetterA).Distinct().ToList();
         var upgraded = all.Select(Upgrade).OfType<CardDefinition>().ToList();
         var poured = all.Concat(upgraded).Where(CanPour).Select(Pour);
         return all.Concat(upgraded).Concat(poured);

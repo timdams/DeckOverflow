@@ -20,7 +20,9 @@
     "ink": "items/set-to-1",
     "read": "items/rev-stamped",
     "measure-twice": "items/remold",
-    "read-the-label": "items/wrong-label"
+    "read-the-label": "items/wrong-label",
+    "count-letters": "items/spare-screw",
+    "letter-a": "items/rev-crossed"
   },
   "relics": {
     "counter": "items/relic-counter",
@@ -48,7 +50,11 @@
     "caster": "actors/reckoner",
     "label": "items/wrong-label",
     "splitter": "actors/slime",
-    "effective-power": "actors/ghost"
+    "effective-power": "actors/ghost",
+    "counter": "items/relic-counter",
+    "type-block": "actors/golem",
+    "paper-golem": "actors/knight",
+    "typesetter": "actors/hero-toolbox"
   },
   "nodes": {
     "fight": "items/whack",

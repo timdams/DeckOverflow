@@ -19,10 +19,10 @@ public class ActTests
         return run;
     }
 
-    /// <summary>Een start in act 2 met precies dit deck: de draft overgeslagen, de eerste relic gekozen.</summary>
-    private static Run StartInAct2(RunSetup? setup = null)
+    /// <summary>Een start in de Gieterij (act 3) met precies dit deck: de draft overgeslagen, de eerste relic gekozen.</summary>
+    private static Run StartInMoldWorks(RunSetup? setup = null)
     {
-        var run = Run.Start(255, (setup ?? new RunSetup()) with { StartAct = 2 });
+        var run = Run.Start(255, (setup ?? new RunSetup()) with { StartAct = Acts.MoldWorks.Number });
         for (int i = 0; i < Run.DraftRounds; i++) run.Handle(new SkipReward());
         run.Handle(new ChooseRelic(0));
         return run;
@@ -56,8 +56,8 @@ public class ActTests
         Assert.Contains(new ActStarted(2), events.WithoutSeq());
         Assert.Equal(RunPhase.Map, s.Phase);
         Assert.Equal(2, s.Act);
-        Assert.Equal(Acts.MoldWorks.Key, s.ActKey);
-        Assert.Equal(Bestiary.Caster, run.Map.Nodes.Single(n => n.Kind == NodeKind.Boss).Encounter);
+        Assert.Equal(Acts.PrintShop.Key, s.ActKey);
+        Assert.Equal(Bestiary.Typesetter, run.Map.Nodes.Single(n => n.Kind == NodeKind.Boss).Encounter);
         Assert.All(s.Map.Nodes.Where(n => n.Reachable), n => Assert.Equal(0, n.Row));
         Assert.DoesNotContain(s.Map.Nodes, n => n.Visited);
     }
@@ -76,7 +76,7 @@ public class ActTests
     [Fact]
     public void De_baas_van_de_laatste_act_verslaan_wint_de_run()
     {
-        var run = Run.Start(255, new RunSetup(Hp: 400, Map: ActMap.Path((NodeKind.Boss, Bestiary.Caster)), StartAct: 2));
+        var run = Run.Start(255, new RunSetup(Hp: 400, Map: ActMap.Path((NodeKind.Boss, Bestiary.Caster)), StartAct: Acts.MoldWorks.Number));
         for (int i = 0; i < Run.DraftRounds; i++) run.Handle(new SkipReward());
         run.Handle(new ChooseRelic(0));
         run.Handle(new ChooseNode(0));
@@ -85,7 +85,7 @@ public class ActTests
 
         Assert.Equal(RunPhase.Won, run.Phase);
         Assert.Contains(new RunEnded(Won: true), events.WithoutSeq());
-        Assert.Equal(2, run.Snapshot().End!.Act);
+        Assert.Equal(Acts.MoldWorks.Number, run.Snapshot().End!.Act);
     }
 
     // ---------- Startpunt in een latere act ----------
@@ -124,7 +124,7 @@ public class ActTests
 
         Assert.Equal(RunPhase.Map, run.Phase);
         Assert.Single(run.Relics);
-        Assert.Equal(Acts.MoldWorks, run.Act);
+        Assert.Equal(Acts.PrintShop, run.Act);
     }
 
     [Fact]
@@ -149,9 +149,9 @@ public class ActTests
     }
 
     [Fact]
-    public void Flight_501_zonder_cast_naar_byte_wordt_in_act_2_The_Index()
+    public void Flight_501_zonder_cast_naar_byte_wordt_in_de_Gieterij_The_Index()
     {
-        var run = StartInAct2(new RunSetup(Map: ActMap.Path((NodeKind.Elite, Bestiary.Colossus), (NodeKind.Rest, null)),
+        var run = StartInMoldWorks(new RunSetup(Map: ActMap.Path((NodeKind.Elite, Bestiary.Colossus), (NodeKind.Rest, null)),
             Deck: [CardCatalog.Strike, CardCatalog.MeasureTwice]));
 
         run.Handle(new ChooseNode(0));
@@ -160,7 +160,7 @@ public class ActTests
         Assert.Equal(Bestiary.Index, run.CombatSnapshot()!.Combatants.Single(c => c.IsEnemy).Key);
     }
 
-    // ---------- De map van act 2 ----------
+    // ---------- De map van de Gieterij ----------
 
     public static TheoryData<ulong> Seeds()
     {
@@ -171,7 +171,7 @@ public class ActTests
 
     [Theory]
     [MemberData(nameof(Seeds))]
-    public void De_map_van_act_2_gebruikt_de_vijanden_en_de_baas_van_act_2(ulong seed)
+    public void De_map_van_de_Gieterij_gebruikt_haar_vijanden_en_haar_baas(ulong seed)
     {
         var map = MapGenerator.Generate(new SeededRng(seed), Acts.MoldWorks);
 
@@ -194,12 +194,14 @@ public class ActTests
     }
 
     [Fact]
-    public void De_kaartpool_van_act_2_bevat_ook_alle_kaarten_van_act_1()
+    public void De_kaartpool_van_een_act_bevat_ook_alle_kaarten_van_de_acts_ervoor()
     {
-        var pool = Acts.CardPool(2);
+        var pool = Acts.CardPool(Acts.MoldWorks.Number);
 
         Assert.All(Acts.VatValley.NewCards, c => Assert.Contains(c, pool));
+        Assert.All(Acts.PrintShop.NewCards, c => Assert.Contains(c, pool));
         Assert.Contains(CardCatalog.MeasureTwice, pool);
-        Assert.DoesNotContain(CardCatalog.MeasureTwice, Acts.CardPool(1));
+        Assert.DoesNotContain(CardCatalog.MeasureTwice, Acts.CardPool(Acts.PrintShop.Number));
+        Assert.DoesNotContain(CardCatalog.CountLetters, Acts.CardPool(Acts.VatValley.Number));
     }
 }

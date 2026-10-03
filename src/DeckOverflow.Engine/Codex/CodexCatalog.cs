@@ -8,7 +8,7 @@ namespace DeckOverflow.Engine.Codex;
 /// <param name="BookPage">De pagina in de online versie van het boek, relatief tot <c>content/</c>, eventueel met anker.</param>
 /// <param name="MinAct">
 /// Vanaf welke act de pagina mag opengaan. Eerst ervaren, dan benoemen: Omgieten voel je in act 1,
-/// maar de pagina "Casting" opent pas in act 2, bij hoofdstuk 4.
+/// maar de pagina "Casting" opent pas in act 3, bij hoofdstuk 4.
 /// </param>
 public sealed record CodexEntry(string Key, int? Chapter, string BookPage, int MinAct = 1);
 
@@ -21,6 +21,7 @@ public static class CodexCatalog
     public const string OperatorPrecedence = "operator-precedence";
     public const string StringConcat = "string-concat";
     public const string StringLength = "string-length";
+    public const string CharIsNumber = "char-is-number";
     public const string Casting = "casting";
     public const string Convert = "convert";
     public const string Rounding = "rounding";
@@ -35,12 +36,13 @@ public static class CodexCatalog
         new(IntegerDivision, 2, "1_csharpbasics/2_expressies.html"),
         new(Overflow, 2, "1_csharpbasics/1_datatypes.html"),
         new(OperatorPrecedence, 2, "1_csharpbasics/2_expressies.html"),
-        new(StringConcat, 3, "2_tekst/5_chars_strings.html"),
-        new(StringLength, 3, "2_tekst/5_chars_strings.html"),
-        new(Casting, 4, "3_data/4_converteren_casting.html#casting", MinAct: 2),
-        new(Convert, 4, "3_data/4_converteren_casting.html#conversie", MinAct: 2),
-        new(Rounding, 4, "3_data/4d_afronden.html", MinAct: 2),
-        new(Parse, 4, "3_data/4_converteren_casting.html#parsing-en-.tostring", MinAct: 2),
+        new(StringConcat, 3, "2_tekst/5_chars_strings.html", MinAct: 2),
+        new(StringLength, 3, "2_tekst/5_chars_strings.html", MinAct: 2),
+        new(CharIsNumber, 3, "2_tekst/5_chars_strings.html", MinAct: 2),
+        new(Casting, 4, "3_data/4_converteren_casting.html#casting", MinAct: 3),
+        new(Convert, 4, "3_data/4_converteren_casting.html#conversie", MinAct: 3),
+        new(Rounding, 4, "3_data/4d_afronden.html", MinAct: 3),
+        new(Parse, 4, "3_data/4_converteren_casting.html#parsing-en-.tostring", MinAct: 3),
         new(Exceptions, 10, "20_exceptions/0_exceptionhandling.html"),
     ];
 
