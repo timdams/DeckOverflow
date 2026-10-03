@@ -1,0 +1,154 @@
+@page "/"
+@inject Strings S
+@inject HttpClient Http
+@inject NavigationManager Nav
+@implements IDisposable
+
+@if (!S.Loaded)
+{
+    <div class="overlay"><h1>Deck Overflow</h1><p>loading...</p></div>
+    return;
+}
+
+<div class="room">
+    <header>
+        <div class="titles">
+            <h1>@S.T("ui.title")</h1>
+            <p>@S.T("ui.subtitle")</p>
+        </div>
+        <nav class="steps">
+            @for (int i = 0; i < Levels.All.Count; i++)
+            {
+                int index = i;
+                var l = Levels.All[i];
+                <button class="step @(index == _levelIndex ? "current" : "") @(_beaten.Contains(l.Key) ? "beaten" : "")"
+                        disabled="@(!Unlocked(index) || Busy)" @onclick="() => SelectLevel(index)"
+                        title="@(Unlocked(index) ? S.T($"enemy.{l.Key}") : S.T("ui.locked"))">
+                    <span class="circle">@(index + 1)</span>
+                    <span class="label">@(Unlocked(index) ? S.T($"enemy.{l.Key}") : "?")</span>
+                </button>
+            }
+        </nav>
+    </header>
+
+    <main class="floor">
+        <section class="board mine">
+            <h2>@S.T("ui.yourRules") <small>@S.T("ui.slots", ("used", _drafts.Count), ("max", Level.Slots))</small></h2>
+            <p class="hint">↓ @S.T("ui.top")</p>
+            <RuleBoard Rules="_drafts" Editable="_duel is null" Slots="Level.Slots"
+                       Checks="Level.Checks" Moves="Level.Moves" AllowAnd="Level.AllowAnd"
+                       Stats="_duel?.Stats(Side.Player)" Finished="_duel?.IsOver ?? false"
+                       FlashIndex="_flash[0]" FlashSeq="_flashSeq[0]" OnChanged="StateHasChanged" />
+            @if (_duel is null && NewThings.Count > 0)
+            {
+                <p class="new"><b>@S.T("ui.newCheck"):</b> @string.Join(", ", NewThings)</p>
+            }
+            <label class="code-toggle"><input type="checkbox" @bind="_showCode" /> @S.T("ui.code")</label>
+            @if (_showCode)
+            {
+                <p class="hint">@S.T("ui.codeHint")</p>
+                <pre class="code">@RuleText.CSharp(_drafts.Select(d => d.ToRule()).ToList())</pre>
+            }
+        </section>
+
+        <section class="arena">
+            <div class="turn">@S.T("ui.turn", ("turn", _duel?.Turn ?? 0), ("max", Duel.MaxTurns))</div>
+            <div class="bots">
+                <BotCard State="PlayerState" Side="Side.Player" ShowRepairs="Level.Moves.Contains(Move.PatchUp)"
+                         Popups="_popups.Where(p => p.Side == Side.Player)" Anim="_anim[0]" AnimSeq="_animSeq[0]" />
+                <span class="vs">vs</span>
+                <BotCard State="EnemyState" Side="Side.Enemy" ShowRepairs="Level.Enemy.Repairs > 0"
+                         Popups="_popups.Where(p => p.Side == Side.Enemy)" Anim="_anim[1]" AnimSeq="_animSeq[1]" />
+            </div>
+
+            <div class="controls">
+                @if (_duel is null)
+                {
+                    <button class="primary" disabled="@(_drafts.Count == 0)" @onclick="Run">▶ @S.T("ui.run")</button>
+                }
+                else if (!_duel.IsOver)
+                {
+                    @if (_running)
+                    {
+                        <button @onclick="Pause">⏸ @S.T("ui.pause")</button>
+                    }
+                    else
+                    {
+                        <button class="primary" @onclick="Resume">▶ @S.T("ui.resume")</button>
+                        <button @onclick="StepOnce">⏭ @S.T("ui.step")</button>
+                    }
+                    <button @onclick="Reset">↺ @S.T("ui.reset")</button>
+                }
+                <span class="speed">
+                    @S.T("ui.speed")
+                    @foreach (var sp in new[] { 1, 2, 4 })
+                    {
+                        <button class="tiny @(sp == _speed ? "on" : "")" @onclick="() => _speed = sp">@(sp)×</button>
+                    }
+                </span>
+            </div>
+
+            @if (_duel is { IsOver: true })
+            {
+                <div class="result @_duel.Outcome.ToString()!.ToLowerInvariant()">
+                    @switch (_duel.Outcome)
+                    {
+                        case Outcome.PlayerWon:
+                            <h3>@S.T("ui.won")</h3>
+                            <p>@S.T("ui.wonDetail", ("turns", _duel.Turn), ("rules", _drafts.Count), ("hp", _duel.Bot(Side.Player).Hp))</p>
+                            break;
+                        case Outcome.EnemyWon:
+                            <h3>@S.T("ui.lost")</h3>
+                            <p>@S.T("ui.lostDetail", ("hp", _duel.Bot(Side.Enemy).Hp))</p>
+                            break;
+                        default:
+                            <h3>@S.T("ui.shiftOver")</h3>
+                            <p>@S.T("ui.shiftOverDetail", ("turns", _duel.Turn))</p>
+                            break;
+                    }
+                    @if (_best.TryGetValue(Level.Key, out var best))
+                    {
+                        <p class="best">@S.T("ui.best", ("turns", best.Turns), ("rules", best.Rules))</p>
+                    }
+                    <div class="actions">
+                        <button @onclick="Reset">@S.T("ui.retry")</button>
+                        @if (_duel.Outcome == Outcome.PlayerWon && _levelIndex < Levels.All.Count - 1)
+                        {
+                            <button class="primary" @onclick="() => SelectLevel(_levelIndex + 1)">@S.T("ui.next") →</button>
+                        }
+                    </div>
+                    @if (_duel.Outcome == Outcome.PlayerWon && S.Has($"bug.{Level.Key}.story"))
+                    {
+                        <div class="codex">
+                            <h4>Codex · @S.T($"bug.{Level.Key}.title")</h4>
+                            <p>@S.T($"bug.{Level.Key}.story")</p>
+                        </div>
+                    }
+                </div>
+            }
+
+            <ol class="log">
+                @foreach (var line in _log)
+                {
+                    <li class="@line.Kind" @key="line.Id">@line.Text</li>
+                }
+            </ol>
+        </section>
+
+        <section class="board theirs">
+            <h2>@S.T($"enemy.{Level.Key}")
+                @if (S.Has($"tag.{Level.Key}"))
+                {
+                    <small class="tag">@S.T($"tag.{Level.Key}")</small>
+                }
+            </h2>
+            <p class="hint">↓ @S.T("ui.top")</p>
+            <RuleBoard Rules="_enemyDrafts" Stats="_duel?.Stats(Side.Enemy)" Finished="_duel?.IsOver ?? false"
+                       FlashIndex="_flash[1]" FlashSeq="_flashSeq[1]" />
+            @if (_showCode)
+            {
+                <pre class="code">@RuleText.CSharp(Level.EnemyRules)</pre>
+            }
+        </section>
+    </main>
+</div>

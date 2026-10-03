@@ -1,0 +1,235 @@
+@page "/"
+@implements IAsyncDisposable
+@inject StageBridge Stage
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+@inject Strings S
+@inject ArtStyle Art
+
+<div class="run">
+    @* De stage staat altijd klaar onder de schermen, zodat PixiJS zijn maat houdt *@
+    <div class="stage-host" @ref="_host"></div>
+
+    @if (_run is null || _snap is null)
+    {
+        <div class="overlay">
+            <ArtImage Src="@Art.Scene("title")" Class="title-art" />
+            <h1>Deck Overflow</h1>
+            <p>@(S.Loaded ? S.T("ui.subtitle") : "")</p>
+            <button disabled="@(_starting || !S.Loaded)" @onclick="StartAsync">@(_starting || !S.Loaded ? "..." : S.T("ui.play"))</button>
+        </div>
+    }
+    else
+    {
+        var s = _snap;
+
+        @if (s.Phase == RunPhase.Combat || _busy)
+        {
+            <div class="hud">
+                <span class="seed">@S.T("ui.floor", ("floor", s.Floor)) · @S.T("ui.seed", ("seed", s.Seed))</span>
+                <span class="hud-buttons">
+                    <button class="end-turn" disabled="@(_busy || s.Phase != RunPhase.Combat)" @onclick="EndTurnAsync"><img src="@ArtStyle.Icon("end-turn")" alt="" />@S.T("ui.end-turn")</button>
+                </span>
+            </div>
+        }
+        else
+        {
+            <div class="screen">
+                <header class="topbar">
+                    <span class="hp" title="@S.T("ui.hp")"><img src="@ArtStyle.Icon("hp")" alt="" />@s.Hp/@s.MaxHp</span>
+                    <span class="gold" title="@S.T("ui.gold")"><img src="@ArtStyle.Icon("gold")" alt="" />@s.Gold</span>
+                    <span class="floor">@S.T("ui.floor-of", ("floor", s.Floor), ("rows", s.Map.Rows))</span>
+                    <span class="relics">
+                        @foreach (var relic in s.Relics)
+                        {
+                            <span class="relic" title="@S.T(relic.Text)"><ArtImage Src="@Art.Relic(relic.Id)" />@S.Relic(relic.Id)</span>
+                        }
+                    </span>
+                    <button class="secondary small" @onclick="() => _showDeck = true">@S.T("ui.deck", ("count", s.Deck.Count))</button>
+                </header>
+
+                <main class="panel-area">
+                    @switch (s.Phase)
+                    {
+                        case RunPhase.Map:
+                            <MapBoard Map="s.Map" OnChoose="ChooseNodeAsync" />
+                            break;
+
+                        case RunPhase.Reward when s.Reward is { } reward:
+                            <section class="panel">
+                                @if (reward.Gold > 0)
+                                {
+                                    <h2>@S.T("ui.won")</h2>
+                                    <p class="loot">@S.T("ui.gold-gained", ("amount", reward.Gold))</p>
+                                }
+                                else
+                                {
+                                    <h2>@S.T("event.foundry.title")</h2>
+                                }
+                                @if (reward.Relic is { } relic)
+                                {
+                                    <p class="loot relic-found"><ArtImage Src="@Art.Relic(relic.Id)" Class="big" /><strong>@S.Relic(relic.Id)</strong>: @S.T(relic.Text)</p>
+                                }
+                                @* Was het een echte bug, dan vertelt de Codex het verhaal erachter *@
+                                @if (_lastEnemy is { } bug && S.Has($"bug.{bug}.story"))
+                                {
+                                    <aside class="codex">
+                                        <span class="codex-label">@S.T("codex.title")</span>
+                                        <strong>@S.T($"bug.{bug}.title")</strong>
+                                        <p>@S.T($"bug.{bug}.story")</p>
+                                    </aside>
+                                }
+                                <p>@S.T("ui.choose-card")</p>
+                                <div class="card-row">
+                                    @for (int i = 0; i < reward.Cards.Count; i++)
+                                    {
+                                        int index = i;
+                                        <CardTile Card="reward.Cards[index]" Delay="@(index * 180)" Class="flip-in" OnClick="() => DoAsync(new TakeRewardCard(index))" />
+                                    }
+                                </div>
+                                <button class="secondary" @onclick="() => DoAsync(new SkipReward())">@S.T("ui.skip")</button>
+                            </section>
+                            break;
+
+                        case RunPhase.Rest when s.Rest is { } rest:
+                            <section class="panel">
+                                <ArtImage Src="@Art.Scene("rest")" Class="scene" />
+                                <h2>@S.T("ui.rest.title")</h2>
+                                @if (rest.Outcome is null)
+                                {
+                                    <p>@S.T("ui.rest.text")</p>
+                                    <div class="choices">
+                                        <button @onclick="() => DoAsync(new RestHeal())">@S.T("ui.rest.heal")<small>@S.T("ui.rest.heal.detail", ("amount", rest.HealAmount))</small></button>
+                                        <button disabled="@(rest.UpgradableCards.Count == 0)" @onclick="() => PickUpgrade(rest)">@S.T("ui.rest.smith")<small>@S.T("ui.rest.smith.detail")</small></button>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <p class="outcome">@S.T(rest.Outcome)</p>
+                                    <button @onclick="() => DoAsync(new Leave())">@S.T("ui.continue")</button>
+                                }
+                            </section>
+                            break;
+
+                        case RunPhase.Event when s.Event is { } ev:
+                            <section class="panel">
+                                <ArtImage Src="@Art.Scene(ev.Key)" Class="scene" />
+                                <h2>@S.T($"event.{ev.Key}.title")</h2>
+                                <p class="story">@S.T($"event.{ev.Key}.text")</p>
+                                @if (ev.Outcome is null)
+                                {
+                                    <div class="choices column">
+                                        @for (int i = 0; i < ev.Options.Count; i++)
+                                        {
+                                            int index = i;
+                                            var option = ev.Options[index];
+                                            <button class="@(option.Label.Key.EndsWith(".leave") ? "secondary" : "")" disabled="@(!option.Enabled)"
+                                                    title="@(option.DisabledReason is { } why ? S.T(why) : "")" @onclick="() => ChooseEventOptionAsync(index, option)">
+                                                @S.T(option.Label)<small>@(option.Enabled ? S.T(option.Detail) : S.T(option.DisabledReason!))</small>
+                                            </button>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <p class="outcome">@S.T(ev.Outcome)</p>
+                                    <button @onclick="() => DoAsync(new Leave())">@S.T("ui.continue")</button>
+                                }
+                            </section>
+                            break;
+
+                        case RunPhase.Shop when s.Shop is { } shop:
+                            <section class="panel wide">
+                                <ArtImage Src="@Art.Scene("shop")" Class="scene small" />
+                                <h2>@S.T("ui.shop.title")</h2>
+                                <div class="card-row">
+                                    @for (int i = 0; i < shop.Cards.Count; i++)
+                                    {
+                                        int index = i;
+                                        var offer = shop.Cards[index];
+                                        <CardTile Card="offer.Card" Disabled="@(offer.Sold || offer.Price > s.Gold)"
+                                                  Footer="@(offer.Sold ? S.T("ui.shop.sold") : $"● {offer.Price}")" Class="@(offer.Sold ? "sold" : "")"
+                                                  OnClick="() => DoAsync(new BuyCard(index))" />
+                                    }
+                                </div>
+                                <div class="shop-extras">
+                                    @if (shop.Relic is { } relicOffer)
+                                    {
+                                        <button disabled="@(relicOffer.Sold || relicOffer.Price > s.Gold)" @onclick="() => DoAsync(new BuyRelic())">
+                                            <ArtImage Src="@Art.Relic(relicOffer.Relic.Id)" Class="big" />
+                                            @(relicOffer.Sold ? S.T("ui.shop.sold-out") : S.T("ui.shop.relic", ("relic", relicOffer.Relic.Id), ("price", relicOffer.Price)))
+                                            <small>@S.T(relicOffer.Relic.Text)</small>
+                                        </button>
+                                    }
+                                    <button disabled="@(shop.RemovalUsed || shop.RemovalPrice > s.Gold)" @onclick="() => PickRemoval(shop)">
+                                        @(shop.RemovalUsed ? S.T("ui.shop.remove.done") : S.T("ui.shop.remove", ("price", shop.RemovalPrice)))
+                                        <small>@S.T("ui.shop.remove.detail")</small>
+                                    </button>
+                                </div>
+                                <button class="secondary" @onclick="() => DoAsync(new Leave())">@S.T("ui.continue")</button>
+                            </section>
+                            break;
+
+                        case RunPhase.Treasure when s.Treasure is { } treasure:
+                            <section class="panel">
+                                <h2>@S.T("ui.treasure.title")</h2>
+                                @if (!treasure.Opened)
+                                {
+                                    <button class="chest" @onclick="() => DoAsync(new OpenChest())"><ArtImage Src="@Art.Node(NodeKind.Treasure)" Class="scene" Fallback="▣" /><small>@S.T("ui.treasure.open")</small></button>
+                                }
+                                else
+                                {
+                                    <p class="loot">@S.T("ui.gold-gained", ("amount", treasure.Gold))</p>
+                                    @if (treasure.Relic is { } found)
+                                    {
+                                        <p class="loot relic-found"><ArtImage Src="@Art.Relic(found.Id)" Class="big" /><strong>@S.Relic(found.Id)</strong>: @S.T(found.Text)</p>
+                                    }
+                                    <button @onclick="() => DoAsync(new Leave())">@S.T("ui.continue")</button>
+                                }
+                            </section>
+                            break;
+
+                        case RunPhase.Won or RunPhase.Lost when s.End is { } end:
+                            <section class="panel end @(end.Won ? "won" : "lost")">
+                                <img class="end-art" src="@ArtStyle.Icon(end.Won ? "victory" : "crash")" alt="" />
+                                <h2>@S.T(end.Won ? "ui.end.won" : "ui.end.lost")</h2>
+                                @if (end.Won)
+                                {
+                                    <p>@S.T("ui.end.won.text", ("enemy", end.EnemyKey ?? ""), ("hp", s.Hp))</p>
+                                }
+                                else
+                                {
+                                    <p>@S.T("ui.end.lost.text", ("floor", end.Floor), ("rows", s.Map.Rows), ("enemy", end.EnemyKey ?? ""), ("enemyHp", Num(end.EnemyHp)), ("enemyMax", Num(end.EnemyMaxHp)))</p>
+                                    <div class="near-miss"><div style="width:@(Percent(end.EnemyHp, end.EnemyMaxHp))%"></div></div>
+                                }
+                                <p class="stats">@S.T("ui.end.stats", ("deck", end.DeckSize), ("relics", end.RelicCount), ("gold", end.Gold))</p>
+                                <div class="buttons">
+                                    <button @onclick="() => NewRunAsync(NewSeed())">@S.T("ui.new-run")</button>
+                                    <button class="secondary" @onclick="() => NewRunAsync(s.Seed)">@S.T("ui.same-seed")</button>
+                                </div>
+                            </section>
+                            break;
+                    }
+                </main>
+            </div>
+        }
+
+        @if (_showDeck)
+        {
+            <DeckPicker Title="@S.T("ui.your-deck")" Deck="s.Deck" OnCancel="() => _showDeck = false" />
+        }
+
+        @if (_picker is { } picker)
+        {
+            <DeckPicker Title="@picker.Title" Hint="@picker.Hint" Deck="s.Deck" Eligible="picker.Eligible" HideIneligible="true"
+                        ShowUpgrade="picker.ShowUpgrade" OnPick="PickedAsync" OnCancel="() => _picker = null" />
+        }
+
+        <div class="toasts">
+            @foreach (var toast in _toasts)
+            {
+                <div class="toast @toast.Class" @key="toast.Id">@toast.Text</div>
+            }
+        </div>
+    }
+</div>

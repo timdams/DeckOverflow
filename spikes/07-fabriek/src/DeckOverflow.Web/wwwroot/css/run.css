@@ -1,0 +1,374 @@
+/* De schermen buiten het gevecht, als bladzijden uit dezelfde handleiding. */
+
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 10px 22px;
+  border-bottom: 2px solid var(--ink);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.topbar .hp, .topbar .gold { display: inline-flex; align-items: center; gap: 6px; }
+.topbar .hp img, .topbar .gold img { width: 28px; height: 28px; }
+.topbar .floor { color: var(--muted); font-weight: 400; }
+.topbar .relics { flex: 1; display: flex; gap: 8px; flex-wrap: wrap; }
+
+.relic {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 400;
+  border: 1.5px solid var(--ink);
+  border-radius: 14px;
+  padding: 1px 10px 1px 3px;
+  background: var(--white);
+  cursor: help;
+}
+
+.relic .art-img { width: 24px; height: 24px; }
+
+button.small { padding: 6px 12px; font-size: 12px; }
+
+.panel-area {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  font-size: clamp(16px, 1.1vw, 22px);
+  max-width: max(760px, 50vw);
+  padding: 24px;
+  text-align: center;
+}
+
+.panel.wide { max-width: max(1000px, 70vw); }
+
+.panel h2, .modal h2 {
+  font-size: 1.6em;
+  font-weight: 800;
+  margin: 0;
+}
+
+.panel p { margin: 0; line-height: 1.4; }
+.panel .story { max-width: 560px; }
+.panel .outcome { max-width: 560px; font-style: italic; }
+.loot { font-size: 1.3em; font-weight: 700; }
+.relic-found { display: flex; align-items: center; gap: 10px; font-size: 1em; }
+
+.art-img { display: block; object-fit: contain; pointer-events: none; }
+.art-img.big { width: 3em; height: 3em; flex: none; }
+.art-img.scene { width: 16em; height: auto; margin: 0 auto; }
+.art-img.scene.small { width: 11em; }
+.end-art { width: 140px; height: 140px; }
+
+.choices { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+.choices.column { flex-direction: column; align-items: stretch; min-width: 420px; }
+
+.choices button, .shop-extras button, .chest {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.choices button small, .shop-extras button small, .chest small {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.shop-extras { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+.shop-extras button .art-img.big { margin: 0 auto 4px; }
+
+.chest {
+  padding: 16px 32px;
+  animation: rattle 1.2s infinite;
+}
+
+.chest .art-img.scene { width: 110px; }
+
+@keyframes rattle {
+  0%, 70%, 100% { transform: rotate(0); }
+  75% { transform: rotate(-4deg); }
+  80% { transform: rotate(4deg); }
+  85% { transform: rotate(-3deg); }
+  90% { transform: rotate(2deg); }
+}
+
+/* ---------------------------------------------------------------- map */
+
+.map-board {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.map-board svg { height: 100%; max-width: 100%; }
+
+.map-board .edge {
+  stroke: var(--rule);
+  stroke-width: 2.5;
+  stroke-dasharray: 6 6;
+  stroke-linecap: round;
+}
+
+.map-board .edge.walked { stroke: var(--ink); stroke-dasharray: none; }
+.map-board .edge.open { stroke: var(--ink); }
+
+.map-board .node .disc { fill: var(--white); stroke: var(--ink); stroke-width: 2.5; }
+.map-board .node .glyph { text-anchor: middle; fill: var(--ink); pointer-events: none; }
+.map-board .node .node-art { pointer-events: none; }
+.map-board .node.kind-boss .disc { stroke-width: 4; }
+.map-board .node.visited { opacity: 0.35; }
+.map-board .node.current { opacity: 1; }
+.map-board .node.current .disc { fill: var(--shade); stroke-width: 4; }
+.map-board .node.reachable { cursor: pointer; }
+.map-board .node.reachable .disc { stroke-width: 3.5; }
+.map-board .node.reachable:hover .disc { fill: var(--shade); }
+
+.map-board .node .pulse {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2;
+  stroke-dasharray: 4 4;
+  animation: pulse 1.1s infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.9; transform: scale(0.9); }
+  100% { opacity: 0; transform: scale(1.25); }
+}
+
+.map-board .step circle { fill: var(--ink); }
+.map-board .step text { fill: var(--white); font-weight: 700; font-size: 15px; text-anchor: middle; }
+
+.legend {
+  position: absolute;
+  right: 22px;
+  top: 22px;
+  list-style: none;
+  margin: 0;
+  padding: 10px 14px;
+  background: var(--white);
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  font-size: 15px;
+}
+
+.legend li { display: flex; align-items: center; gap: 8px; }
+.legend .legend-art { width: 34px; height: 34px; }
+
+/* ---------------------------------------------------------------- kaarten */
+
+.card-row { display: flex; gap: clamp(16px, 1.6vw, 32px); flex-wrap: wrap; justify-content: center; }
+
+/* Zelfde vorm als in de stage: wit kaartje, zwarte rand, binnenrand in de kleur van het type */
+/* Alle maten in em: de tegel groeit mee met het scherm, van laptop tot beamer */
+.card-tile {
+  position: relative;
+  font-size: clamp(13px, 1.05vw, 22px);
+  width: 11.5em;
+  height: 18em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45em;
+  padding: 2.2em 0.75em 0.75em;
+  background: var(--white);
+  color: var(--ink);
+  border: 2.5px solid var(--ink);
+  border-radius: 8px;
+  box-shadow: 3px 3px 0 var(--ink);
+  font-weight: 400;
+}
+
+.card-tile.kind-int { outline: 3px solid var(--int); outline-offset: -8px; }
+.card-tile.kind-double { outline: 3px solid var(--double); outline-offset: -8px; }
+.card-tile.kind-byte { outline: 3px solid var(--byte); outline-offset: -8px; }
+.card-tile:hover:not(:disabled) { background: var(--white); transform: translateY(-6px); }
+/* Zeldzaamheid als sterretjes in de hoek, zoals een moeilijkheidsgraad */
+.card-tile.rarity-uncommon::after, .card-tile.rarity-rare::after {
+  position: absolute;
+  right: 0.8em;
+  bottom: 0.5em;
+  font-size: 0.9em;
+}
+.card-tile.rarity-uncommon::after { content: "★"; }
+.card-tile.rarity-rare::after { content: "★★"; }
+.card-tile:disabled { color: var(--ink); border-color: var(--ink); opacity: 0.45; box-shadow: none; }
+.card-tile.preview:disabled { opacity: 1; box-shadow: 3px 3px 0 var(--ink); }
+.card-tile.sold:disabled { opacity: 0.2; }
+
+/* Kosten in een stapcirkel */
+.card-tile .cost {
+  position: absolute;
+  left: -0.7em;
+  top: -0.7em;
+  width: 2em;
+  height: 2em;
+  line-height: 2em;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--white);
+  font-size: 1.05em;
+  font-weight: 700;
+}
+
+.card-tile .type-badge { position: absolute; right: 0.9em; top: 0.9em; font-size: 0.75em; }
+.card-tile .name { font-size: 1.1em; font-weight: 700; line-height: 1.2; }
+.card-tile .card-art { width: 6.5em; height: 6.5em; flex: none; }
+.card-tile .cast { font-size: 1.2em; font-weight: 700; }
+.card-tile .cast .type-badge { position: static; font-size: 0.65em; }
+.card-tile .text { font-size: 1em; line-height: 1.25; }
+.card-tile .footer { margin-top: auto; font-size: 1.15em; font-weight: 700; }
+
+/* Zelfde kleur en vorm als in de stage: int hoekig, double rond, byte dubbele rand */
+.type-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  color: var(--white);
+  background: var(--ink);
+  border: 1.5px solid var(--ink);
+}
+
+.type-badge.int { background: var(--int); }
+.type-badge.double { background: var(--double); border-radius: 9px; }
+.type-badge.byte { background: var(--byte); outline: 1px solid var(--white); outline-offset: -4px; }
+
+/* Beloningen draaien één voor één om */
+.flip-in { animation: flip-in 420ms backwards; animation-delay: var(--delay, 0ms); }
+
+@keyframes flip-in {
+  from { transform: perspective(600px) rotateY(90deg) scale(0.8); opacity: 0; }
+  to { transform: perspective(600px) rotateY(0) scale(1); opacity: 1; }
+}
+
+/* ---------------------------------------------------------------- deck kiezen */
+
+.modal {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(247, 245, 238, 0.96);
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-width: 92vw;
+  max-height: 92vh;
+  overflow: auto;
+  padding: 20px;
+}
+
+.modal .hint { margin: 0; color: var(--muted); }
+.card-grid { display: flex; flex-wrap: wrap; gap: 18px; justify-content: center; padding: 10px; }
+.pick { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.pick .arrow { font-size: 22px; font-weight: 700; }
+
+/* ---------------------------------------------------------------- meldingen */
+
+.toasts {
+  position: absolute;
+  left: 50%;
+  top: 70px;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.toast {
+  padding: 6px 14px;
+  background: var(--white);
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  box-shadow: 3px 3px 0 var(--ink);
+  font-size: 15px;
+  font-weight: 700;
+  animation: toast 2.6s forwards;
+}
+
+.toast.rejected { color: var(--muted); border-style: dashed; box-shadow: none; }
+
+@keyframes toast {
+  0% { opacity: 0; transform: translateY(-10px) scale(0.8); }
+  8% { opacity: 1; transform: none; }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-14px); }
+}
+
+/* ---------------------------------------------------------------- einde */
+
+.end .stats { color: var(--muted); }
+
+/* Bijna gewonnen: hoeveel had de vijand nog? Gearceerd, zoals een maataanduiding */
+.near-miss {
+  width: 320px;
+  height: 16px;
+  background: var(--white);
+  border: 2px solid var(--ink);
+}
+
+.near-miss div {
+  height: 100%;
+  background: repeating-linear-gradient(45deg, var(--ink) 0 2px, transparent 2px 7px);
+}
+
+/* Knoppen op een scherm groeien mee met de rest */
+.panel > button, .choices button, .shop-extras button { font-size: 0.85em; }
+
+/* Spike 7: het echte verhaal achter een bug, als een notitiekader in de handleiding */
+.codex {
+  max-width: 34em;
+  text-align: left;
+  padding: 0.8em 1em;
+  background: var(--white);
+  border: 2px solid var(--ink);
+  border-left-width: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+}
+
+.codex .codex-label {
+  font-size: 0.7em;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.codex p { font-size: 0.95em; }

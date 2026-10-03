@@ -1,13 +1,15 @@
 # Ontwerpdocumenten
 
-| Document | Waarover | Bron |
-| --- | --- | --- |
-| [Game Design Document](game-design-document.md) | Visie, pijlers, kernsysteem (types en Omgieten), loot, Act 1: De Vatenvallei, encounters, Codex, antipatronen | [Claude Docs](https://claude.ai/artifact/5Zz4VdoN9QFaeYZEm1hsa7) |
-| [Spike Design Doc](spike-design-doc.md) | Architectuur motor/shell/stage, eventcontract, interop, Byte-Golem-scenario, succescriteria, scope spike 2 | [Claude Docs](https://claude.ai/artifact/TFfgyB6S5NvBcdx6tExyrj) |
-| [Architectuurschema](architectuur.svg) | De motor beslist, de stage speelt af | Uit het Spike Design Doc |
-| [Product sheet](product-sheet/product-sheet.html) | A4-pitch voor instellingen en financiers, met [sfeerbeeld](product-sheet/sfeerbeeld.jpg) | [Design-canvas](https://claude.ai/artifact/95YGcMNq95KyYYNkNjmVJu) |
+Deze repo is de enige bron voor het ontwerp. Wijzigingen gebeuren hier, in markdown, en gaan mee in git.
 
-De markdown is overgenomen op 2 oktober 2026. De Claude Docs blijven de plek waar we samen schrijven en reageren; werk na een grote wijziging daar ook de kopie hier bij.
+| Document | Waarover |
+| --- | --- |
+| [Game Design Document](game-design-document.md) | Visie, pijlers, kernsysteem (types en Omgieten), loot, afdelingen met elk een eigen spelvorm, de fabrieksplattegrond, de onthulling, Act 1: De Vatenvallei, encounters, Codex, antipatronen |
+| [Spike Design Doc](spike-design-doc.md) | Architectuur motor/shell/stage, eventcontract, interop, Byte-Golem-scenario, succescriteria, de weg naar de MVP, hosting, accounts en data |
+| [Architectuurschema](architectuur.svg) | De motor beslist, de stage speelt af |
+| [Product sheet](product-sheet/product-sheet.html) | A4-pitch voor instellingen en financiers, met [sfeerbeeld](product-sheet/sfeerbeeld.jpg) |
+
+Tot 3 oktober 2026 stonden deze documenten in Claude Docs en een design-canvas ([GDD](https://claude.ai/artifact/5Zz4VdoN9QFaeYZEm1hsa7), [Spike Design Doc](https://claude.ai/artifact/TFfgyB6S5NvBcdx6tExyrj), [product sheet](https://claude.ai/artifact/95YGcMNq95KyYYNkNjmVJu)). Die versies worden niet meer bijgewerkt en lopen achter op de repo.
 
 ## Stand van zaken tegenover spike 1
 

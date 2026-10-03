@@ -1,0 +1,54 @@
+{
+  "cards": {
+    "strike": "items/strike",
+    "floating-strike": "items/floating-strike",
+    "heavy-strike": "items/heavy-strike",
+    "floating-rain": "items/floating-rain",
+    "molded-strike": "items/molded-strike",
+    "molded-rain": "items/molded-strike",
+    "shield": "items/shield",
+    "thick-shield": "items/thick-shield",
+    "mend": "items/mend",
+    "add": "items/add",
+    "double-up": "items/double-up",
+    "remold-int": "items/remold",
+    "remold-byte": "items/remold",
+    "set-to-1": "items/set-to-1",
+    "byte-trap": "items/byte-trap"
+  },
+  "relics": {
+    "counter": "items/relic-counter",
+    "floating-point": "items/relic-floating-point",
+    "scrap-pouch": "items/relic-scrap-pouch",
+    "anchor-barrel": "items/relic-anchor-barrel",
+    "great-pot": "items/relic-great-pot"
+  },
+  "actors": {
+    "player": "actors/hero",
+    "slime": "actors/slime",
+    "knight": "actors/knight",
+    "ghost": "actors/ghost",
+    "dripper": "actors/dripper",
+    "jug": "actors/jug",
+    "colossus": "actors/colossus",
+    "golem": "actors/golem",
+    "reckoner": "actors/reckoner"
+  },
+  "nodes": {
+    "fight": "icons/fight",
+    "elite": "icons/elite",
+    "event": "icons/event",
+    "shop": "icons/shop",
+    "boss": "icons/boss",
+    "rest": "items/rest",
+    "treasure": "items/treasure"
+  },
+  "scenes": {
+    "foundry": "scenes/foundry",
+    "crucible": "scenes/crucible",
+    "leaking-barrel": "scenes/leaking-barrel",
+    "rest": "scenes/rest",
+    "shop": "scenes/shop",
+    "title": "scenes/title"
+  }
+}

@@ -1,0 +1,120 @@
+@* Een lijst regels, van boven naar onder bekeken. Bewerkbaar voor de speler, alleen-lezen voor de vijand.
+   Tijdens en na een duel toont elke regel hoe vaak ze vuurde, of dat ze nooit bereikt werd. *@
+@inject Strings S
+
+<ol class="rules @(Editable ? "editable" : "readonly")">
+    @for (int i = 0; i < Rules.Count; i++)
+    {
+        int index = i;
+        RuleDraft r = Rules[i];
+        <li class="rule @StateClass(index)" @key="(index, FlashSeq == 0 || FlashIndex != index ? 0 : FlashSeq)">
+            <span class="num">@(index + 1)</span>
+            @if (Editable)
+            {
+                <span class="kw">@S.T("rule.when")</span>
+                <span class="cond">
+                    @CheckPicker(r.When, r.WhenValue, c => { r.When = c; r.WhenValue = RuleDraft.DefaultValue(c); }, v => r.WhenValue = v)
+                    @if (r.And is { } and)
+                    {
+                        <span class="kw">@S.T("rule.andKw")</span>
+                        @CheckPicker(and, r.AndValue, c => { r.And = c; r.AndValue = RuleDraft.DefaultValue(c); }, v => r.AndValue = v, withAlways: false)
+                        <button class="tiny" title="@S.T("ui.removeAnd")" @onclick="() => Change(() => r.And = null)">✕</button>
+                    }
+                    else if (AllowAnd && r.When != Check.Always)
+                    {
+                        <button class="tiny" @onclick="() => Change(() => { r.And = Checks.First(c => c != Check.Always); r.AndValue = RuleDraft.DefaultValue(r.And.Value); })">@S.T("ui.addAnd")</button>
+                    }
+                </span>
+                <span class="arrow">→</span>
+                <select class="move" value="@r.Then" @onchange="e => Change(() => r.Then = Enum.Parse<Move>((string)e.Value!))" title="@S.T($"moveHelp.{r.Then}")">
+                    @foreach (var m in Moves)
+                    {
+                        <option value="@m">@S.T($"move.{m}")</option>
+                    }
+                </select>
+                <span class="tools">
+                    <button class="tiny" disabled="@(index == 0)" @onclick="() => Swap(index, index - 1)">▲</button>
+                    <button class="tiny" disabled="@(index == Rules.Count - 1)" @onclick="() => Swap(index, index + 1)">▼</button>
+                    <button class="tiny" @onclick="() => Change(() => Rules.RemoveAt(index))">✕</button>
+                </span>
+            }
+            else
+            {
+                <span class="sentence">@RuleText.Sentence(S, r.ToRule())</span>
+            }
+            <span class="stat">@StatText(index)</span>
+        </li>
+    }
+</ol>
+
+@if (Editable && Rules.Count < Slots)
+{
+    <button class="add" @onclick="() => Change(() => Rules.Add(new RuleDraft { When = Check.Always, Then = Moves[0] }))">@S.T("ui.addRule")</button>
+}
+
+@code {
+    [Parameter, EditorRequired] public List<RuleDraft> Rules { get; set; } = [];
+    [Parameter] public bool Editable { get; set; }
+    [Parameter] public int Slots { get; set; }
+    [Parameter] public IReadOnlyList<Check> Checks { get; set; } = [];
+    [Parameter] public IReadOnlyList<Move> Moves { get; set; } = [];
+    [Parameter] public bool AllowAnd { get; set; }
+    [Parameter] public RuleStats? Stats { get; set; }
+    /// <summary>Is het duel voorbij? Dan krijgen regels die nooit vuurden hun label.</summary>
+    [Parameter] public bool Finished { get; set; }
+    [Parameter] public int FlashIndex { get; set; } = -1;
+    [Parameter] public int FlashSeq { get; set; }
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private RenderFragment CheckPicker(Check check, int value, Action<Check> setCheck, Action<int> setValue, bool withAlways = true) =>
+        @<span class="picker">
+            <select value="@check" @onchange="e => Change(() => setCheck(Enum.Parse<Check>((string)e.Value!)))">
+                @foreach (var c in Checks.Where(c => withAlways || c != Check.Always))
+                {
+                    <option value="@c">@S.T($"pick.{c}")</option>
+                }
+            </select>
+            @if (Condition.TakesValue(check))
+            {
+                <select class="value" value="@value" @onchange="e => Change(() => setValue(int.Parse((string)e.Value!)))">
+                    @foreach (var v in Levels.ValuesFor(check))
+                    {
+                        <option value="@v">@v</option>
+                    }
+                </select>
+                @if (check == Check.EveryNthTurn)
+                {
+                    <span class="unit">@S.T("ui.unitTurns")</span>
+                }
+            }
+        </span>;
+
+    private string StateClass(int i)
+    {
+        if (Stats is null || i >= Stats.Checked.Length) return "";
+        string flash = i == FlashIndex && FlashSeq > 0 ? " flash" : "";
+        if (Finished && Stats.Checked[i] == 0) return "dead" + flash;
+        if (Finished && Stats.Fired[i] == 0) return "idle" + flash;
+        return Stats.Fired[i] > 0 ? "live" + flash : flash.Trim();
+    }
+
+    private string StatText(int i)
+    {
+        if (Stats is null || i >= Stats.Checked.Length) return "";
+        if (Stats.Fired[i] > 0) return S.T("ui.fired", ("n", Stats.Fired[i]));
+        if (!Finished) return "";
+        return Stats.Checked[i] == 0 ? S.T("ui.neverReached") : S.T("ui.neverTrue");
+    }
+
+    private Task Swap(int a, int b)
+    {
+        (Rules[a], Rules[b]) = (Rules[b], Rules[a]);
+        return OnChanged.InvokeAsync();
+    }
+
+    private Task Change(Action change)
+    {
+        change();
+        return OnChanged.InvokeAsync();
+    }
+}

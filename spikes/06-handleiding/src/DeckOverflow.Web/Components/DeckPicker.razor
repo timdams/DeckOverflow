@@ -1,0 +1,46 @@
+@inject Strings S
+
+@* Kies een kaart uit je deck, bv. om te verbeteren, om te gieten of te verwijderen. *@
+
+<div class="modal" @onclick="OnCancel">
+    <div class="modal-body" @onclick:stopPropagation="true">
+        <h2>@Title</h2>
+        @if (Hint is not null)
+        {
+            <p class="hint">@Hint</p>
+        }
+        <div class="card-grid">
+            @for (int i = 0; i < Deck.Count; i++)
+            {
+                int index = i;
+                bool eligible = Eligible is null || Eligible.Contains(index);
+                if (!eligible && HideIneligible) continue;
+                var card = Deck[index];
+                <div class="pick">
+                    <CardTile Card="card" Disabled="@(!eligible || OnPick is null)" OnClick="() => OnPick!(index)" />
+                    @if (ShowUpgrade && card.Upgrade is { } up)
+                    {
+                        <span class="arrow">↓</span>
+                        <CardTile Card="up" Disabled="true" Class="preview" />
+                    }
+                </div>
+            }
+        </div>
+        <button class="secondary" @onclick="OnCancel">@S.T(OnPick is null ? "ui.close" : "ui.cancel")</button>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+    [Parameter] public string? Hint { get; set; }
+    [Parameter, EditorRequired] public IReadOnlyList<CardInfo> Deck { get; set; } = [];
+
+    /// <summary>Indexen die je mag kiezen. Leeg: alles.</summary>
+    [Parameter] public IReadOnlyList<int>? Eligible { get; set; }
+    [Parameter] public bool HideIneligible { get; set; }
+    [Parameter] public bool ShowUpgrade { get; set; }
+
+    /// <summary>Leeg: alleen bekijken.</summary>
+    [Parameter] public Func<int, Task>? OnPick { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+}

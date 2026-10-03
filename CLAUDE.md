@@ -14,18 +14,20 @@ Eerst de core game loop: vechten, een beloning kiezen, de map. Geluid, definitie
 
 ## Indeling en wat je waar doet
 
-- **`docs/`**: kopieën van gedeelde Claude Docs (bronnen in [docs/README.md](docs/README.md)). Pas je hier iets wezenlijks aan, meld dan dat het ook in het brondocument moet.
+- **`docs/`**: het ontwerp (GDD, Spike Design Doc, product sheet). Deze repo is de enige bron; Claude Docs worden niet meer gebruikt of bijgewerkt. Schrijf ontwerpwijzigingen rechtstreeks hier.
 - **`spikes/NN-naam/`**: afgesloten of lopende experimenten, elk met een eigen `.sln`, README en CI-workflow, los draaibaar. Een afgesloten spike verandert niet meer; bouw er niet op verder. Een nieuwe spike krijgt een nieuwe map.
-- **`src/` en `tests/` op de root** zijn voor het echte spel en bestaan nog niet. Code uit een spike neem je daar bewust over, niet door de spikemap te verplaatsen of te laten doorgroeien.
-- Spike 1 staat ook in git onder de tag `spike-1`. Spike 2 (`spikes/02-omgieten/`), spike 3 (`spikes/03-vatenvallei/`, de hele act met map en beloningen) spike 4 (`spikes/04-eerste-minuten/`, starterdeck, openingskeuze, Engelse teksten) en spike 5 (`spikes/05-tekenstijlen/`, elf tekenstijlen voor kaarten en relics) zijn gebouwd maar nog niet getest met spelers. Nieuw werk bouwt verder op spike 5.
+- **`src/` en `tests/` op de root** zijn het echte spel, overgenomen uit spike 7 op 2 oktober 2026. Nieuw werk gebeurt daar. Code uit een spike neem je bewust over, niet door de spikemap te verplaatsen of te laten doorgroeien.
+- **`art/sheets/` en `tools/cut_sheets.py`**: de gegenereerde tekenvellen en het script dat ze in losse tekeningen snijdt. Nieuwe art komt van hetzelfde model met het manualvel als referentie.
+- Spike 1 staat ook in git onder de tag `spike-1`. Spike 2 (`spikes/02-omgieten/`), spike 3 (`spikes/03-vatenvallei/`, de hele act met map en beloningen) spike 4 (`spikes/04-eerste-minuten/`, starterdeck, openingskeuze, Engelse teksten) spike 5 (`spikes/05-tekenstijlen/`, elf tekenstijlen voor kaarten en relics) spike 6 (`spikes/06-handleiding/`, het hele spel als montagehandleiding) spike 7 (`spikes/07-fabriek/`, kaarten als overtredingen, elites als echte bugs) en spike 8 (`spikes/08-controlekamer/`, regels opstellen voor een automaat, de eerste afdeling zonder kaarten) zijn gebouwd maar nog niet getest met spelers. Ze zijn referentie, geen werkplek meer.
 
 ## Commando's
 
-Elke spike draai je vanuit zijn eigen map, bijvoorbeeld `spikes/05-tekenstijlen/`:
+Het spel draai je vanuit de root; een spike vanuit zijn eigen map, met dezelfde commando's:
 
 ```bash
 dotnet test tests/DeckOverflow.Engine.Tests      # wat CI draait
-dotnet run --project src/DeckOverflow.Web        # spike 5: /?seed=255, of /?fight=reckoner
+dotnet run --project src/DeckOverflow.Web        # /?seed=255, of /?fight=golem
+python tools/cut_sheets.py                       # tekeningen opnieuw uitsnijden
 ```
 
 ## Architectuur: wie mag wat

@@ -1,0 +1,43 @@
+@* Een automaat in de arena: tekening, HP, blok, opgeladen, herstellingen, en zwevende getallen bij een treffer. *@
+@inject Strings S
+
+<div class="bot @Side.ToString().ToLowerInvariant() @(State.Hp <= 0 ? "down" : "")">
+    <div class="art @Anim" @key="AnimSeq">
+        <img src="art/@(State.Key).png" alt="" />
+        @foreach (var p in Popups)
+        {
+            <span class="pop @p.Kind" @key="p.Id">@p.Text</span>
+        }
+    </div>
+    <div class="name">@S.T($"enemy.{State.Key}")</div>
+    <div class="hpbar">
+        <div class="fill" style="width:@(100.0 * State.Hp / State.MaxHp)%"></div>
+        <span>@State.Hp / @State.MaxHp</span>
+    </div>
+    <div class="badges">
+        @if (State.Block > 0)
+        {
+            <span class="badge block">@S.T("ui.block", ("n", State.Block))</span>
+        }
+        @if (State.Charged)
+        {
+            <span class="badge charged">@S.T("ui.charged")</span>
+        }
+        @if (ShowRepairs)
+        {
+            <span class="badge repairs @(State.RepairsLeft == 0 ? "empty" : "")">@S.T("ui.repairs", ("n", State.RepairsLeft))</span>
+        }
+    </div>
+</div>
+
+@code {
+    public sealed record Popup(int Id, Side Side, string Text, string Kind);
+
+    [Parameter, EditorRequired] public BotState State { get; set; } = default!;
+    [Parameter] public Side Side { get; set; }
+    [Parameter] public bool ShowRepairs { get; set; }
+    [Parameter] public IEnumerable<Popup> Popups { get; set; } = [];
+    /// <summary>"hit", "act" of leeg. Met een nieuwe <see cref="AnimSeq"/> speelt de animatie opnieuw.</summary>
+    [Parameter] public string Anim { get; set; } = "";
+    [Parameter] public int AnimSeq { get; set; }
+}

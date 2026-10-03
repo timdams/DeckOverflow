@@ -341,20 +341,90 @@ De laatste rij is geen slaag-of-faal-criterium, maar de eerste meting van het he
 
 ## Van spike naar MVP-demo
 
-De MVP-demo is een speelbare Act 1, zoals beschreven in het [Game Design Document](game-design-document.md). De architectuur van de spike blijft, er komen lagen bij.
+De MVP-demo is een speelbare, afgewerkte Act 1 (hoofdstuk 2 en 3 van Zie Scherp Scherper), zoals beschreven in het [Game Design Document](game-design-document.md). De architectuur van de spike blijft, er komen lagen bij.
 
-| Laag | Spike | MVP-demo |
+| Laag | Spike 7 | MVP-demo |
 | --- | --- | --- |
-| Motor | 1 gevecht, 2 regels | Alle Act 1-vijanden, elites en de Rekenmeester; map, beloningen, relics |
-| Shell | 1 pagina | Map, beloningsscherm, Codex, collectie, doodscherm met "bijna" |
-| Stage | Juice voor 1 gevecht | Volledige juice-set, zeldzaamheden, kist-anticipatie, snelle modus |
-| Audio | Placeholder-geluiden | Eerste echte set kerngeluiden |
-| Backend | Geen | `DeckOverflow.Api`: minimal API + SQLite in Docker, dagelijkse seed, klasklassement |
-| Docent | Geen | Eenvoudig dashboard: Codex-voortgang per student, klas-seed |
+| Motor | Act 1 van spike 4: map, beloningen, relics, events, 8 vijanden | Alle concepten van H2 en H3 (o.a. `string` + `int`, `char`, `++`, `const`), elites Level 256 en Effective Power, de Rekenmeester; de patch-mechaniek; runs over acts met startpunten |
+| Shell | Map, beloning, rust, winkel, events, Codex-kader na een bug | Codex-pagina's met echte C# en een link naar het hoofdstuk; startpunt kiezen met een gedraft deck; klascode invoeren |
+| Stage | Handleidingstijl, explosietekening, schaar, rondgaande pijl | Revisie-stempel voor de patch; juice voor de nieuwe concepten |
+| Audio | Placeholders uit de pixelspikes | Een papieren klankkleur, pas als de loop leuk is |
+| Backend | Geen | Supabase zonder eigen server: gastaccounts met optionele registratie, voortgang, dagelijkse seed, klasklassement met gegenereerde bijnamen, klascode; zie [Hosting, accounts en data](#hosting-accounts-en-data) |
+| Docent | Geen | Een act vrijgeven voor de klas via de klascode; een dashboard pas na de MVP |
+| Taal | Engels | Engels; Nederlands is één extra tekstbestand |
 
 Volgorde: eerst de motor uitbreiden met tests, dan de shell-schermen, dan pas de backend. Zo is de demo al lokaal speelbaar voor er een server nodig is.
 
 **Prioriteit:** eerst de core game loop: vechten, een beloning kiezen, de map. Geluid, definitieve art en andere polish wachten tot die loop leuk is; tot dan volstaan de placeholders.
+
+### Van spikes naar src/
+
+Beslist op 2 oktober 2026, na spike 7. De echte game start in `src/` en `tests/` op de root van de repo, als bewuste kopie van spike 7. De spikemappen blijven zoals ze zijn.
+
+| Wat | Uit | Opmerking |
+| --- | --- | --- |
+| Motor met tests | spike 7 (= motor van spike 4) | 1306 tests, PCG32-seeds vastgepind |
+| Shell en stage | spike 7 | handleidingstijl, geen stijlmenu meer |
+| Art en snijscript | spike 6 en 7 | `tools/cut_sheets.py` en de vellen in `art/sheets/` |
+| Teksten | spike 7, `en.json` | kaartnamen als overtredingen van de handleiding |
+| Niet mee | spike 5 | het stijlmenu en de pixelsprites |
+
+1. `src/` en `tests/` opzetten uit spike 7, met CI.
+2. Runs over acts: kortere map van 6 rijen, startpunten met een gedraft deck.
+3. De concepten van H2 en H3 in de motor, elk met een eigen `XxxRules`-klasse en tests.
+4. Elite Effective Power en de patch-mechaniek (`const`).
+5. Codex-pagina's met echte C# en links naar het boek.
+6. Hosting op GitHub Pages en de backend op Supabase.
+7. Playtest met 5 studenten en 2 collega's, pas als Act 1 af is.
+
+## Hosting, accounts en data
+
+Beslist op 3 oktober 2026. Iedereen mag Deck Overflow spelen: studenten, maar ook leerlingen uit het middelbaar en wie het toevallig vindt. Er spelen dus minderjarigen mee, en dat stuurt elke keuze hieronder: zo weinig gegevens als het spel nodig heeft, en niets wat publiek naar een persoon wijst.
+
+### Hosting: GitHub Pages
+
+De game is een statische site (Blazor WebAssembly), dus een server is niet nodig.
+
+- **Eén Pages-site voor alles.** Eén workflow publiceert het spel op de root en elke spike die we willen testen in een submap (`/spike-8/`). Zo heeft elke playtest een eigen link zonder iets te installeren.
+- **`.nojekyll` in de output.** Zonder dat bestand negeert Pages de map `_framework/` van Blazor, en laadt er niets.
+- **`<base href>` per map.** De site staat onder `/DeckOverflow/`, niet op `/`. De workflow zet de juiste base bij het publiceren, tenzij er later een eigen domein komt.
+- **Geen deep links nodig.** Het spel werkt met querystrings op `/` (`?seed=…`, `?level=…`), dus de gebruikelijke 404-omweg voor SPA's is overbodig.
+- **De repo moet publiek zijn** voor gratis Pages.
+- Pages serveert de Brotli-bestanden van Blazor niet, dus de eerste keer laden is enkele MB zwaarder. Op te lossen met een eigen loader als de laadtijd een probleem blijkt.
+
+### Accounts: eerst gast, later bewaren
+
+1. **Je speelt meteen als gast.** Geen loginscherm vooraf: het spel moet aanvoelen als gewoon een deckbuilder, zie de onthulling in het GDD. Technisch een anoniem account in Supabase, gebonden aan je browser.
+2. **"Bewaar je fabriek"** verschijnt op een natuurlijk moment, na je eerste gewonnen gevecht of bij de onthulling. Je kiest een gebruikersnaam en een wachtwoord; je gastvoortgang gaat mee (Supabase "link identity").
+3. **E-mail is optioneel**, alleen om je wachtwoord te herstellen. Zonder e-mail ben je je fabriek kwijt als je je wachtwoord vergeet, en dat zeggen we bij het registreren. Supabase logt in met e-mail, dus een account zonder e-mail krijgt achter de schermen een adres als `gebruikersnaam@users.deckoverflow.invalid`.
+4. **De klascode is optioneel.** Wie alleen speelt, ontgrendelt afdelingen door te spelen. Een docent maakt een klas (daarvoor is een geregistreerd account nodig), deelt de code, geeft afdelingen vrij en ziet de voortgang van de klas.
+
+**Privacy.** Een account om voortgang te bewaren steunt op de uitvoering van de dienst, niet op toestemming. Daarom is er geen toestemming van ouders nodig, ook niet onder de 13 jaar (artikel 8 AVG geldt alleen bij verwerking op basis van toestemming). Wat we daarvoor wel beloven:
+
+- We vragen nooit naar een echte naam, leeftijd, school of woonplaats.
+- **Gebruikersnamen zijn nooit publiek.** In klassementen staat een gegenereerde bijnaam uit woordenlijsten ("Rusty Bolt 42"). Vrije tekst die anderen zien, bestaat niet.
+- **Geen analytics, geen tracking, geen cookies van derden.** Dan is er ook nergens toestemming voor nodig.
+- Een privacyverklaring in taal die een kind van 12 begrijpt.
+- Je account en alles wat eraan hangt, verwijder je in het spel met één knop.
+
+Bij een brede uitrol laten we dit nalezen door iemand van privacy bij de instelling. Een koppeling met Moodle (LTI) is een latere stap, als instellingen dat vragen.
+
+### Data: Supabase
+
+Postgres in de EU-regio (Frankfurt), met de beveiliging per rij (row level security) en databasefuncties van Supabase. Er is geen eigen API-server: de shell praat met `HttpClient` tegen de REST-API. `DeckOverflow.Api` uit de MVP-tabel vervalt daarmee.
+
+| Tabel | Inhoud | Wie leest |
+| --- | --- | --- |
+| `profiles` | user id, gegenereerde bijnaam, aangemaakt op | jezelf; je bijnaam ook je klas |
+| `progress` | user id, onderdeel (bv. `h2.overflow`), toestand (in de zak, uitgepakt, gemonteerd), bijgewerkt op | jezelf, de docent van je klas |
+| `unlocks` | user id, afdeling, hoe (baas, vangnet, docent), wanneer | jezelf, de docent van je klas |
+| `classes` | code, naam die de docent kiest, eigenaar, vrijgegeven afdelingen | leden en eigenaar |
+| `class_members` | klas, user id | leden en eigenaar |
+| `scores` | user id, afdeling, dagelijkse seed, commandolijst, geclaimde score, gecontroleerd (ja, nee, nog niet) | je klas (met bijnaam); iedereen alleen als histogram |
+
+- **Offline eerst.** Het spel houdt voortgang ook lokaal bij en synchroniseert als er verbinding is. Een haperend schoolnetwerk mag een run nooit breken.
+- **Scores worden opnieuw gespeeld.** De motor is deterministisch, dus een score bestaat uit de seed en de commandolijst. Een nachtelijke GitHub Action speelt elke nieuwe score opnieuw af met de echte C#-motor en zet `gecontroleerd`. Een klassement van vandaag wordt definitief na controle. Zo hergebruiken we de motor zonder C#-server; Supabase Edge Functions draaien TypeScript en kunnen dat niet.
+- **Kosten.** Het gratis plan volstaat voor de pilot, maar pauzeert een project na een week zonder activiteit. Voor echt gebruik (ook tijdens vakanties) is het Pro-plan nodig, ongeveer 25 dollar per maand.
 
 ## Risico's en open vragen
 
@@ -370,5 +440,9 @@ Het grootste technische risico is de laadtijd van Blazor WebAssembly op schoolla
 
 - [ ] Licenties van PixiJS, GSAP en Howler nakijken voor gebruik in onderwijs en eventuele verkoop
 - [ ] Placeholder-art en -geluid kiezen (vrije assetpacks of zelf gemaakt)
-- [ ] Hosting van de spike: statische site volstaat, bijvoorbeeld GitHub Pages
+- [x] Hosting van de spike: GitHub Pages (beslist op 3 oktober 2026)
+- [ ] Publieke GitHub-repo aanmaken en de Pages-workflow opzetten
+- [ ] Misbruik van gastaccounts: volstaan de limieten van Supabase, of is er een captcha nodig? Een captcha botst met "meteen spelen".
+- [ ] Woordenlijsten voor bijnamen samenstellen en nakijken op ongelukkige combinaties
+- [ ] Privacyverklaring in eenvoudige taal schrijven
 - [ ] Playtesters vastleggen: 5 studenten en 2 collega's

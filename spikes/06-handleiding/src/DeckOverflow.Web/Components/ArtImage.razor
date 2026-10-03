@@ -1,0 +1,16 @@
+@* Een plaatje uit de gekozen tekenstijl. Zonder plaatje: de fallback, of niets. *@
+
+@if (Src is not null)
+{
+    <img class="art-img @Class" src="@Src" alt="" draggable="false" />
+}
+else if (Fallback is not null)
+{
+    @Fallback
+}
+
+@code {
+    [Parameter] public string? Src { get; set; }
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public string? Fallback { get; set; }
+}

@@ -1,0 +1,54 @@
+{
+  "cards": {
+    "strike": "items/whack",
+    "heavy-strike": "items/hammer-it-in",
+    "floating-strike": "items/floating-bolts",
+    "floating-rain": "items/floating-parts",
+    "molded-strike": "items/molded-bolts",
+    "molded-rain": "items/molded-bolts",
+    "shield": "items/hold-firmly",
+    "thick-shield": "items/two-person-lift",
+    "mend": "items/fill-past-the-line",
+    "add": "items/spare-screw",
+    "double-up": "items/second-pair-of-hands",
+    "remold-int": "items/force-fit",
+    "remold-byte": "items/force-fit",
+    "set-to-1": "items/wrong-label",
+    "byte-trap": "items/squeeze-in"
+  },
+  "relics": {
+    "counter": "items/relic-counter",
+    "floating-point": "items/relic-floating-point",
+    "scrap-pouch": "items/relic-scrap-pouch",
+    "anchor-barrel": "items/relic-anchor-barrel",
+    "great-pot": "items/relic-great-pot"
+  },
+  "actors": {
+    "player": "actors/hero-wrench",
+    "slime": "actors/slime",
+    "knight": "actors/knight",
+    "ghost": "actors/ghost",
+    "dripper": "actors/dripper",
+    "jug": "actors/jug",
+    "colossus": "actors/flight-501",
+    "golem": "actors/level-256",
+    "reckoner": "actors/inspector"
+  },
+  "nodes": {
+    "fight": "items/whack",
+    "elite": "items/rev-crossed",
+    "event": "icons/event",
+    "shop": "icons/shop",
+    "boss": "actors/inspector",
+    "rest": "items/rest",
+    "treasure": "items/treasure"
+  },
+  "scenes": {
+    "foundry": "scenes/foundry",
+    "crucible": "scenes/crucible",
+    "leaking-barrel": "scenes/leaking-barrel",
+    "rest": "scenes/rest",
+    "shop": "scenes/shop",
+    "title": "scenes/title"
+  }
+}

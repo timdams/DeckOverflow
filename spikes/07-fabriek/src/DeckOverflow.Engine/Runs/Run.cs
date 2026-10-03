@@ -1,0 +1,655 @@
+using DeckOverflow.Engine.Cards;
+using DeckOverflow.Engine.Combat;
+using DeckOverflow.Engine.Commands;
+using DeckOverflow.Engine.Events;
+using DeckOverflow.Engine.Maps;
+using DeckOverflow.Engine.Random;
+using DeckOverflow.Engine.Relics;
+using DeckOverflow.Engine.Text;
+
+namespace DeckOverflow.Engine.Runs;
+
+/// <param name="Map">Een vaste map, voor tests. Leeg: de seed bepaalt de map.</param>
+/// <param name="Opening">Begin bij de Gieterij met een keuze, of meteen op de map.</param>
+public sealed record RunSetup(
+    int Hp = 50,
+    int Gold = 60,
+    IReadOnlyList<CardDefinition>? Deck = null,
+    IReadOnlyList<string>? Relics = null,
+    ActMap? Map = null,
+    bool Opening = true);
+
+/// <summary>
+/// Eén run door een act: map, gevechten, beloningen. Zoals <see cref="Combat.Combat"/>:
+/// een command gaat erin, een lijst events komt eruit. Gevechtscommands gaan door naar het gevecht.
+/// </summary>
+public sealed class Run
+{
+    // Prijzen en beloningen: eerste gokken, af te stellen in de playtest
+    public const int RestHealPercent = 30;
+    public const int RemovalPrice = 75;
+    private static readonly (int Min, int Max) FightGold = (12, 20);
+    private static readonly (int Min, int Max) EliteGold = (28, 40);
+    private static readonly (int Min, int Max) TreasureGold = (20, 30);
+    public const int FoundryGold = 100;
+
+    private readonly ActMap _map;
+    private readonly SeededRng _loot;
+    private readonly List<CardDefinition> _deck;
+    private readonly List<string> _relics;
+    private readonly List<int> _visited = [];
+    private List<GameEvent> _events = [];
+    private int _seq;
+
+    private Combat.Combat? _combat;
+    private MapNode? _node;
+    private RewardView? _reward;
+    private List<CardDefinition> _rewardCards = [];
+    private ShopState? _shop;
+    private TextRef? _outcome;
+    /// <summary>Het event dat nu open staat: de Gieterij bij de start, of dat van een knoop.</summary>
+    private string? _eventKey;
+    private string? _foundryRelic;
+    private bool _jugMet;
+    private TreasureState? _treasure;
+    private EndView? _end;
+
+    private Run(ulong seed, RunSetup setup)
+    {
+        Seed = seed;
+        _map = setup.Map ?? MapGenerator.Generate(new SeededRng(seed));
+        // Een aparte stroom voor loot, zodat de map niet verandert als er een beloning bijkomt
+        _loot = new SeededRng(Mix(seed, 0x10075));
+        _deck = [.. setup.Deck ?? CardCatalog.StarterDeck()];
+        _relics = [.. setup.Relics ?? []];
+        Hp = setup.Hp;
+        MaxHp = setup.Hp;
+        Gold = setup.Gold;
+
+        if (setup.Opening)
+        {
+            _eventKey = Adventures.Foundry;
+            _foundryRelic = RandomUnownedRelic();
+            Phase = RunPhase.Event;
+        }
+    }
+
+    public ulong Seed { get; }
+    public RunPhase Phase { get; private set; } = RunPhase.Map;
+    public int Hp { get; private set; }
+    public int MaxHp { get; private set; }
+    public int Gold { get; private set; }
+    public IReadOnlyList<CardDefinition> Deck => _deck;
+    public IReadOnlyList<string> Relics => _relics;
+    public ActMap Map => _map;
+
+    public static Run Start(ulong seed, RunSetup? setup = null) => new(seed, setup ?? new RunSetup());
+
+    /// <summary>Het lopende gevecht, voor de stage. Leeg buiten een gevecht.</summary>
+    public CombatSnapshot? CombatSnapshot() => Phase == RunPhase.Combat ? _combat?.Snapshot() : null;
+
+    /// <summary>Enige manier om de status te wijzigen.</summary>
+    public IReadOnlyList<GameEvent> Handle(ICommand command)
+    {
+        _events = [];
+
+        switch (Phase, command)
+        {
+            case (RunPhase.Combat, PlayCard or EndTurn): HandleCombat(command); break;
+            case (RunPhase.Map, ChooseNode c): Enter(c.NodeId); break;
+            case (RunPhase.Reward, TakeRewardCard t): TakeReward(t.Index); break;
+            case (RunPhase.Reward, SkipReward): BackToMap(); break;
+            case (RunPhase.Rest, RestHeal): RestAndHeal(); break;
+            case (RunPhase.Rest, RestUpgrade u): RestAndUpgrade(u.DeckIndex); break;
+            case (RunPhase.Event, ChooseEventOption o): ChooseOption(o.Option, o.DeckIndex); break;
+            case (RunPhase.Shop, BuyCard b): Buy(b.Index); break;
+            case (RunPhase.Shop, BuyRelic): BuyShopRelic(); break;
+            case (RunPhase.Shop, BuyRemoval r): BuyCardRemoval(r.DeckIndex); break;
+            case (RunPhase.Treasure, OpenChest): Open(); break;
+            case (RunPhase.Shop or RunPhase.Treasure or RunPhase.Rest or RunPhase.Event, Leave): LeaveNode(); break;
+            default: Reject("reject.not-now"); break;
+        }
+
+        return _events;
+    }
+
+    public RunSnapshot Snapshot()
+    {
+        var reachable = Reachable().Select(n => n.Id).ToHashSet();
+        var mapView = new MapView(
+            _map.Rows,
+            _map.Nodes.Max(n => n.Column) + 1,
+            [.. _map.Nodes.Select(n => new MapNodeView(n.Id, n.Row, n.Column, n.Kind,
+                _visited.Contains(n.Id), n.Id == _node?.Id, Phase == RunPhase.Map && reachable.Contains(n.Id)))],
+            _map.Edges);
+
+        return new RunSnapshot(
+            Seed,
+            Phase,
+            CurrentHp,
+            MaxHp,
+            Gold,
+            _node is null ? 0 : _node.Row + 1,
+            [.. _deck.Select(CardInfo.From)],
+            [.. _relics.Select(RelicInfo.From)],
+            mapView,
+            Phase == RunPhase.Reward ? _reward : null,
+            Phase == RunPhase.Rest ? RestView() : null,
+            Phase == RunPhase.Event ? EventView() : null,
+            Phase == RunPhase.Shop ? ShopView() : null,
+            Phase == RunPhase.Treasure && _treasure is { } t ? new TreasureView(t.Opened, t.Opened && t.Relic is { } r ? RelicInfo.From(r) : null, t.Opened ? t.Gold : 0) : null,
+            _end);
+    }
+
+    /// <summary>Tijdens een gevecht is de HP van de speler in het gevecht de waarheid.</summary>
+    private int CurrentHp => Phase == RunPhase.Combat && _combat is not null
+        ? (int)_combat.Snapshot().Combatants.Single(c => !c.IsEnemy).Hp
+        : Hp;
+
+    // ---------- Map ----------
+
+    private IEnumerable<MapNode> Reachable() =>
+        _node is null ? _map.StartNodes : _map.Children(_node.Id);
+
+    private void Enter(int nodeId)
+    {
+        MapNode? node = Reachable().FirstOrDefault(n => n.Id == nodeId);
+        if (node is null)
+        {
+            Reject("reject.no-path");
+            return;
+        }
+
+        _node = node;
+        _visited.Add(node.Id);
+        _outcome = null;
+        Emit(new NodeEntered(node.Id, node.Kind));
+
+        switch (node.Kind)
+        {
+            case NodeKind.Fight or NodeKind.Elite or NodeKind.Boss:
+                StartCombat(EnemyFor(node), node.Id);
+                break;
+            case NodeKind.Rest:
+                Phase = RunPhase.Rest;
+                break;
+            case NodeKind.Event when node.Encounter == Bestiary.Jug && !_jugMet:
+                // Een onbekende knoop vroeg in de act: het wondermoment, één keer per run
+                _jugMet = true;
+                StartCombat(Bestiary.Jug, node.Id);
+                break;
+            case NodeKind.Event:
+                // Een tweede kruik wordt een gewoon event
+                _eventKey = Adventures.All.Contains(node.Encounter!) ? node.Encounter : Adventures.All[_loot.NextInt(Adventures.All.Count)];
+                Phase = RunPhase.Event;
+                break;
+            case NodeKind.Shop:
+                _shop = StockShop();
+                Phase = RunPhase.Shop;
+                break;
+            case NodeKind.Treasure:
+                _treasure = new TreasureState(RandomUnownedRelic(), Roll(TreasureGold));
+                Phase = RunPhase.Treasure;
+                break;
+        }
+    }
+
+    private void BackToMap()
+    {
+        _reward = null;
+        _rewardCards = [];
+        _shop = null;
+        _treasure = null;
+        _outcome = null;
+        _eventKey = null;
+        Phase = RunPhase.Map;
+    }
+
+    private void LeaveNode()
+    {
+        if (Phase == RunPhase.Treasure && _treasure is { Opened: false })
+        {
+            Reject("reject.chest-closed");
+            return;
+        }
+        if (Phase is RunPhase.Rest or RunPhase.Event && _outcome is null)
+        {
+            Reject("reject.choose-first");
+            return;
+        }
+        BackToMap();
+    }
+
+    // ---------- Gevecht ----------
+
+    /// <summary>
+    /// De Kolos is alleen te verslaan door hem naar byte om te gieten. Zonder kaart die dat kan,
+    /// krijg je de Golem: elk gevecht moet op meer dan één manier te winnen zijn.
+    /// </summary>
+    private string EnemyFor(MapNode node)
+    {
+        string enemy = node.Encounter ?? throw new InvalidOperationException($"Knoop {node.Id} heeft geen vijand.");
+        bool canRemold = _deck.Any(c => c.CastTo == Values.ValueKind.Byte);
+        return enemy == Bestiary.Colossus && !canRemold ? Bestiary.Golem : enemy;
+    }
+
+    private void StartCombat(string enemy, int nodeId)
+    {
+        double block = _relics.Sum(id => RelicCatalog.Create(id).BlockAtCombatStart);
+        var setup = new CombatSetup(
+            Scenarios.Player(Hp, MaxHp, block),
+            Bestiary.Create(enemy),
+            [.. _deck],
+            Relics: [.. _relics]);
+
+        _combat = Combat.Combat.Start(setup, Mix(Seed, (ulong)nodeId + 1));
+        Phase = RunPhase.Combat;
+    }
+
+    private void HandleCombat(ICommand command)
+    {
+        Combat.Combat combat = _combat!;
+        foreach (GameEvent e in combat.Handle(command)) Emit(e);
+
+        if (combat.Outcome == CombatOutcome.Ongoing) return;
+
+        var snapshot = combat.Snapshot();
+        var enemy = snapshot.Combatants.Single(c => c.IsEnemy);
+        Hp = (int)snapshot.Combatants.Single(c => !c.IsEnemy).Hp;
+
+        if (combat.Outcome == CombatOutcome.Lost)
+        {
+            End(won: false, enemy);
+            return;
+        }
+
+        if (_node!.Kind == NodeKind.Boss)
+        {
+            End(won: true, enemy);
+            return;
+        }
+
+        bool elite = _node.Kind == NodeKind.Elite;
+        int gold = Roll(elite ? EliteGold : FightGold);
+        GainGold(gold);
+
+        string? relic = elite ? RandomUnownedRelic() : null;
+        if (relic is not null) GainRelic(relic);
+
+        _rewardCards = RollCards(3, elite ? EliteOdds : FightOdds);
+        _reward = new RewardView(gold, relic is null ? null : RelicInfo.From(relic), [.. _rewardCards.Select(CardInfo.From)]);
+        Phase = RunPhase.Reward;
+    }
+
+    private void End(bool won, CombatantView enemy)
+    {
+        _combat = null;
+        Phase = won ? RunPhase.Won : RunPhase.Lost;
+        _end = new EndView(won, _node!.Row + 1, enemy.Key, enemy.Hp, enemy.MaxHp, Gold, _deck.Count, _relics.Count);
+        Emit(new RunEnded(won));
+    }
+
+    private void TakeReward(int index)
+    {
+        if (index < 0 || index >= _rewardCards.Count)
+        {
+            Reject("reject.card-not-offered");
+            return;
+        }
+        AddCard(_rewardCards[index]);
+        BackToMap();
+    }
+
+    // ---------- Rustvuur ----------
+
+    private int RestHealAmount => MaxHp * RestHealPercent / 100;
+
+    private RestView RestView() => new(
+        RestHealAmount,
+        [.. _deck.Select((c, i) => (c, i)).Where(x => CardCatalog.Upgrade(x.c) is not null).Select(x => x.i)],
+        _outcome);
+
+    private void RestAndHeal()
+    {
+        if (_outcome is not null) { Reject("reject.already-rested"); return; }
+        int healed = ChangeHp(RestHealAmount);
+        _outcome = TextRef.Of("rest.healed", ("amount", healed));
+    }
+
+    private void RestAndUpgrade(int deckIndex)
+    {
+        if (_outcome is not null) { Reject("reject.already-rested"); return; }
+        if (!InDeck(deckIndex) || CardCatalog.Upgrade(_deck[deckIndex]) is not { } better)
+        {
+            Reject("reject.cannot-upgrade");
+            return;
+        }
+        string before = _deck[deckIndex].Id;
+        Transform(deckIndex, better);
+        _outcome = TextRef.Of("rest.upgraded", ("from", before), ("to", better.Id));
+    }
+
+    // ---------- Events ----------
+
+    private EventView EventView()
+    {
+        string key = _eventKey!;
+        return new EventView(key, _outcome is null ? EventOptions(key) : [], _outcome);
+    }
+
+    /// <summary>Elke keuze heeft een label en een uitleg in <c>en.json</c>, met de getallen die erbij horen.</summary>
+    private List<EventOptionView> EventOptions(string key)
+    {
+        int[] all = [.. Enumerable.Range(0, _deck.Count)];
+
+        switch (key)
+        {
+            case Adventures.Foundry:
+                return
+                [
+                    Option(TextRef.Of("event.foundry.card"), TextRef.Of("event.foundry.card.detail"), null, []),
+                    _foundryRelic is { } relic
+                        ? Option(TextRef.Of("event.foundry.relic", ("relic", relic)), RelicCatalog.Create(relic).Text, null, [])
+                        : Option(TextRef.Of("event.foundry.no-relic"), TextRef.Of("event.foundry.no-relic.detail"), "reject.no-relic-left", []),
+                    Option(TextRef.Of("event.foundry.gold", ("amount", FoundryGold)), TextRef.Of("event.foundry.gold.detail"), null, []),
+                ];
+
+            case Adventures.Crucible:
+            {
+                int[] pourable = [.. all.Where(i => CardCatalog.CanPour(_deck[i]))];
+                return
+                [
+                    Option(TextRef.Of("event.crucible.pour"), TextRef.Of("event.crucible.pour.detail"),
+                        pourable.Length > 0 ? null : "reject.no-floating-card", pourable),
+                    Option(TextRef.Of("event.crucible.melt"), TextRef.Of("event.crucible.melt.detail", ("amount", Adventures.MeltHpCost)),
+                        Hp > Adventures.MeltHpCost ? null : "reject.not-enough-hp", all),
+                    Option(TextRef.Of("event.crucible.leave"), TextRef.Of("event.crucible.leave.detail"), null, []),
+                ];
+            }
+
+            case Adventures.LeakingBarrel:
+                return
+                [
+                    Option(TextRef.Of("event.leaking-barrel.catch"),
+                        TextRef.Of("event.leaking-barrel.catch.detail", ("gold", Adventures.BarrelGold), ("hp", Adventures.BarrelHpCost)),
+                        Hp > Adventures.BarrelHpCost ? null : "reject.not-enough-hp", []),
+                    Option(TextRef.Of("event.leaking-barrel.leave"), TextRef.Of("event.leaking-barrel.leave.detail"), null, []),
+                ];
+
+            default:
+                return [];
+        }
+
+        static EventOptionView Option(TextRef label, TextRef detail, string? disabled, int[] cards) =>
+            new(label, detail, disabled is null, disabled, cards);
+    }
+
+    private void ChooseOption(int option, int deckIndex)
+    {
+        if (_outcome is not null) { Reject("reject.already-chosen"); return; }
+
+        var options = EventOptions(_eventKey!);
+        if (option < 0 || option >= options.Count)
+        {
+            Reject("reject.no-such-option");
+            return;
+        }
+        if (!options[option].Enabled)
+        {
+            Reject(options[option].DisabledReason!);
+            return;
+        }
+        if (options[option].EligibleCards.Count > 0 && !options[option].EligibleCards.Contains(deckIndex))
+        {
+            Reject("reject.pick-card");
+            return;
+        }
+
+        switch (_eventKey, option)
+        {
+            case (Adventures.Foundry, 0):
+                // Meteen naar een beloningsscherm: 1 kaart uit 3, zonder gewone kaarten
+                _rewardCards = RollCards(3, FoundryOdds);
+                _reward = new RewardView(0, null, [.. _rewardCards.Select(CardInfo.From)]);
+                _eventKey = null;
+                Phase = RunPhase.Reward;
+                break;
+            case (Adventures.Foundry, 1):
+                GainRelic(_foundryRelic!);
+                _outcome = TextRef.Of("event.foundry.relic.outcome", ("relic", _foundryRelic!));
+                break;
+            case (Adventures.Foundry, 2):
+                GainGold(FoundryGold);
+                _outcome = TextRef.Of("event.foundry.gold.outcome");
+                break;
+
+            case (Adventures.Crucible, 0):
+            {
+                CardDefinition before = _deck[deckIndex];
+                CardDefinition poured = CardCatalog.Pour(before);
+                Transform(deckIndex, poured);
+                _outcome = TextRef.Of("event.crucible.pour.outcome", ("from", before.Id), ("to", poured.Id));
+                break;
+            }
+            case (Adventures.Crucible, 1):
+            {
+                string id = _deck[deckIndex].Id;
+                RemoveCard(deckIndex);
+                ChangeHp(-Adventures.MeltHpCost);
+                _outcome = TextRef.Of("event.crucible.melt.outcome", ("card", id));
+                break;
+            }
+            case (Adventures.LeakingBarrel, 0):
+                GainGold(Adventures.BarrelGold);
+                ChangeHp(-Adventures.BarrelHpCost);
+                _outcome = TextRef.Of("event.leaking-barrel.catch.outcome");
+                break;
+            default:
+                _outcome = TextRef.Of("event.leave.outcome");
+                break;
+        }
+    }
+
+    // ---------- Winkel ----------
+
+    private sealed class ShopState
+    {
+        public required List<(CardDefinition Card, int Price, bool Sold)> Cards { get; init; }
+        public (string Id, int Price, bool Sold)? Relic { get; set; }
+        public bool RemovalUsed { get; set; }
+    }
+
+    private ShopState StockShop()
+    {
+        var cards = new List<(CardDefinition, int, bool)>();
+        foreach ((Rarity rarity, int count) in new[] { (Rarity.Common, 2), (Rarity.Uncommon, 2), (Rarity.Rare, 1) })
+        {
+            var pool = CardCatalog.RewardPool.Where(c => c.Rarity == rarity).ToList();
+            _loot.Shuffle(pool);
+            foreach (var card in pool.Take(count)) cards.Add((card, PriceOf(rarity), false));
+        }
+
+        string? relic = RandomUnownedRelic();
+        return new ShopState
+        {
+            Cards = cards,
+            Relic = relic is null ? null : (relic, 140 + _loot.NextInt(21), false),
+        };
+    }
+
+    private int PriceOf(Rarity rarity) => rarity switch
+    {
+        Rarity.Common => 45 + _loot.NextInt(11),
+        Rarity.Uncommon => 70 + _loot.NextInt(16),
+        _ => 120 + _loot.NextInt(21),
+    };
+
+    private ShopView ShopView() => new(
+        [.. _shop!.Cards.Select(c => new ShopCardView(CardInfo.From(c.Card), c.Price, c.Sold))],
+        _shop.Relic is { } r ? new ShopRelicView(RelicInfo.From(r.Id), r.Price, r.Sold) : null,
+        RemovalPrice,
+        _shop.RemovalUsed);
+
+    private void Buy(int index)
+    {
+        if (index < 0 || index >= _shop!.Cards.Count || _shop.Cards[index].Sold)
+        {
+            Reject("reject.card-sold");
+            return;
+        }
+        var (card, price, _) = _shop.Cards[index];
+        if (!Pay(price)) return;
+        _shop.Cards[index] = (card, price, true);
+        AddCard(card);
+    }
+
+    private void BuyShopRelic()
+    {
+        if (_shop!.Relic is not { Sold: false } offer)
+        {
+            Reject("reject.relic-sold");
+            return;
+        }
+        if (!Pay(offer.Price)) return;
+        _shop.Relic = offer with { Sold = true };
+        GainRelic(offer.Id);
+    }
+
+    private void BuyCardRemoval(int deckIndex)
+    {
+        if (_shop!.RemovalUsed) { Reject("reject.one-removal"); return; }
+        if (!InDeck(deckIndex)) { Reject("reject.not-in-deck"); return; }
+        if (!Pay(RemovalPrice)) return;
+        _shop.RemovalUsed = true;
+        RemoveCard(deckIndex);
+    }
+
+    private bool Pay(int price)
+    {
+        if (price > Gold)
+        {
+            Reject("reject.not-enough-gold");
+            return false;
+        }
+        GainGold(-price);
+        return true;
+    }
+
+    // ---------- Schat ----------
+
+    private sealed class TreasureState(string? relic, int gold)
+    {
+        public string? Relic { get; } = relic;
+        public int Gold { get; } = gold;
+        public bool Opened { get; set; }
+    }
+
+    private void Open()
+    {
+        var t = _treasure!;
+        if (t.Opened) { Reject("reject.chest-open"); return; }
+        t.Opened = true;
+        GainGold(t.Gold);
+        if (t.Relic is not null) GainRelic(t.Relic);
+    }
+
+    // ---------- Loot ----------
+
+    /// <summary>Kans in procent op gewoon en ongewoon; de rest is zeldzaam.</summary>
+    private readonly record struct CardOdds(int Common, int Uncommon);
+
+    private static readonly CardOdds FightOdds = new(60, 33);
+    private static readonly CardOdds EliteOdds = new(40, 45);
+    private static readonly CardOdds FoundryOdds = new(0, 80);
+
+    /// <summary>Kaarten zonder dubbels. Een elite geeft meer kans op zeldzaam.</summary>
+    private List<CardDefinition> RollCards(int count, CardOdds odds)
+    {
+        var picked = new List<CardDefinition>();
+        for (int attempt = 0; picked.Count < count && attempt < 50; attempt++)
+        {
+            int roll = _loot.NextInt(100);
+            Rarity rarity = roll < odds.Common ? Rarity.Common
+                : roll < odds.Common + odds.Uncommon ? Rarity.Uncommon
+                : Rarity.Rare;
+
+            var pool = CardCatalog.RewardPool.Where(c => c.Rarity == rarity && !picked.Contains(c)).ToList();
+            if (pool.Count == 0) continue;
+            picked.Add(pool[_loot.NextInt(pool.Count)]);
+        }
+        return picked;
+    }
+
+    private string? RandomUnownedRelic()
+    {
+        var pool = RelicCatalog.All.Where(id => !_relics.Contains(id)).ToList();
+        return pool.Count == 0 ? null : pool[_loot.NextInt(pool.Count)];
+    }
+
+    private int Roll((int Min, int Max) range) => range.Min + _loot.NextInt(range.Max - range.Min + 1);
+
+    // ---------- Status ----------
+
+    private void GainGold(int amount)
+    {
+        Gold += amount;
+        Emit(new GoldChanged(amount, Gold));
+    }
+
+    /// <summary>Verandert de HP buiten een gevecht, begrensd door 1 en max HP. Een event doodt je nooit.</summary>
+    private int ChangeHp(int amount)
+    {
+        int before = Hp;
+        Hp = Math.Clamp(Hp + amount, 1, MaxHp);
+        Emit(new RunHpChanged(Hp - before, Hp, MaxHp));
+        return Hp - before;
+    }
+
+    private void GainRelic(string id)
+    {
+        _relics.Add(id);
+        Emit(new RelicGained(id));
+
+        int bonus = RelicCatalog.Create(id).MaxHpOnGain;
+        if (bonus > 0)
+        {
+            MaxHp += bonus;
+            ChangeHp(bonus);
+        }
+    }
+
+    private void AddCard(CardDefinition card)
+    {
+        _deck.Add(card);
+        Emit(new CardAdded(card.Id));
+    }
+
+    private void RemoveCard(int deckIndex)
+    {
+        string id = _deck[deckIndex].Id;
+        _deck.RemoveAt(deckIndex);
+        Emit(new CardRemoved(id));
+    }
+
+    private void Transform(int deckIndex, CardDefinition to)
+    {
+        string from = _deck[deckIndex].Id;
+        _deck[deckIndex] = to;
+        Emit(new CardTransformed(from, to.Id));
+    }
+
+    private bool InDeck(int index) => index >= 0 && index < _deck.Count;
+
+    private void Reject(string reason) => Emit(new RunRejected(reason));
+
+    private void Emit(GameEvent e) => _events.Add(e with { Seq = ++_seq });
+
+    /// <summary>SplitMix64: een vaste, goed gespreide seed per gevecht, afgeleid van de run-seed.</summary>
+    private static ulong Mix(ulong seed, ulong salt)
+    {
+        ulong z = unchecked(seed + salt * 0x9E3779B97F4A7C15UL);
+        z = unchecked((z ^ (z >> 30)) * 0xBF58476D1CE4E5B9UL);
+        z = unchecked((z ^ (z >> 27)) * 0x94D049BB133111EBUL);
+        return z ^ (z >> 31);
+    }
+}

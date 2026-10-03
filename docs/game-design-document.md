@@ -4,30 +4,79 @@
 
 ## Visie
 
-Deck Overflow is een roguelike deckbuilder in de browser waarin de wereld gehoorzaamt aan C#. Wie de regels doorheeft, wint. Het spel moet verslavend zijn in de goede zin: je wil nog één run spelen, en elke run maakt je beter in C#.
+Deck Overflow is een spel in de browser waarin de wereld gehoorzaamt aan C#. Wie de regels doorheeft, wint. Het spel moet verslavend zijn in de goede zin: je wil nog één run spelen, en elke run maakt je beter in C#.
 
-- **Doelgroep:** eerstejaars programmeren, met de zwakkere studenten als ontwerpmaat. Wie Slay the Spire of Balatro kan spelen, moet dit kunnen spelen.
-- **Bron:** de leerlijn van Zie Scherp Scherper. Elke act volgt een blok hoofdstukken.
-- **Wat we bewust niet maken:** geen gamification (punten en badges op oefeningen), geen visuele programmeeromgeving. Een eerste versie met kaarten als codestatements is verworpen: dat was Scratch met een zwaard, een dunne laag over code schrijven.
+Het hart is een roguelike deckbuilder. Rond dat hart ligt een fabriek met afdelingen, één per blok hoofdstukken, en elke afdeling heeft de spelvorm die het best past bij wat ze aanleert. Een deckbuilder voor types en expressies, een regelsysteem voor `if`, een lopende band voor loops. Alles hangt samen op één plattegrond waarop je ziet hoe ver je fabriek af is.
+
+- **Doelgroep:** eerstejaars programmeren, met de zwakkere studenten als ontwerpmaat. Iedereen mag spelen, ook leerlingen uit het middelbaar. Wie Slay the Spire of Balatro kan spelen, moet dit kunnen spelen.
+- **Bron:** de leerlijn van Zie Scherp Scherper. Elke afdeling volgt een blok hoofdstukken.
+- **Wat we bewust niet maken:** geen gamification (punten en badges op oefeningen), geen visuele programmeeromgeving. Een eerste versie met kaarten als codestatements is verworpen: dat was Scratch met een zwaard, een dunne laag over code schrijven. Ook de afdelingen waarin je regels of machines bouwt, blijven aan de goede kant van die lijn: zie [Afdelingen](#afdelingen-elk-hoofdstuk-zijn-eigen-spelvorm).
 - **De kern:** C#-semantiek zijn de natuurwetten. Types, operatoren, overflow en scope bepalen hoe gevechten verlopen. Begrijpen is de sterkste strategie.
 
 ## Pijlers
 
 Deck Overflow is eerst een goede deckbuilder en pas daarna een leermiddel. Wat zonder leerdoel niet leuk is, gaat eruit.
 
-1. **Echte keuzes, echt risico.** Runs, een map met paden, deckbouw-afwegingen en een run die kan mislukken. Geen veilige oefenmodus als standaard.
+1. **Echte keuzes, echt risico.** Runs, een map met paden, deckbouw-afwegingen en een run die kan mislukken. Geen veilige oefenmodus als standaard. In de andere afdelingen geldt hetzelfde: een oplossing kan mislukken, en er zijn er altijd meerdere.
 2. **C# is natuurkunde, geen leerstof.** De regels zijn altijd consistent en worden nooit vooraf uitgelegd. Je botst erop, net als op zwaartekracht.
 3. **Begrijpen is de sterkste strategie.** Wie het concept doorheeft, wint efficiënter. Brute kracht mag, maar kost HP, goud of kaarten.
-4. **Geen code in beeld in Act 1.** Kaarten tonen getallen, letters en woorden. Code verschijnt pas, optioneel, in de Codex.
+4. **Geen code in beeld in Act 1.** Kaarten tonen getallen, letters en woorden. Code verschijnt pas, optioneel, in de Codex. Over de hele game loopt een helling: eerst waarden ervaren (de deckbuilder), dan regels in symbolen bouwen (Controlekamer, Lopende Band, met een optionele C#-weergave), en pas bij OOP echte code als volwaardige laag.
 5. **Eerst ervaren, dan benoemen.** De naam van een concept komt na het moment waarop het je een gevecht won of kostte.
 
 **Ontwerptoets voor elke encounter:** zou iemand zonder enige interesse in programmeren dit gevecht nog willen spelen? Nee betekent herwerken.
 
 **Tweede toets:** rekent de speler omdat het moet, of omdat hij iets wil bereiken? Alleen het tweede mag.
 
+## Thema: niet volgens de handleiding
+
+De Vatenvallei is een fabriek die alles bouwt volgens de specificatie. De speler is het figuurtje uit de montagehandleiding, en die doet precies wat de ✗-panelen verbieden. Wat de handleiding verbiedt maar C# toelaat, werkt: C# is natuurkunde, de handleiding is maar papier.
+
+**Waarom.** In spike 6 was alleen het rekenwerk C#. Kaarten heetten Strike en Block, iconen waren zwaarden en schilden: een middeleeuwse Slay the Spire. Het thema moet zelf uit software komen, niet alleen de getallen.
+
+- **De held** is het figuurtje zonder gezicht uit een handleiding. Geen krijger, maar iemand die de verboden stappen leest als tips.
+- **De fabriek** is de tegenspeler. Gewone vijanden zijn producten van de lopende band. Wie een truc te vaak gebruikt, krijgt een nieuwe revisie van de handleiding (zie De wereld patcht zich).
+- **Elites zijn echte bugs** uit de geschiedenis. Na het gevecht vertelt de Codex het echte verhaal. Bazen blijven figuren van de fabriek, zoals de inspecteur.
+- **Toon:** droog en deadpan, zoals een testfaciliteit die alles volgens protocol doet. Grappig voor volwassenen, nooit schattig.
+- **Beeldtaal:** zwarte lijnen op papier, één schreefloze letter, stapnummers. Kleur is voorbehouden aan types: zie je kleur, dan zie je een type. Een verslagen vijand valt uiteen in een explosietekening.
+
+### Kaartnamen
+
+Elke kaartnaam is een instructie of een overtreding, nooit een wapen. "Floating" blijft het woord voor `double`, omdat het later naar `float` en `double` verwijst. De spelnamen zijn Engels; de werktitels in dit document blijven Nederlands.
+
+| Werktitel | Spelnaam | Wat je ziet |
+| --- | --- | --- |
+| Slag | Whack | het figuurtje klopt met de vlakke hand op een machine |
+| Zware Slag | Hammer It In | een pin die te groot is voor het gat |
+| Schild | Hold Firmly | het figuurtje houdt een kantelende kast tegen |
+| Dik Schild | Two-Person Lift | twee figuurtjes tillen samen |
+| Herstel | Fill Past the Line | een vat met een maxstreep, de vloeistof erboven |
+| Voeg toe | Spare Screw | het schroefje dat altijd overblijft |
+| Dubbel | Second Pair of Hands | het figuurtje met vier armen |
+| Giet om | Force Fit | een ronde pin in een vierkant gat |
+| Zet op 1 | Wrong Label | een nieuw etiket over het oude |
+| Vlottende Slag | Floating Bolts | drie bouten die zweven |
+
+### Elites: echte bugs
+
+Gewone vijanden zijn producten van de fabriek, bazen zijn figuren van de fabriek. Elites zijn beroemde softwarefouten, elk bij een concept uit hun act.
+
+| Elite | Act | Echte bug | Concept |
+| --- | --- | --- | --- |
+| Level 256 | 1 | Pac-Man (1980): het levelnummer is een `byte`. Op level 256 loopt het over en wordt de rechterhelft van het doolhof rommel. | `byte`-overflow |
+| Effective Power | 1 | iPhone (2015): één bericht met een reeks Arabische Unicode-tekens liet het toestel crashen zodra het die tekst probeerde te tonen. | tekst, Unicode |
+| Flight 501 | 2 | Ariane 5 (1996): een `double` werd omgezet naar een 16-bits geheel getal, dat liep over. De raket vernietigde zichzelf na 37 seconden. | casting |
+| The Index | 2 | Vancouver Stock Exchange (1982): de index werd na elke berekening afgekapt in plaats van afgerond en zakte in 22 maanden tot ongeveer de helft van zijn echte waarde. | afronden |
+| Zune | 4 | Zune (2008): alle spelers van één model bevroren op 31 december, de 366e dag van een schrikkeljaar, in een `while`-lus die nooit stopte. | loops |
+| Heartbleed | 6 | OpenSSL (2014): een server las voorbij het einde van een buffer en stuurde geheime data mee terug. | arrays |
+| The Counter | later | Gangnam Style (2014): YouTube zette zijn weergaventeller van 32 naar 64 bits omdat de maximumwaarde in zicht kwam. | `int`-overflow |
+
+We gebruiken geen bugs met doden (zoals de Patriot-raket in 1991). "Nuclear Gandhi" is een mythe; die kan hoogstens als Codex-grap: deze bug heeft nooit bestaan. Geen merknamen of logo's in beeld: een speelhalkast, geen Pac-Man.
+
 ## Core loop
 
-Eén act duurt 25 tot 35 minuten, zodat een run in een lesblok past. Meta-progressie is kennis van de speler, niet extra kracht.
+Dit is de loop van de deckbuilder, de afdelingen Vatenvallei en Gieterij. De andere afdelingen krijgen elk een eigen loop, die eerst als spike moet bewijzen dat hij leuk is.
+
+Een run begint altijd in Act 1, en je probeert zo ver mogelijk te geraken. Eén act duurt 10 tot 15 minuten. De deckbuilder heeft voorlopig twee acts (H2-H3 en H4), dus een volledige run past ruim in een lesblok. Elke act die je in een run bereikt, wordt een startpunt: een volgende run mag daar beginnen, met een deck dat je eerst draft uit de kaarten van de vorige acts. De docent kan een act ook voor de hele klas vrijgeven. Meta-progressie is kennis van de speler en startpunten, nooit extra kracht.
 
 1. **Map kiezen.** Een vertakte kaart met gevechten, elites, rustplekken, winkels en mysterie-events. Elk pad heeft een andere mix van risico en beloning.
 2. **Vechten.** 3 energie, 5 kaarten per beurt. Elke vijand toont zijn intent voor de volgende beurt.
@@ -99,7 +148,7 @@ Elk deck-archetype draait rond één C#-regel. Wie een archetype kiest, doorgron
 | Schrijver | `string` en concatenatie | Inkt, Stempel | Tekstwaarden aan elkaar plakken tot één enorm getal en dan pas omzetten |
 | Rekenmeester | Operatorvoorrang | Haakjes, Voeg toe | Volgorde van je combo herschikken zodat de vermenigvuldiging als laatste valt |
 
-**De run die breekt.** Ergens in act 2 of 3 vallen twee relics en een kaart samen tot een combo die alles platwalst. Dat moment moet in elk archetype bestaan, en het moet alleen zichtbaar zijn voor wie het concept snapt.
+**De run die breekt.** Ergens in act 2 vallen twee relics en een kaart samen tot een combo die alles platwalst. Dat moment moet in elk archetype bestaan, en het moet alleen zichtbaar zijn voor wie het concept snapt.
 
 ## Verslavingsmotor: de trucs van de foor
 
@@ -128,7 +177,7 @@ We gebruiken bewust alles wat roguelikes, slotmachines en mobiele games zo kleve
 De juice volgt het begrip: hoe beter je een C#-regel uitbuit, hoe harder het spel reageert. Zie [analyse van Balatro](https://blakecrosley.com/guides/design/balatro) en [hit pause](https://bugnet.io/blog/how-to-use-hit-pause-to-make-impacts-feel-powerful).
 
 1. **Intents rekenen zichtbaar uit.** Bij `3 + 2 × 4` licht eerst `2 × 4` op met een tik, dan de `+`. Elke stap een hogere toon: operatorvoorrang als ritme.
-2. **Grootste knal voor regel-exploits.** De Byte-Golem tikt naar 255, alles bevriest, het getal rolt naar 0, bas-drop. Een gewone grote slag voelt daarnaast bescheiden.
+2. **Grootste knal voor regel-exploits.** Level 256 tikt naar 255, alles bevriest, het getal rolt naar 0, bas-drop. Een gewone grote slag voelt daarnaast bescheiden.
 3. **Regels altijd hoor- en zichtbaar.** Bij `int`-afkappen breekt de decimaal af en valt rinkelend weg; bij integer deling rolt de rest als munt in de Restzak.
 4. **Fouten grappig, niet bestraffend.** De "5" stempelt achter de "20" en de Papieren Golem zwelt op tot "205".
 5. **Types hebben een vaste kleur en vorm**, zodat je een `double` of `string` in één blik leest, ook bij kleurenblindheid.
@@ -188,6 +237,10 @@ Elke nerf wordt zelf een nieuw C#-concept.
 
 Narratief brengen we het als patch notes: "De Vallei heeft een patch uitgerold." Studenten ervaren zo dat elk lek een oplossing heeft.
 
+In de beeldtaal van de handleiding is een patch een nieuwe revisie. Het paneel dat je misbruikte, krijgt een stempel: "Rev. B: vul een byte-vat niet voorbij 255." De fabriek is daarmee de tegenspeler met een gezicht.
+
+De patch zit in de MVP. In Act 1 gebruikt hij `const` (H2): na een paar keer Wrong Label op dezelfde soort vijand verschijnt een revisie die zijn aanval `const` maakt, en de kaart weigert.
+
 ### Patch-gebeurtenissen
 
 - **De slechte patch.** Een act-variant op een buggy build, met glitch-effecten, een flikkerende HUD en kapotte regels vol exploits. De Codex zegt expliciet dat dit géén C# is: het is een kapotte wereld, geen kapotte taal. Pas laat in de game, als de echte regels ingesleten zijn.
@@ -232,33 +285,140 @@ Terugdraaien kan op drie manieren:
 
 Het roguelike-format remt al vanzelf: een combo vraagt specifieke kaarten en relics, en die zijn nooit gegarandeerd.
 
+## Afdelingen: elk hoofdstuk zijn eigen spelvorm
+
+De game volgt Zie Scherp Scherper, en elk blok hoofdstukken is een afdeling van de fabriek. Een deckbuilder is perfect voor types en expressies, omdat een kaart een waarde is: je stelt waarden samen en de game doet de control flow. Voor `if` en loops wringt dat: daar moet de speler zelf regels opstellen die de game uitvoert. Daarom kiest elke afdeling de spelvorm die dezelfde vorm heeft als het concept.
+
+Drie regels houden het één spel:
+
+1. **De vorm volgt het concept.** Een genre komt er alleen in als zijn kernmechaniek het concept *is*: in een gambit-systeem wint de eerste regel die klopt, en dat is een `else if`-keten.
+2. **De natuurwetten blijven gelden.** In elke afdeling kapt `int` nog altijd af en loopt `byte` over. Wat je in de Vatenvallei leerde, werkt overal.
+3. **De afdelingen voeden elkaar.** Wat je in de ene afdeling bouwt, duikt op in de andere: gambits uit de Controlekamer worden intents van vijanden in de deckbuilder, een blueprint uit de Gereedschapsmuur wordt een kaart. Wie `if` snapt, leest vijanden beter.
+
+| Afdeling | Hoofdstuk | Spelvorm | Waarom deze vorm | Echte bug |
+| --- | --- | --- | --- | --- |
+| De Vatenvallei (act 1) | H2 basis, H3 tekst | Roguelike deckbuilder | Kaarten zijn waarden en expressies: types, afkappen, overflow, tekst die plakt; Omgieten als ervaring | Level 256, Effective Power |
+| De Gieterij (act 2) | H4 werken met data | Roguelike deckbuilder | Casting met naam, Parse, afronden (`Math.Round(2.5)` is 2) | Flight 501, The Index |
+| De Controlekamer | H5 beslissingen | Gambits: je stelt de regels van een automaat op ("als een vijand onder 10 HP staat: aanvallen") en kijkt dan hoe hij vecht | De eerste regel die klopt wint: volgorde, `else if`, logische operatoren. `switch` is een tabel van gevallen | nog te kiezen |
+| De Lopende Band | H6 loops | Automatiseringspuzzel: banden en machines die herhalen tot een voorwaarde waar is | Herhaling met een stopvoorwaarde; een band die nooit stopt, is de oneindige lus | Zune (2008): een `while`-lus die op 31 december van een schrikkeljaar nooit stopte |
+| De Gereedschapsmuur | H7 methoden | Dezelfde band, met blueprints: een machine één keer bouwen en overal stempelen, met instelknoppen | Hergebruik en parameters; een blueprint wordt ook een kaart in de deckbuilder | nog te kiezen |
+| Het Magazijn | H8 arrays | Grid en inventaris: vakken met een nummer, effecten op de buren | Index, lengte, off-by-one dat je meteen ziet | Heartbleed (2014): lezen voorbij het einde van een array |
+| Nog te benoemen | H9 en verder: OOP | Tower defense of eigen kaarten ontwerpen: een torentype is een klasse, elke geplaatste toren een object | Klasse en object, overerving, polymorfisme (elke toren doet `Aanval()` op zijn manier) | uit te werken |
+| Terug in de deckbuilder | Exceptions, call stack | Roguelike deckbuilder | De beurt is al een call stack, try/catch-kaarten | uit te werken |
+
+**De lijn met visuele programmeeromgevingen.** Een regel in de Controlekamer of een machine op de band is een strategische keuze over wat er moet gebeuren, geen statement dat je regel per regel uitschrijft. Het voorbeeld is Opus Magnum, niet Scratch. Het grootste risico zit in de Lopende Band: die mag niet afglijden naar een opdrachtenlijstje. Dezelfde ontwerptoets geldt: zou iemand zonder interesse in programmeren dit willen spelen?
+
+Alleen de Vatenvallei wordt nu gebouwd. De tabel is een richting, geen belofte: elke afdeling moet eerst als spel leuk zijn. De volgende spike is een klein gambit-prototype voor de Controlekamer, omdat dat genre het verst van de deckbuilder ligt, goedkoop te bouwen is en meteen test of gambits als intents in de deckbuilder werken.
+
+## De wereld: de fabrieksplattegrond
+
+De plattegrond verschijnt pas na [de onthulling](#de-onthulling). Tussen de afdelingen zit geen wereld om rond te lopen, maar één scherm: de plattegrond van de fabriek, getekend als het eerste blad van een montagehandleiding. Elke afdeling is een genummerde stap, en elk nummer is een hoofdstuk van het boek. Vier eisen: overzichtelijk, afdelingen ontgrendelen, mastery per afdeling tonen, en toegang tot klassement en achievements.
+
+### Eén scherm
+
+- In het midden de plattegrond, met de afdelingen in de volgorde van het boek. Aan de rand drie vaste knoppen: de **Codex**, de **Prikklok** (klassement) en het **✗-register** (achievements).
+- Klik je op een afdeling, dan schuift één paneel open: naam, hoofdstuk, spelvorm, de onderdelenlijst, en twee knoppen: **Spelen** en **Dagelijkse run**.
+- Van het openen van de game tot in een spel: hooguit twee klikken. De plattegrond is een keuzescherm, geen menu in een menu.
+
+### Ontgrendelen
+
+- Een gesloten afdeling staat gestippeld getekend, met de onderdelen nog in de zak. Een open afdeling is uitgetekend.
+- Een afdeling gaat open als je de baas of eindpuzzel van de vorige verslaat, of als de docent ze vrijgeeft met de klascode, zodat de klas de lesplanning kan volgen.
+- Open blijft open. Een sterke student gaat vooruit, een zwakkere keert terug naar een eerdere afdeling. Dat terugkeren is nooit een straf: elke afdeling blijft even leuk om opnieuw te spelen.
+- De startpunten binnen de deckbuilder (een run in act 2 beginnen) blijven bestaan, binnen de Vatenvallei en de Gieterij.
+
+### Mastery: de onderdelenlijst
+
+Elke montagehandleiding begint met een onderdelenlijst. Bij ons zijn de onderdelen de concepten van dat hoofdstuk, uit de concepttabel van de afdeling. Elk onderdeel heeft drie toestanden:
+
+1. **In de zak.** Nog niet tegengekomen. Je ziet een silhouet.
+2. **Uitgepakt.** De regel heeft een gevecht of puzzel beslist; de Codex-pagina is open.
+3. **Gemonteerd.** Je hebt de regel bewust in je voordeel gebruikt, in meerdere runs. Bijvoorbeeld: een vijand laten overlopen in drie verschillende runs, of de elite van dat concept verslaan.
+
+De afdeling op de plattegrond groeit mee: hoe meer onderdelen gemonteerd, hoe meer van de tekening ingekt en ingekleurd. Een volledige afdeling komt tot leven: de schouw rookt, de band draait. Mastery is dus geen cijfer of percentage, maar een fabriek die af raakt.
+
+- **Zwaktes zien.** Een open afdeling met losse onderdelen krijgt een sticker "hapert". Zo ziet een student meteen waar er nog te oefenen valt: "vandaag de Lopende Band".
+- **Alleen gedrag telt.** Een onderdeel monteer je door te spelen, nooit door een Codex-pagina te lezen of een vraag te beantwoorden.
+- **Geen slijtage.** Gemonteerd blijft gemonteerd. Een fabriek die roest als je een week niet speelt, is een straf voor afwezigheid.
+- Het docentdashboard leest later dezelfde onderdelenlijst, per student en per klas.
+
+### Prikklok: het klassement
+
+- Per afdeling een dagelijkse seed, met een klasklassement onder anonieme bijnamen. De Prikklok opent op de afdeling waar je het laatst speelde.
+- Elke spelvorm meet iets eigens: in de deckbuilder winst en resterende HP, in de Controlekamer het aantal regels, op de band het aantal machines en cycli.
+- **Histogram in plaats van ranglijst**, zoals bij Opus Magnum: je ziet waar je oplossing valt tegenover de klas, niet dat je 27ste van 28 bent. Een top 10 van bijnamen kan ernaast, maar het histogram is de standaard.
+
+### ✗-register: de achievements
+
+- De achievements zijn ✗-panelen uit de handleiding: dingen die de handleiding verbiedt en die jij toch deed. Elke afdeling heeft een eigen pagina.
+- Voorbeelden: een baas laten overlopen tot hij sterft, de Controlekamer winnen met één regel, de band duizend keer laten draaien zonder vast te lopen.
+- Alleen spelprestaties, nooit leerprestaties: geen "lees tien Codex-pagina's" (zie [Antipatronen](#antipatronen)). Een deel is verborgen, zodat geruchten zich op de speelplaats verspreiden.
+
+## De onthulling
+
+Een student begint Deck Overflow en denkt dat het een gewone deckbuilder is. Pas later ontdekt die dat er een hele fabriek achter de muur ligt, zoals bij Inscryption. In een klas blijft dat geen week geheim, dus we ontwerpen het als een mysterie, niet als een verrassing. Een verrassing is weg zodra iemand ze verklapt. Een mysterie wordt sterker als een klasgenoot zegt: "er zit iets achter die deur."
+
+### Wanneer de muur opengaat
+
+De onthulling mag niet alleen afhangen van winnen, anders zien net de zwakkere studenten de wereld nooit. De eerste van drie voorwaarden die vervuld is, opent de muur:
+
+1. **De baas van act 2 verslaan.** Het grote moment: de muur van de Gieterij scheurt open.
+2. **Het vangnet.** Na een aantal runs of een bepaalde speeltijd, ook zonder ooit te winnen, merkt de fabriek je op: er verschijnt een barst in de muur, en je kan er zelf doorheen.
+3. **De docent.** Komt de les bij H5, dan moet iedereen de Controlekamer in. De docent opent de muur voor de hele klas tegelijk, als klasmoment, niet als spoiler.
+
+### De teaseladder
+
+Elke tease roept een vraag op en legt niets uit. Wie hem mist, mist niets.
+
+| Wanneer | Tease | Waarom het werkt |
+| --- | --- | --- |
+| Vanaf run 1 | Een paginanummer in de hoek, zoals in een handleiding: *p. 2 / 21*. Op de achtergrond van de map een gestippelde deur met een ⑤ | Waarom 21 pagina's? |
+| Runs 1 tot 3 | Af en toe een onderdeel dat nergens voor dient, zoals een tandwiel met "hoort bij stap 6", in een zakje dat je kan openen | Een leeg verzamelvak wil gevuld worden |
+| Runs 2 tot 4 | Een vreemde vijand uit een andere afdeling, met een intent die geen getal is maar een regel: "als jij een schild hebt: dubbele schade" | Een eerste smaak van de Controlekamer, in de deckbuilder |
+| Na een nederlaag | Soms een geluid achter de deur, een ratelende band, of een briefje dat onder de deur door schuift | Het doodscherm wordt gelezen, je wacht er toch even |
+| Codex | Tabbladen die niet opengaan, alleen met een nummer | Silhouetten, zoals in het verzamelalbum |
+| Changelog | "Controlekamer: regels bijgewerkt" | Een administratieve hint, grappig voor wie hem opmerkt |
+
+### Je was al aan het bouwen
+
+De onderdelenlijst wordt vanaf run 1 in stilte bijgehouden. Bij de onthulling zoomt het beeld uit naar de plattegrond, en de Vatenvallei is al half ingekt met de onderdelen die je onbewust monteerde. De tandwielen uit je zakje vallen op hun plaats. De boodschap: je bouwde hier al de hele tijd aan. De wereld is een beloning, geen nieuwe taak.
+
+### Voor en na
+
+- **Voor de onthulling** is er geen plattegrond. De game opent meteen in de deckbuilder, met als titelscherm de kaft van de handleiding. Klassement en ✗-register bestaan, maar alleen voor de deckbuilder, als tabbladen in het spel.
+- **Na de onthulling** vervangt de plattegrond het titelscherm, en verhuizen Prikklok en ✗-register naar de plattegrond.
+- **Wie het al weet, verliest niets.** De teases lezen dan als voorpret in plaats van als raadsel.
+- **Naar buiten toe** mogen product sheet en presentaties voor docenten en instellingen de wereld verklappen. Tegenover studenten zwijgen we erover.
+
 ## Act 1: De Vatenvallei
 
-Act 1 dekt variabelen, datatypes, identifiers, operatoren en expressies. Het thema maakt die concepten tastbaar: in de Vatenvallei is alles een waarde in een vat, en elk vat heeft een vorm (type) en een etiket (naam).
+Act 1 dekt hoofdstuk 2 en 3 van Zie Scherp Scherper: variabelen, datatypes, identifiers, operatoren, expressies, constanten en tekst. Het thema maakt die concepten tastbaar: in de Vatenvallei is alles een waarde in een vat, en elk vat heeft een vorm (type) en een etiket (naam).
 
 - Een `int`-vat heeft geen plaats voor een komma. Wat erin gegoten wordt, verliest zijn decimalen.
 - Een `bool`-vat heeft maar twee standen.
 - Een `string`-vat bewaart tekst, ook als die tekst toevallig op een getal lijkt.
 - Een etiket moet geldig zijn, anders vindt niemand het vat terug.
 
-Structuur: ongeveer 15 knopen op drie paden, 2 elites per pad, 1 baas.
+Structuur: een map van 6 rijen, 1 elite per pad, 1 baas. Samen 10 tot 15 minuten.
 
 | Concept | Waar het in de game zit | Zie Scherp Scherper |
 | --- | --- | --- |
-| Toekenning (`=` vs `+=`) | Zet- en Voeg-toe-kaarten | [hfst] |
-| `int` en afkappen | Tinnen Ridder, schild-mechaniek | [hfst] |
-| `double` | Vlottende kaarten, relic Vlottende Komma | [hfst] |
-| `bool` | Bool-schim | [hfst] |
-| `string` en `+` | Papieren Golem | [hfst] |
-| `char` | Nog open (zie open vragen) | [hfst] |
-| Identifiers | Elite De Naamloze, event De Etiketkamer | [hfst] |
-| Rekenkundige operatoren | Intents van alle vijanden | [hfst] |
-| Integer deling | Splitsbende | [hfst] |
-| Modulo `%` | Ritmeschildpad, relic Restzak | [hfst] |
-| Operatorvoorrang | Baas De Rekenmeester, relic Haakjes | [hfst] |
-| `++` en `--` | Tweelingschutters | [hfst] |
-| Casting | Omgieten-kaarten (kernsysteem), event De Smeltkroes; Codex pas bij hfst 4 | [hfst] |
-| Overflow | Elite De Byte-Golem | [hfst] |
+| Toekenning (`=` vs `+=`) | Zet- en Voeg-toe-kaarten | H2 |
+| `int` en afkappen | Tinnen Ridder, schild-mechaniek | H2 |
+| `double` | Vlottende kaarten, relic Vlottende Komma | H2 |
+| `bool` als datatype | Bool-schim (logische operatoren pas in Act 3, H5) | H2 |
+| Identifiers | Elite De Naamloze, event De Etiketkamer | H2 |
+| Rekenkundige operatoren | Intents van alle vijanden | H2 |
+| Integer deling | Splitsbende | H2 |
+| Modulo `%` | Ritmeschildpad, relic Restzak | H2 |
+| Operatorvoorrang | Baas De Rekenmeester, relic Haakjes | H2 |
+| `++` en `--` | Tweelingschutters | H2 |
+| Constanten (`const`) | De patch: een revisie maakt een waarde `const` | H2 |
+| Overflow | Elite Level 256 (vroeger De Byte-Golem) | H2 |
+| `string` en `+` | Papieren Golem | H3 |
+| `char` is een getal | Kaarten met letters: `'A' + 1` is 66 | H3 |
+| Unicode | Elite Effective Power | H3 |
+| Casting | Omgieten-kaarten (kernsysteem), event De Smeltkroes; Codex pas in Act 2 | H4 |
 
 ## Encounters
 
@@ -282,9 +442,19 @@ Elke gewone vijand draait rond één regel. De valkuil is wat een beginner intu�
 
 Elites combineren een regel met druk. De baas test of je expressies kan lezen terwijl alles tegelijk gebeurt.
 
-### Elite: De Byte-Golem (overflow)
+### Elite: Level 256 (overflow)
 
 250 van 255 HP, onkwetsbaar voor schade, heelt zichzelf elke beurt met 2. Na een paar beurten zit hij op 255 en zijn volgende heling laat hem klappen. Wie het doorheeft, speelt een Herstel-kaart op hem en wint in één beurt. Wie het niet doorheeft, kan hem ook uitzitten, maar verliest onderweg veel HP.
+
+Vroeger De Byte-Golem. Hij is nu een speelhalkast waarvan de rechterhelft van het scherm in brokken uiteenvalt: de echte bug van Pac-Man, waar het levelnummer een `byte` is en level 256 het doolhof breekt. De Codex vertelt dat verhaal na het gevecht.
+
+### Elite: Effective Power (tekst en Unicode)
+
+Een bericht dat ontploft als je het leest. Zijn HP is een `string`: wie er schade bij telt, plakt cijfers aan zijn tekst en maakt hem langer. Wie ziet dat elk teken een getal is (`char`), kan hem teken per teken afbreken. Het is de echte bug van 2015, waarbij één reeks Unicode-tekens iPhones liet crashen.
+
+### Elite: Flight 501 (casting, Act 2)
+
+Een raket met 506 HP als `int`, te sterk om met schade te verslaan. Wie hem naar `byte` omgiet, ziet 506 terugspringen naar 250, en dan is hij te doen. Het is de echte bug van Ariane 5 (1996): een getal dat niet in zijn nieuwe type paste. In spike 4 tot 6 heette hij de Tinnen Kolos.
 
 ### Elite: De Naamloze (identifiers)
 
@@ -342,11 +512,14 @@ Wie een pagina leest, krijgt niets extra. De beloning zit in de volgende run: je
 
 Deck Overflow wordt een website: spelen zonder installatie, op laptop en tablet.
 
-- **Game-engine:** Blazor WebAssembly of een JavaScript-game-engine met canvas. De keuze hangt af van hoe vlot animaties, partikels en hit pause lopen (zie open vragen).
+- **Game-engine:** Blazor WebAssembly voor de regelmotor en de shell, PixiJS voor de stage. Gekozen na zes spikes.
 - **Audio:** Web Audio, zodat we toonhoogte per trigger kunnen laten stijgen en geluiden laag op laag kunnen stapelen.
 - **Regelmotor:** één centrale motor die C#-semantiek naspeelt (types, afkappen, overflow, voorrang). De game-feel-laag luistert naar zijn events, zodat elke regel automatisch zijn eigen animatie en geluid krijgt.
-- **Docentdashboard:** per student welke Codex-pagina's ontgrendeld zijn, plus klas-seeds en speelduurlimiet.
+- **Spelers en accounts:** iedereen mag spelen, ook leerlingen uit het middelbaar. Je speelt meteen als gast en kan later een account met gebruikersnaam en wachtwoord maken om je fabriek te bewaren; e-mail is optioneel. In klassementen staat altijd een gegenereerde bijnaam, nooit wat de speler zelf typte. Geen analytics of tracking. De klascode, waarmee een docent een afdeling vrijgeeft, is optioneel. Details in het [Spike Design Doc](spike-design-doc.md#hosting-accounts-en-data).
+- **Docentdashboard:** pas na de MVP.
 - **LMS-koppeling:** met Moodle-omgevingen zoals Digitap, als latere stap.
+
+**Taal.** Het spel is Engels. Alle spelteksten staan in één bestand per taal, zodat een Nederlandse versie één extra bestand is.
 
 ## Antipatronen
 
@@ -356,18 +529,18 @@ Zodra een van deze erin sluipt, zijn we terug bij gamification. Ze zijn verboden
 - **Uitleg vooraf.** Geen tutorialschermen die een regel uitleggen voor je hem tegenkomt. Hooguit één zin bij de eerste kaart van een nieuw type.
 - **Regels die buigen voor de les.** Als `int` afkapt, dan kapt `int` altijd af, ook als het de speler toevallig helpt.
 - **Punten of cijfers.** Geen score per juist antwoord, geen badges voor gelezen Codex-pagina's. Winnen is de enige score.
-- **Code typen in Act 1.** Pas in latere acts, en dan nog als optionele laag.
+- **Code typen in Act 1.** Pas in latere afdelingen, en dan nog als optionele laag.
 - **Eén juiste oplossing.** Elk gevecht moet op meerdere manieren te winnen zijn. Begrijpen maakt het efficiënter, niet verplicht.
 
 ## Open vragen en volgende stappen
 
 De grootste onzekerheid is of studenten de regels in de game herkennen wanneer ze later echte code lezen. Een kleine playtest moet dat vroeg uitwijzen.
 
-- [ ] Hoofdstuknummers uit Zie Scherp Scherper invullen in de concepttabel
-- [ ] `char` een eigen vijand of mechaniek geven, of bewust naar een latere act schuiven
+- [x] Hoofdstuknummers uit Zie Scherp Scherper invullen in de concepttabel
+- [x] `char` een eigen vijand of mechaniek geven, of bewust naar een latere act schuiven
 - [ ] Identifiers zijn het zwakste concept als mechaniek: De Naamloze testen op fun, niet alleen op leerwaarde
-- [ ] Runlengte afstemmen op een lesblok
-- [ ] Techniekkeuze: Blazor WebAssembly of een JavaScript-game-engine
+- [x] Runlengte afstemmen op een lesblok
+- [x] Techniekkeuze: Blazor WebAssembly of een JavaScript-game-engine
 - [ ] Papieren prototype van 3 encounters en de Rekenmeester, playtest met 5 studenten
 - [ ] Transfer meten: na de playtest dezelfde studenten 5 korte C#-expressies laten voorspellen
 
@@ -378,4 +551,23 @@ De grootste onzekerheid is of studenten de regels in de game herkennen wanneer z
 - [ ] Geluidsontwerp: een eerste set van tien kerngeluiden maken en testen
 
 - [ ] Typetabel uitwerken: welk aanvalstype werkt hoe op welk doelwittype
-- [ ] Bepalen hoe de Codex-pagina Casting opengaat: via het docentendashboard of gekoppeld aan de lesplanning
+- [x] Bepalen hoe de Codex-pagina Casting opengaat: via het docentendashboard of gekoppeld aan de lesplanning
+
+Beslist op 2 oktober 2026: Act 1 is H2 en H3, een act duurt 10 tot 15 minuten, de Codex opent na het gevecht met echte C# en een link naar het hoofdstuk, `char` hoort bij Act 1. Nog open:
+
+- [x] Art: de AI-gegenereerde art in de handleidingstijl is definitief (beslist op 2 oktober 2026). Nieuwe tekeningen komen van hetzelfde model met het manualvel als referentiebeeld, zodat de stijl gelijk blijft.
+- [ ] Startpunten: hoe groot is het gedrafte deck bij een start in een latere act, en welke relics krijg je mee?
+- [ ] Echte bugs kiezen voor de Controlekamer (beslissingen) en de Gereedschapsmuur (methoden)
+- [x] Acts 7 en verder (H9 tot H21) uitwerken: vervangen door afdelingen met een eigen spelvorm (3 oktober 2026)
+- [ ] Playtest pas na Act 1: 5 studenten en 2 collega's
+
+Beslist op 3 oktober 2026: elke afdeling krijgt de spelvorm die past bij haar hoofdstuk, rond één fabrieksplattegrond. Nog open:
+
+- [x] Spike 8: gambit-prototype voor de Controlekamer gebouwd ([spikes/08-controlekamer](../spikes/08-controlekamer/)), nog niet met spelers getest
+- [ ] Gambits als intents in de deckbuilder: pas proberen als spike 8 toont dat spelers de regels van de vijand lezen
+- [ ] Per afdeling vastleggen wanneer een onderdeel "gemonteerd" is
+- [ ] Spelvorm voor OOP kiezen: tower defense of eigen kaarten ontwerpen
+- [ ] Wat ontgrendelt een afdeling precies: de baas van de vorige, of al een bepaald aantal gemonteerde onderdelen?
+- [ ] Plattegrond als papieren mock testen: begrijpt een student zonder uitleg waar er te oefenen valt?
+- [ ] Vangnet voor de onthulling afstellen: na hoeveel runs of hoeveel speeltijd gaat de muur vanzelf open?
+- [ ] Teases testen: merken studenten het paginanummer, de deur en de onderdelen op, en worden ze er nieuwsgierig van?
