@@ -16,6 +16,7 @@ public static class Bestiary
     public const string Colossus = "colossus";
     public const string Golem = "golem";
     public const string Reckoner = "reckoner";
+    public const string Splitter = "splitter";
 
     // Act 2: de Gieterij
     public const string Ingot = "ingot";
@@ -29,7 +30,7 @@ public static class Bestiary
 
     public static readonly IReadOnlyList<string> Bosses = [Reckoner, Caster];
 
-    public static readonly IReadOnlyList<string> All = [Slime, Knight, Ghost, Dripper, Jug, Colossus, Golem, Reckoner, Ingot, Rounder, Index, Caster, Label];
+    public static readonly IReadOnlyList<string> All = [Slime, Knight, Ghost, Dripper, Jug, Colossus, Golem, Reckoner, Splitter, Ingot, Rounder, Index, Caster, Label];
 
     public static bool Exists(string? key) => key is not null && All.Contains(key);
 
@@ -39,10 +40,11 @@ public static class Bestiary
             new CombatantSetup(Slime, ValueKind.Int, Hp: 20, MaxHp: 20),
             [new("2 * 3", 2 * 3), new("4 + 4", 4 + 4)]),
 
-        // Een int met een int-schild: Vlottende kaarten verliezen hier hun decimalen
+        // Een int met een int-schild: Vlottende kaarten verliezen hier hun decimalen.
+        // Zijn tweede aanval wordt kleiner naarmate je meer kaarten speelt.
         Knight => new(
             new CombatantSetup(Knight, ValueKind.Int, Hp: 30, MaxHp: 30),
-            [new("5 + 3", 5 + 3), new("10 / 3", 10 / 3)],
+            [new("5 + 3", 5 + 3), Intent.Live("24 / (cards + 1)", c => 24 / (c.Cards + 1))],
             BlockAfterAttack: 5.5),
 
         // Een double met een decimaal schild. Naar int omgegoten verliest hij de restjes.
@@ -51,10 +53,16 @@ public static class Bestiary
             [new("9 / 2.0", 9 / 2.0), new("13 / 2.0", 13 / 2.0)],
             BlockAfterAttack: 12.5),
 
-        // Een double zonder schild die halve schade uitdeelt: jouw int-HP kapt af
+        // Een double zonder schild die halve schade uitdeelt: jouw int-HP kapt af.
+        // Zijn tweede aanval straft energie die je overhoudt.
         Dripper => new(
             new CombatantSetup(Dripper, ValueKind.Double, Hp: 19.5, MaxHp: 19.5),
-            [new("5 * 1.5", 5 * 1.5), new("2.5 + 2.5", 2.5 + 2.5)]),
+            [new("5 * 1.5", 5 * 1.5), Intent.Live("energy * 4 + 2.5", c => c.Energy * 4 + 2.5)]),
+
+        // Deling van gehele getallen als verdediging: zonder blok 30, met 5 blok nog 5
+        Splitter => new(
+            new CombatantSetup(Splitter, ValueKind.Int, Hp: 26, MaxHp: 26),
+            [Intent.Live("30 / (block + 1)", c => 30 / (c.Block + 1)), new("4 * 3", 4 * 3)]),
 
         // Het wondermoment: een byte die zoveel drinkt dat hij omklapt. Hij heelt meer dan
         // een starterdeck per beurt kan slaan, dus hij klapt altijd om, wat je ook doet.

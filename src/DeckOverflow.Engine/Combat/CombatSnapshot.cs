@@ -38,8 +38,9 @@ public sealed record CombatantView(
     IntentView? Intent,
     string? Text = null);
 
-/// <param name="Value">Leeg als het totaal verborgen blijft.</param>
-public sealed record IntentView(string Expression, double? Value);
+/// <param name="Value">Leeg als het totaal verborgen blijft. Bij een bewuste intent: wat het nu zou zijn.</param>
+/// <param name="Filled">Alleen bij een bewuste intent: de expressie met jouw getallen ingevuld, bv. <c>30 / (5 + 1)</c>.</param>
+public sealed record IntentView(string Expression, double? Value, string? Filled = null);
 
 /// <param name="Counter">Voortgang voor relics die tellen, bv. "1.5/3". Leeg voor de rest.</param>
 public sealed record RelicView(string Id, string? Counter);

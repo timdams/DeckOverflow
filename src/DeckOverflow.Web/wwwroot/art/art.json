@@ -43,7 +43,8 @@
     "rounder": "actors/colossus",
     "index": "actors/the-index",
     "caster": "actors/reckoner",
-    "label": "items/wrong-label"
+    "label": "items/wrong-label",
+    "splitter": "actors/slime"
   },
   "nodes": {
     "fight": "items/whack",

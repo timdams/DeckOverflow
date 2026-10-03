@@ -33,6 +33,8 @@ public sealed class Combat
     private bool _enemyCrashed;
     private int _typeCycleIndex;
     private int _cardsPlayed;
+    /// <summary>Kaarten deze beurt: een variabele voor bewuste intents.</summary>
+    private int _cardsThisTurn;
 
     private Combat(CombatSetup setup, ulong seed)
     {
@@ -84,7 +86,7 @@ public sealed class Combat
         [.. _deck.Hand.Select(c => new CardView(c.Id, CostOf(c), CardText.Of(c), c.Target, c.Kind, c.CastTo, CostOf(c) <= Energy))],
         _deck.DrawCount,
         _deck.DiscardCount,
-        [View(_player, intent: null), View(_enemy, _enemy.IsDead ? null : CurrentIntent)],
+        [View(_player, intent: null, Context()), View(_enemy, _enemy.IsDead ? null : CurrentIntent, Context())],
         Outcome,
         [.. _modifiers.Select(Label)],
         [.. _relics.Select(r => new RelicView(r.Id, r.Counter))]);
@@ -169,6 +171,7 @@ public sealed class Combat
         Emit(new CardPlayed(card.Id, PlayerId, target.Id));
         PayRelics(card);
         _cardsPlayed++;
+        _cardsThisTurn++;
 
         if (crash is not null)
         {
@@ -213,8 +216,11 @@ public sealed class Combat
         }
         else
         {
-            Emit(new AttackLaunched(EnemyId, PlayerId, attack.Expression, attack.Value));
-            DealDamage(_player, attack.Value, fromPlayer: false);
+            // Een bewuste intent rekent nu uit, met wat je aan het eind van je beurt hebt
+            IntentContext context = Context();
+            double value = attack.ValueIn(context);
+            Emit(new AttackLaunched(EnemyId, PlayerId, attack.FilledIn(context), value));
+            DealDamage(_player, value, fromPlayer: false);
             if (CheckOutcome()) return;
         }
 
@@ -235,6 +241,7 @@ public sealed class Combat
 
         // Nieuwe beurt
         Turn++;
+        _cardsThisTurn = 0;
         Energy = _setup.MaxEnergy;
         if (_player.Block > 0)
         {
@@ -245,7 +252,7 @@ public sealed class Combat
         Emit(new TurnStarted(Turn, Energy));
 
         Intent next = CurrentIntent;
-        Emit(new IntentRevealed(EnemyId, next.Expression, next.Hidden ? null : next.Value));
+        Emit(new IntentRevealed(EnemyId, next.Expression, next.Hidden ? null : next.ValueIn(Context())));
     }
 
     // ---------- Kaarteffecten ----------
@@ -644,8 +651,11 @@ public sealed class Combat
         _ => "int.Parse"
     };
 
-    private static CombatantView View(Combatant c, Intent? intent) => new(
+    /// <summary>De variabelen van een bewuste intent, zoals ze nu staan.</summary>
+    private IntentContext Context() => new((int)_player.Block, _cardsThisTurn, Energy, (int)_player.Hp);
+
+    private static CombatantView View(Combatant c, Intent? intent, IntentContext context) => new(
         c.Id, c.Key, c.Kind, c.Hp, c.MaxHp, c.Block, c.IsEnemy,
-        intent is null ? null : new IntentView(intent.Expression, intent.Hidden ? null : intent.Value),
+        intent is null ? null : new IntentView(intent.Expression, intent.Hidden ? null : intent.ValueIn(context), intent.IsLive ? intent.FilledIn(context) : null),
         c.Text);
 }

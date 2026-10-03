@@ -120,6 +120,8 @@ export function sync(snapshot) {
     a.setHp(c.hp);
     a.setBlock(c.block);
     if (c.intent && !a.intentShown) a.typeIntent(c.intent.expression, c.intent.value);
+    // Een bewuste intent rekent mee terwijl je speelt: het totaal springt naar zijn nieuwe waarde
+    else if (c.intent?.filled && a.intentShown) a.refreshIntent(c.intent.value);
     if (!c.intent) a.setIntent(null);
   }
 
@@ -565,6 +567,15 @@ function createActor(c) {
         intentValue.text = intentLabel(intentData.value);
         layoutBubble();
       }
+    },
+
+    /** Alleen het totaal bijwerken, met een kleine sprong als het veranderde. */
+    refreshIntent(value) {
+      const label = intentLabel(value);
+      if (intentValue.text === label) return;
+      intentValue.text = label;
+      layoutBubble();
+      gsap.fromTo(intentValue.scale, { x: 1.5, y: 1.5 }, { x: 1, y: 1, duration: sec(260), ease: 'back.out(2)' });
     },
 
     async typeIntent(expression, value) {
