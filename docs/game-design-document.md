@@ -403,7 +403,7 @@ Elke tease roept een vraag op en legt niets uit. Wie hem mist, mist niets.
 | Runs 1 tot 3 | Af en toe een onderdeel dat nergens voor dient, zoals een tandwiel met "hoort bij stap 6", in een zakje dat je kan openen | Een leeg verzamelvak wil gevuld worden |
 | Runs 2 tot 4 | Een vreemde vijand uit een andere afdeling, met een intent die geen getal is maar een regel: "als jij een schild hebt: dubbele schade" | Een eerste smaak van de Controlekamer, in de deckbuilder |
 | Na een nederlaag | Soms een geluid achter de deur, een ratelende band, of een briefje dat onder de deur door schuift | Het doodscherm wordt gelezen, je wacht er toch even |
-| Codex | Tabbladen die niet opengaan, alleen met een nummer | Silhouetten, zoals in het verzamelalbum |
+| Codex | Dichtgeniete tabbladen H5 tot H18, alleen met een nummer; bij H5 steekt een hoekje uit (`if … then …`) | Het boek is dikker dan wat je al zag |
 | Changelog | "Controlekamer: regels bijgewerkt" | Een administratieve hint, grappig voor wie hem opmerkt |
 
 ### Je was al aan het bouwen
@@ -595,6 +595,28 @@ Wie een pagina leest, krijgt niets extra. De beloning zit in de volgende run: je
 | Exceptions | H10 | een `FormatException` of `OverflowException` |
 
 De laatste laag linkt naar de juiste pagina in de [online versie van het boek](https://timdams.github.io/ziescherpscherper/content/README.html), waar het kan met een anker (bv. `#conversie`).
+
+### De Codex is het boek
+
+Beslist op 3 oktober 2026. De Codex is geordend volgens Zie Scherp Scherper, niet volgens de spelvormen: een tabblad per hoofdstuk, H2 tot H18. Elke afdeling kan pagina's vullen. Deling van gehele getallen voel je in de deckbuilder en later op de Lopende Band; `if` en `else if` komen uit de Controlekamer. Zo is de Codex het ene ding dat in elke spelvorm hetzelfde blijft, en valt hij samen met de lesplanning van een docent.
+
+**De Codex is ook de onderdelenlijst.** De mastery op de [fabrieksplattegrond](#mastery-de-onderdelenlijst) en de Codex zijn hetzelfde: concepten per hoofdstuk, met drie toestanden.
+
+| Onderdelenlijst | Codex |
+| --- | --- |
+| In de zak | Silhouet (`???`) |
+| Uitgepakt | Pagina open: je voelde de regel |
+| Gemonteerd | Stempel op de pagina: je gebruikte de regel bewust, in meerdere runs of in twee spelvormen |
+
+Na de onthulling toont een pagina ook waar je de regel voelde, met kleine icoontjes per afdeling. Dat is de transfer die we zoeken: dezelfde regel in een andere vorm herkennen. Stempel en icoontjes wachten tot er een tweede spelvorm in het spel zit.
+
+**Teasen met mate.**
+
+- Voor de onthulling staan H2 tot H4 open, plus elk hoofdstuk waarin al een pagina openging (Exceptions, H10, kan vroeg opduiken). De rest is dichtgeniet: alleen een nummer, geen naam, geen spelvorm, geen aantal pagina's.
+- Eén tabblad laat iets lekken: bij H5 steekt een hoekje uit met een regel zoals in een handleiding, `if … then …`. Meer niet.
+- De teller telt alleen open tabbladen: "3 van 10 pagina's", nooit "3 van 87". Een album van 87 lege vakjes motiveert verzamelaars, maar ontmoedigt net de zwakkere studenten.
+- Bij de onthulling springen de nietjes eruit, en de tabbladen van de afdelingen die openkomen, vouwen open.
+- De Codex vertelt nooit dat er andere spelvormen komen. Hij mag laten zien dát het boek dikker is, niet hoe het verder gaat.
 
 ## Platform en techniek
 

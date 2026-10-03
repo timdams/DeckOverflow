@@ -390,14 +390,8 @@ button.small { padding: 6px 12px; font-size: 12px; }
   border-radius: 6px;
   box-shadow: 3px 3px 0 var(--ink);
 }
-.codex-page h3 { margin: 0; font-size: 1.15em; padding-right: 36px; }
+.codex-page h3 { margin: 0; font-size: 1.15em; }
 .codex-page p { margin: 0; line-height: 1.4; }
-.codex-page .chapter {
-  position: absolute; top: 10px; right: 10px;
-  font-size: 12px; font-weight: 700; color: var(--muted);
-  border: 1.5px solid currentColor; border-radius: 50%;
-  width: 30px; height: 30px; display: grid; place-items: center;
-}
 .codex-page button { align-self: flex-start; }
 .codex-page .read { color: var(--ink); font-style: italic; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
 .codex-page.focus { box-shadow: 5px 5px 0 var(--ink); transform: translate(-2px, -2px); }
@@ -431,3 +425,58 @@ button.small { padding: 6px 12px; font-size: 12px; }
   font-size: 14px;
   padding: 6px 14px;
 }
+
+/* Tabbladen per hoofdstuk. Dichtgeniet: gestippeld, met een nietje, en een hoekje dat uitsteekt bij H5. */
+.codex-tabs { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.codex-tab {
+  position: relative;
+  min-width: 46px;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 700;
+  border: 2px solid var(--ink);
+  border-radius: 6px 6px 0 0;
+  box-shadow: none;
+  background: var(--white);
+}
+.codex-tab.current { background: var(--ink); color: var(--white); }
+.codex-tab.stapled {
+  display: inline-flex;
+  justify-content: center;
+  color: var(--muted);
+  border-color: var(--muted);
+  border-style: dashed;
+  background: transparent;
+  cursor: default;
+}
+/* Het nietje */
+.codex-tab.stapled::after {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  width: 16px;
+  height: 4px;
+  margin-left: -8px;
+  border: 2px solid var(--muted);
+  border-bottom: none;
+}
+.codex-tab .corner {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%) rotate(-4deg);
+  white-space: nowrap;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--white);
+  border: 1.5px solid var(--ink);
+  border-top: none;
+  padding: 1px 6px 3px;
+  clip-path: polygon(0 0, 100% 0, 100% 60%, 70% 100%, 0 100%);
+}
+.codex-tab.leak { margin-bottom: 14px; }
+
+/* Het boek dekt het titelscherm volledig af, anders schemert de titeltekening door */
+.modal:has(.codex-book) { background: var(--paper); }

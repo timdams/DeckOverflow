@@ -1,21 +1,45 @@
 @using DeckOverflow.Engine.Codex
 @inject Strings S
 
-@* De Codex: regels die je in een gevecht voelde, met hun echte naam. Een dichte pagina is een silhouet.
-   Een open pagina heeft vier lagen die je zelf openklikt: wat er gebeurde, de naam, de code, het boek. *@
+@* De Codex is het boek: een tabblad per hoofdstuk van Zie Scherp Scherper, over alle spelvormen heen.
+   Open tabbladen tonen hun pagina's; een dichte pagina is een silhouet. Een open pagina heeft vier lagen
+   die je zelf openklikt: wat er gebeurde, de naam, de code, het boek.
+   Hoofdstukken die nog niet aan bod kwamen, zijn dichtgeniet: alleen een nummer, geen naam en geen teller.
+   Dat het boek dikker is, mag je zien; wat erin staat, nog niet. *@
 
 <div class="modal" @onclick="OnClose">
     <div class="modal-body codex-book" @onclick:stopPropagation="true">
         <h2>@S.T("ui.codex")</h2>
-        <p class="hint">@S.T("ui.codex.intro") · @S.T("ui.codex.count", ("open", Pages.Count), ("total", CodexCatalog.All.Count))</p>
+        <p class="hint">@S.T("ui.codex.intro") · @S.T("ui.codex.count", ("open", OpenCount), ("total", OpenTotal))</p>
+
+        <nav class="codex-tabs">
+            @for (int chapter = FirstChapter; chapter <= LastChapter; chapter++)
+            {
+                int ch = chapter;
+                if (IsOpen(ch))
+                {
+                    <button class="codex-tab @(ch == _chapter ? "current" : "")" @onclick="() => _chapter = ch">@S.T("ui.codex.tab", ("chapter", ch))</button>
+                }
+                else
+                {
+                    <span class="codex-tab stapled @(ch == Leak ? "leak" : "")" title="@S.T("ui.codex.stapled")">
+                        @S.T("ui.codex.tab", ("chapter", ch))
+                        @if (ch == Leak)
+                        {
+                            @* Eén hoekje steekt uit: een regel zoals in een handleiding, meer niet *@
+                            <span class="corner">@S.T("ui.codex.leak")</span>
+                        }
+                    </span>
+                }
+            }
+        </nav>
 
         <div class="codex-pages">
-            @foreach (var entry in CodexCatalog.All)
+            @foreach (var entry in CodexCatalog.All.Where(e => e.Chapter == _chapter))
             {
                 if (!Pages.TryGetValue(entry.Key, out var values))
                 {
                     <div class="codex-page locked" title="@S.T("ui.codex.locked-hint")">
-                        <span class="chapter">H@(entry.Chapter?.ToString() ?? "?")</span>
                         <strong>@S.T("ui.codex.locked")</strong>
                     </div>
                     continue;
@@ -23,7 +47,6 @@
 
                 int layer = _layers.GetValueOrDefault(entry.Key, 1);
                 <div class="codex-page open @(entry.Key == _focus ? "focus" : "")">
-                    <span class="chapter">H@(entry.Chapter?.ToString() ?? "?")</span>
                     <h3>@(layer >= 2 ? S.T($"codex.{entry.Key}.name") : S.T("ui.codex.happened"))</h3>
                     <p>@S.T(new TextRef($"codex.{entry.Key}.happened", values))</p>
 
@@ -53,6 +76,16 @@
     /// <summary>De online versie van Zie Scherp Scherper.</summary>
     private const string BookUrl = "https://timdams.github.io/ziescherpscherper/content/";
 
+    /// <summary>Hoofdstuk 1 is de inleiding; het boek telt 18 hoofdstukken.</summary>
+    private const int FirstChapter = 2;
+    private const int LastChapter = 18;
+
+    /// <summary>De hoofdstukken van de deckbuilder: die staan altijd open.</summary>
+    private const int LastOpenChapter = 4;
+
+    /// <summary>Het dichtgeniete tabblad waar een hoekje uitsteekt: beslissingen, de Controlekamer.</summary>
+    private const int Leak = 5;
+
     /// <summary>Open pagina's, met de getallen van het moment waarop ze opengingen.</summary>
     [Parameter, EditorRequired] public IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> Pages { get; set; } = default!;
 
@@ -64,6 +97,21 @@
     /// <summary>Hoeveel lagen per pagina open staan: 1 wat er gebeurde, 2 de naam, 3 de code, 4 het boek.</summary>
     private readonly Dictionary<string, int> _layers = [];
     private string? _focus;
+    private int _chapter = FirstChapter;
 
-    protected override void OnParametersSet() => _focus = Focus;
+    /// <summary>Een tabblad is open voor de hoofdstukken van de deckbuilder, of zodra er een pagina in openging.</summary>
+    private bool IsOpen(int chapter) =>
+        chapter <= LastOpenChapter || CodexCatalog.All.Any(e => e.Chapter == chapter && Pages.ContainsKey(e.Key));
+
+    private IEnumerable<CodexEntry> OpenEntries => CodexCatalog.All.Where(e => e.Chapter is { } c && IsOpen(c));
+
+    /// <summary>De teller telt alleen open tabbladen: "3 van 11", nooit "3 van 87".</summary>
+    private int OpenTotal => OpenEntries.Count();
+    private int OpenCount => OpenEntries.Count(e => Pages.ContainsKey(e.Key));
+
+    protected override void OnParametersSet()
+    {
+        _focus = Focus;
+        if (Focus is not null && CodexCatalog.All.FirstOrDefault(e => e.Key == Focus)?.Chapter is { } chapter) _chapter = chapter;
+    }
 }
