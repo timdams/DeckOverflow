@@ -4,7 +4,8 @@ using DeckOverflow.Engine.Values;
 namespace DeckOverflow.Engine.Combat;
 
 /// <param name="Key">Vaste sleutel voor naam (<c>enemy.&lt;key&gt;</c> in <c>en.json</c>), sprite en geluid. Geen spelregel.</param>
-public sealed record CombatantSetup(string Key, ValueKind Kind, double Hp, double MaxHp, double Block = 0);
+/// <param name="Text">Alleen voor een <c>string</c>: de tekst die zijn HP is, bv. <c>"40"</c>.</param>
+public sealed record CombatantSetup(string Key, ValueKind Kind, double Hp, double MaxHp, double Block = 0, string? Text = null);
 
 /// <param name="Pattern">Aanvallen in volgorde, één per beurt. Na de laatste begint hij opnieuw.</param>
 /// <param name="BlockAfterAttack">Blok dat de vijand na zijn aanval opbouwt. Volgt de regels van zijn type.</param>

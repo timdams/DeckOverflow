@@ -19,7 +19,8 @@
     "split": "items/heavy-strike",
     "ink": "items/set-to-1",
     "read": "items/rev-stamped",
-    "measure-twice": "items/remold"
+    "measure-twice": "items/remold",
+    "read-the-label": "items/wrong-label"
   },
   "relics": {
     "counter": "items/relic-counter",
@@ -41,7 +42,8 @@
     "ingot": "actors/golem",
     "rounder": "actors/colossus",
     "index": "actors/the-index",
-    "caster": "actors/reckoner"
+    "caster": "actors/reckoner",
+    "label": "items/wrong-label"
   },
   "nodes": {
     "fight": "items/whack",

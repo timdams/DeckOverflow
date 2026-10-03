@@ -119,6 +119,91 @@ public class MoldWorksTests
         Assert.IsType<PlayRejected>(Assert.Single(events));
     }
 
+    // ---------- The Label: tekst als HP ----------
+
+    [Fact]
+    public void Schade_op_The_Label_plakt_aan_zijn_tekst()
+    {
+        var combat = TestHelpers.StartWithHand(Against(Bestiary.Label), CardCatalog.Strike.Id);
+
+        var events = combat.Play(CardCatalog.Strike.Id, E).WithoutSeq();
+
+        Assert.Contains(new TextAppended(E, "40", "6", "406"), events);
+        Assert.Equal("406", combat.Enemy().Text);
+        Assert.Equal(CombatOutcome.Ongoing, combat.Outcome);
+    }
+
+    [Fact]
+    public void Read_the_Label_maakt_van_de_tekst_een_getal_dat_je_kan_raken()
+    {
+        var combat = TestHelpers.StartWithHand(Against(Bestiary.Label, CardCatalog.ReadTheLabel), CardCatalog.ReadTheLabel.Id, CardCatalog.Strike.Id);
+
+        var parsed = combat.Play(CardCatalog.ReadTheLabel.Id, E).WithoutSeq();
+        combat.Play(CardCatalog.Strike.Id, E);
+
+        Assert.Contains(new TextParsed(E, "int.Parse", "40", 40, ValueKind.Int), parsed);
+        Assert.Equal(ValueKind.Int, combat.Enemy().Kind);
+        Assert.Null(combat.Enemy().Text);
+        Assert.Equal(34, combat.Enemy().Hp);
+    }
+
+    [Fact]
+    public void Wie_eerst_slaat_en_dan_parset_vecht_tegen_een_veel_groter_getal()
+    {
+        var combat = TestHelpers.StartWithHand(Against(Bestiary.Label, CardCatalog.ReadTheLabel), CardCatalog.Strike.Id, CardCatalog.ReadTheLabel.Id);
+        combat.Play(CardCatalog.Strike.Id, E);
+
+        combat.Play(CardCatalog.ReadTheLabel.Id, E);
+
+        Assert.Equal(406, combat.Enemy().Hp);
+        Assert.Equal(406, combat.Enemy().MaxHp);
+    }
+
+    [Fact]
+    public void Een_double_op_de_tekst_laat_het_parsen_crashen_en_kost_je_beurt()
+    {
+        var combat = TestHelpers.StartWithHand(Against(Bestiary.Label, CardCatalog.ReadTheLabel), CardCatalog.FloatingStrike.Id, CardCatalog.ReadTheLabel.Id);
+        combat.Play(CardCatalog.FloatingStrike.Id, E);
+        Assert.Equal("402.52.52.5", combat.Enemy().Text);
+
+        var events = combat.Play(CardCatalog.ReadTheLabel.Id, E).WithoutSeq();
+
+        Assert.Contains(new ExceptionThrown("FormatException", "int.Parse(\"402.52.52.5\")"), events);
+        Assert.Contains(events, e => e is TurnEnded);
+        Assert.Equal(ValueKind.String, combat.Enemy().Kind);
+    }
+
+    [Fact]
+    public void Omgieten_van_tekst_compileert_niet()
+    {
+        var combat = TestHelpers.StartWithHand(Against(Bestiary.Label), CardCatalog.RemoldInt.Id);
+
+        var events = combat.Play(CardCatalog.RemoldInt.Id, E);
+
+        Assert.Equal("reject.cast-text", Assert.IsType<PlayRejected>(Assert.Single(events)).Reason);
+    }
+
+    [Fact]
+    public void Measure_Twice_zet_tekst_om_met_Convert_ToByte()
+    {
+        var combat = TestHelpers.StartWithHand(Against(Bestiary.Label, CardCatalog.MeasureTwice), CardCatalog.MeasureTwice.Id);
+
+        var events = combat.Play(CardCatalog.MeasureTwice.Id, E).WithoutSeq();
+
+        Assert.Contains(new TextParsed(E, "Convert.ToByte", "40", 40, ValueKind.Byte), events);
+        Assert.Equal(ValueKind.Byte, combat.Enemy().Kind);
+    }
+
+    [Fact]
+    public void Read_the_Label_op_een_getal_weigert()
+    {
+        var combat = TestHelpers.StartWithHand(Against(Bestiary.Knight, CardCatalog.ReadTheLabel), CardCatalog.ReadTheLabel.Id);
+
+        var events = combat.Play(CardCatalog.ReadTheLabel.Id, E);
+
+        Assert.Equal("reject.not-text", Assert.IsType<PlayRejected>(Assert.Single(events)).Reason);
+    }
+
     // ---------- The Caster ----------
 
     [Fact]

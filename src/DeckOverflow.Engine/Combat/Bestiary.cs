@@ -22,13 +22,14 @@ public static class Bestiary
     public const string Rounder = "rounder";
     public const string Index = "index";
     public const string Caster = "caster";
+    public const string Label = "label";
 
     /// <summary>Alle elites, over de acts heen. Welke elite in welke act zit, staat in <see cref="Runs.Acts"/>.</summary>
     public static readonly IReadOnlyList<string> Elites = [Colossus, Golem, Index];
 
     public static readonly IReadOnlyList<string> Bosses = [Reckoner, Caster];
 
-    public static readonly IReadOnlyList<string> All = [Slime, Knight, Ghost, Dripper, Jug, Colossus, Golem, Reckoner, Ingot, Rounder, Index, Caster];
+    public static readonly IReadOnlyList<string> All = [Slime, Knight, Ghost, Dripper, Jug, Colossus, Golem, Reckoner, Ingot, Rounder, Index, Caster, Label];
 
     public static bool Exists(string? key) => key is not null && All.Contains(key);
 
@@ -90,6 +91,11 @@ public static class Bestiary
             new CombatantSetup(Ingot, ValueKind.Int, Hp: 34, MaxHp: 34),
             [new("6 + 6", 6 + 6), new("3 * 3", 3 * 3)],
             BlockAfterAttack: 6),
+
+        // Zijn HP is tekst: elke treffer plakt eraan vast. Eerst parsen, dan pas raken.
+        Label => new(
+            new CombatantSetup(Label, ValueKind.String, Hp: 40, MaxHp: 40, Text: "40"),
+            [new("4 + 4", 4 + 4), new("13 / 2", 13 / 2)]),
 
         // Rondt elke treffer af in plaats van af te kappen: 1.5 wordt 2, maar 2.5 ook.
         // Naar int omgegoten kapt hij gewoon af.

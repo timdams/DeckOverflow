@@ -58,6 +58,15 @@ public static class CastRules
         }
     }
 
+    /// <summary><c>Convert.ToInt32</c> of <c>Convert.ToByte</c> op tekst: parsen, met dezelfde exceptions als C#.</summary>
+    public static double ConvertText(string text, ValueKind to) => to switch
+    {
+        ValueKind.Int => System.Convert.ToInt32(text, System.Globalization.CultureInfo.InvariantCulture),
+        ValueKind.Byte => System.Convert.ToByte(text, System.Globalization.CultureInfo.InvariantCulture),
+        ValueKind.Double => System.Convert.ToDouble(text, System.Globalization.CultureInfo.InvariantCulture),
+        _ => throw new NotSupportedException($"Omzetten naar {to} bestaat nog niet.")
+    };
+
     /// <summary>Het grootste getal dat een type kan dragen, begrensd door de basiswaarde.</summary>
     public static double MaxFor(ValueKind kind, double baseMax) => kind switch
     {

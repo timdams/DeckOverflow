@@ -38,11 +38,11 @@ public static class Acts
     public static readonly ActDefinition MoldWorks = new(
         2, "mold-works", Bestiary.Caster,
         EasyPool: [Bestiary.Ingot, Bestiary.Rounder],
-        NormalPool: [Bestiary.Rounder, Bestiary.Ingot, Bestiary.Knight, Bestiary.Ghost],
+        NormalPool: [Bestiary.Rounder, Bestiary.Label, Bestiary.Ingot, Bestiary.Knight, Bestiary.Ghost],
         ElitePool: [Bestiary.Colossus, Bestiary.Index],
         Events: Adventures.All,
         EarlyEvent: null,
-        NewCards: [CardCatalog.MeasureTwice]);
+        NewCards: [CardCatalog.MeasureTwice, CardCatalog.ReadTheLabel]);
 
     public static readonly IReadOnlyList<ActDefinition> All = [VatValley, MoldWorks];
 

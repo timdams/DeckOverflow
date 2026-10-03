@@ -99,6 +99,10 @@ function describe(S, e) {
       return [t('stage.log.grew', { target: who(e.targetId), before: num(e.before), factor: num(e.factor), raw: num(e.raw), after: num(e.after) }), COLORS.ink];
     case 'ConversionCrashed':
       return [t('stage.log.crashed', { target: who(e.targetId), value: num(e.value) }), COLORS.ink];
+    case 'TextAppended':
+      return [t('stage.log.appended', { target: who(e.targetId), before: e.before, added: e.added, after: e.after }), COLORS.ink];
+    case 'TextParsed':
+      return [t('stage.log.parsed', { target: who(e.targetId), method: e.method, text: e.text, value: num(e.value) }), COLORS.ink];
     case 'ExceptionThrown':
       return [t('stage.log.exception', { exception: e.exception, expression: e.expression }), COLORS.ink];
     case 'AttackSkipped':

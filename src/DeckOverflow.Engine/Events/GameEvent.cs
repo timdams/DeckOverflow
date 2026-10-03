@@ -30,6 +30,8 @@ namespace DeckOverflow.Engine.Events;
 [JsonDerivedType(typeof(ConversionCrashed), nameof(ConversionCrashed))]
 [JsonDerivedType(typeof(AttackSkipped), nameof(AttackSkipped))]
 [JsonDerivedType(typeof(ExceptionThrown), nameof(ExceptionThrown))]
+[JsonDerivedType(typeof(TextAppended), nameof(TextAppended))]
+[JsonDerivedType(typeof(TextParsed), nameof(TextParsed))]
 [JsonDerivedType(typeof(IntentAssigned), nameof(IntentAssigned))]
 [JsonDerivedType(typeof(ModifierQueued), nameof(ModifierQueued))]
 [JsonDerivedType(typeof(ModifiersApplied), nameof(ModifiersApplied))]
@@ -102,6 +104,12 @@ public sealed record ConversionCrashed(int TargetId, ValueKind To, double Value)
 /// Er is nog geen catch, dus je beurt eindigt.
 /// </summary>
 public sealed record ExceptionThrown(string Exception, string Expression) : GameEvent;
+
+/// <summary>Een treffer op tekst plakt eraan vast: <c>"40" + 6</c> is <c>"406"</c>.</summary>
+public sealed record TextAppended(int TargetId, string Before, string Added, string After) : GameEvent;
+
+/// <summary>Tekst-HP werd een getal, met <paramref name="Method"/> (<c>int.Parse</c> of <c>Convert.ToByte</c>).</summary>
+public sealed record TextParsed(int TargetId, string Method, string Text, double Value, ValueKind To) : GameEvent;
 
 /// <summary>De vijand slaat zijn aanval over, bv. na een crash.</summary>
 public sealed record AttackSkipped(int EnemyId) : GameEvent;

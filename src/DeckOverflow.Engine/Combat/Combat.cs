@@ -121,6 +121,19 @@ public sealed class Combat
             return;
         }
 
+        // (int)"40" compileert niet; ook ByteTrap begint met een cast
+        if (card.Effect is CastEffect or ComboEffect { First: CastEffect } && target.Kind == ValueKind.String)
+        {
+            Emit(new PlayRejected(play.HandIndex, "reject.cast-text"));
+            return;
+        }
+
+        if (card.Effect is ParseEffect && target.Kind != ValueKind.String)
+        {
+            Emit(new PlayRejected(play.HandIndex, "reject.not-text"));
+            return;
+        }
+
         if (card.Effect is ModifierEffect { Op: ModifierOp.Parse } && !_modifiers.Any(m => m.Operand.IsText))
         {
             Emit(new PlayRejected(play.HandIndex, "reject.nothing-to-read"));
@@ -163,6 +176,12 @@ public sealed class Combat
             string expression = Evaluate(ModifiedAmount(card)!.Value.Amount, ModifiedAmount(card)!.Value.Kind, describeOnly: true).Expression;
             _modifiers.Clear();
             Emit(new ExceptionThrown(crash.GetType().Name, expression));
+            HandleEndTurn();
+            return;
+        }
+
+        if (card.Effect is ParseEffect && !TryParseText(target))
+        {
             HandleEndTurn();
             return;
         }
@@ -251,6 +270,7 @@ public sealed class Combat
 
             case ConvertEffect c when target.Kind != c.To: Convert(target, c.To); break;
             case ConvertEffect: break;
+            case ParseEffect: break;
 
             case SetAttackEffect s: AssignAttack(s.Value); break;
             case ModifierEffect m: QueueModifier(m); break;
@@ -370,6 +390,12 @@ public sealed class Combat
     /// <summary>Eén treffer. Een geheel type kapt af; een double neemt de waarde exact.</summary>
     private void DealDamage(Combatant target, double amount, bool fromPlayer)
     {
+        if (target.Kind == ValueKind.String)
+        {
+            AppendText(target, amount);
+            return;
+        }
+
         bool whole = CastRules.IsWhole(target.Kind);
         double remaining = amount;
 
@@ -431,6 +457,12 @@ public sealed class Combat
 
     private void Heal(Combatant target, int amount)
     {
+        if (target.Kind == ValueKind.String)
+        {
+            AppendText(target, amount);
+            return;
+        }
+
         double before = target.Hp;
 
         switch (target.Kind)
@@ -480,6 +512,46 @@ public sealed class Combat
         if (target.IsDead) Emit(new CombatantDied(target.Id));
     }
 
+    /// <summary>Tekst + getal is tekst: <c>"40" + 6</c> is <c>"406"</c>, en <c>"40" + 2.5</c> is <c>"402.5"</c>.</summary>
+    private void AppendText(Combatant target, double amount)
+    {
+        string before = target.Text!;
+        string added = TypedValue.OfCard(amount, amount % 1 == 0 ? ValueKind.Int : ValueKind.Double).Plus(TypedValue.String("")).Text;
+        target.Text = before + added;
+        Emit(new TextAppended(target.Id, before, added, target.Text));
+    }
+
+    /// <summary>
+    /// <c>int.Parse</c> op de tekst van een vijand. Lukt het, dan is hij voortaan een int met dat getal als HP.
+    /// Lukt het niet (<c>"402.5"</c>, of te groot), dan crasht je code: false, en je beurt eindigt.
+    /// </summary>
+    private bool TryParseText(Combatant target)
+    {
+        string text = target.Text!;
+        int value;
+        try
+        {
+            value = int.Parse(text, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture);
+        }
+        catch (Exception e) when (e is FormatException or OverflowException)
+        {
+            Emit(new ExceptionThrown(e.GetType().Name, $"int.Parse(\"{text}\")"));
+            return false;
+        }
+
+        BecomeNumber(target, value, ValueKind.Int);
+        Emit(new TextParsed(target.Id, "int.Parse", text, value, ValueKind.Int));
+        return true;
+    }
+
+    private static void BecomeNumber(Combatant target, double value, ValueKind to)
+    {
+        target.Kind = to;
+        target.Text = null;
+        target.BaseMaxHp = Math.Max(target.BaseMaxHp, value);
+        target.Hp = value;
+    }
+
     /// <summary>
     /// <c>Convert</c>: afronden in plaats van afkappen, en checked. Past het getal niet,
     /// dan verandert er niets aan het doelwit, maar crasht het en slaat het zijn aanval over.
@@ -488,6 +560,25 @@ public sealed class Combat
     {
         ValueKind from = target.Kind;
         double hpBefore = target.Hp;
+
+        // Convert.ToByte("406") parset: past het niet of is het geen getal, dan crasht het doelwit
+        if (target.Kind == ValueKind.String)
+        {
+            string text = target.Text!;
+            try
+            {
+                double parsed = CastRules.ConvertText(text, to);
+                BecomeNumber(target, parsed, to);
+                Emit(new TextParsed(target.Id, $"Convert.To{(to == ValueKind.Byte ? "Byte" : to.ToString())}", text, parsed, to));
+                if (target.IsDead) Emit(new CombatantDied(target.Id));
+            }
+            catch (Exception e) when (e is FormatException or OverflowException)
+            {
+                Emit(new ConversionCrashed(target.Id, to, 0));
+                if (target.IsEnemy) _enemyCrashed = true;
+            }
+            return;
+        }
 
         if (CastRules.ConvertChecked(hpBefore, to) is not { } hp)
         {
@@ -555,5 +646,6 @@ public sealed class Combat
 
     private static CombatantView View(Combatant c, Intent? intent) => new(
         c.Id, c.Key, c.Kind, c.Hp, c.MaxHp, c.Block, c.IsEnemy,
-        intent is null ? null : new IntentView(intent.Expression, intent.Hidden ? null : intent.Value));
+        intent is null ? null : new IntentView(intent.Expression, intent.Hidden ? null : intent.Value),
+        c.Text);
 }

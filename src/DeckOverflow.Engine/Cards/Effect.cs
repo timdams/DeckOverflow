@@ -19,6 +19,9 @@ public sealed record CastEffect(ValueKind To) : Effect;
 /// </summary>
 public sealed record ConvertEffect(ValueKind To) : Effect;
 
+/// <summary><c>int.Parse</c> op een vijand: zijn tekst-HP wordt een getal. Ongeldige tekst crasht, en je beurt eindigt.</summary>
+public sealed record ParseEffect : Effect;
+
 /// <summary>Toekenning: de aanval van de vijand wordt deze beurt <paramref name="Value"/>, wat er ook stond.</summary>
 public sealed record SetAttackEffect(int Value) : Effect;
 

@@ -40,6 +40,7 @@ export const TYPES = {
   int: { color: 0x2f6fe4, shape: 'square' },
   double: { color: 0x8a5cf0, shape: 'round' },
   byte: { color: 0xe8a800, shape: 'double' },
+  string: { color: 0x2e9d5b, shape: 'round' },
 };
 
 export const typeOf = (kind) => TYPES[(kind ?? '').toLowerCase()] ?? { color: COLORS.ink, shape: 'square' };

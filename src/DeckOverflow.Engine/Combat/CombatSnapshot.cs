@@ -26,6 +26,7 @@ public sealed record CombatSnapshot(
 public sealed record CardView(
     string Id, int Cost, TextRef Text, TargetMode Target, ValueKind? Kind, ValueKind? CastTo, bool Playable);
 
+/// <param name="Text">Alleen voor een <c>string</c>: de tekst die zijn HP is.</param>
 public sealed record CombatantView(
     int Id,
     string Key,
@@ -34,7 +35,8 @@ public sealed record CombatantView(
     double MaxHp,
     double Block,
     bool IsEnemy,
-    IntentView? Intent);
+    IntentView? Intent,
+    string? Text = null);
 
 /// <param name="Value">Leeg als het totaal verborgen blijft.</param>
 public sealed record IntentView(string Expression, double? Value);

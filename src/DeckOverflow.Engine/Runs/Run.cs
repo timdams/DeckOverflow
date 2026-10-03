@@ -262,6 +262,8 @@ public sealed class Run
     private string EnemyFor(MapNode node)
     {
         string enemy = node.Encounter ?? throw new InvalidOperationException($"Knoop {node.Id} heeft geen vijand.");
+        // The Label is tekst: zonder kaart die tekst omzet, valt hij niet te raken
+        if (enemy == Bestiary.Label && !_deck.Any(c => c.Effect is ParseEffect or ConvertEffect)) return Bestiary.Rounder;
         if (enemy != Bestiary.Colossus || _deck.Any(CastsToByte)) return enemy;
         return _act.ElitePool.FirstOrDefault(e => e != Bestiary.Colossus) ?? Bestiary.Golem;
     }

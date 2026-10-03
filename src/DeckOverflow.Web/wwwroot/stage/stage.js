@@ -501,6 +501,13 @@ function createActor(c) {
 
     setHp(value) {
       a.hp = value;
+      // Een string heeft tekst als HP: geen balk die zakt, alleen de tekst tussen aanhalingstekens
+      if (a.data?.text != null) {
+        hpText.text = `"${a.data.text}"`;
+        barFill.scale.x = 1;
+        barLag.scale.x = 1;
+        return;
+      }
       hpText.text = `${num(value)}/${num(a.max)}`;
       const ratio = Math.max(0, Math.min(1, value / a.max));
       barFill.scale.x = ratio;

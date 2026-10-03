@@ -618,6 +618,28 @@ const handlers = {
     await wait(900);
   },
 
+  /** Tekst + getal is tekst: het getal plakt achteraan, en de tekst wordt langer. */
+  async TextAppended(S, e, ctx) {
+    const a = S.actor(e.targetId);
+    const hit = a.center();
+    sfx('tick', { combo: ctx.combo++ });
+    a.knock(a.isEnemy ? 1 : -1, 4);
+    floatText(S.layers.fx, `+ ${e.added}`, hit.x, hit.y - 20, { size: 22, rise: 30 });
+    a.data = { ...a.data, text: e.after };
+    a.setHp(a.hp);
+    await wait(220);
+  },
+
+  /** Tekst werd een getal: de methode en het resultaat, daarna toont de balk weer HP. */
+  async TextParsed(S, e) {
+    const a = S.actor(e.targetId);
+    const head = a.head();
+    sfx('click', { volume: 0.7 });
+    floatText(S.layers.fx, `${e.method}("${e.text}") = ${num(e.value)}`, head.x, head.y - 60, { size: 18, rise: 24, holdMs: 700 });
+    a.data = { ...a.data, text: null };
+    await wait(420);
+  },
+
   /** De vijand crashte vorige beurt: geen aanval. */
   async AttackSkipped(S, e) {
     const a = S.actor(e.enemyId);

@@ -87,7 +87,9 @@ public partial class RunPage
 
     private async Task NewRunAsync(ulong seed)
     {
-        RunSetup setup = Bestiary.Exists(FightQuery) ? new RunSetup(Map: SingleFight(FightQuery!), Opening: false) : new RunSetup(StartAct: _startAct);
+        RunSetup setup = Bestiary.Exists(FightQuery)
+            ? new RunSetup(Map: SingleFight(FightQuery!), Opening: false, Deck: TestDeck)
+            : new RunSetup(StartAct: _startAct);
         _run = Run.Start(seed, setup);
         _snap = _run.Snapshot();
         _picker = null;
@@ -101,6 +103,10 @@ public partial class RunPage
 
         await Stage.ResetAsync();
     }
+
+    /// <summary>Voor <c>?fight=</c>: het starterdeck plus de kaarten die de puzzelvijanden nodig hebben.</summary>
+    private static IReadOnlyList<CardDefinition> TestDeck =>
+        [.. CardCatalog.StarterDeck(), CardCatalog.RemoldByte, CardCatalog.MeasureTwice, CardCatalog.ReadTheLabel, CardCatalog.Ink, CardCatalog.Read];
 
     private static ActMap SingleFight(string enemy)
     {

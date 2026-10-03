@@ -542,7 +542,7 @@ Act 2 dekt hoofdstuk 4: werken met data. Act 1 liet types en tekst voelen; de Gi
 
 | Vijand | Mechaniek | Wat je ontdekt | Andere manier om te winnen |
 | --- | --- | --- | --- |
-| The Label | Zijn HP is tekst: `"40"`. Schade plakt eraan vast (`"40" + 6` is `"406"`), en zijn aanval is een tiende van zijn HP. | Tekst is geen getal: eerst parsen. Omgieten weigert, want `(int)"40"` compileert niet. | Wrong Label maakt er `"1"` van; dan nog parsen, maar van 1 HP |
+| The Label | Zijn HP is tekst: `"40"`. Schade plakt eraan vast (`"40" + 6` is `"406"`), dus wie eerst slaat, parset daarna een veel groter getal. Een Floating-kaart maakt er `"402.5"` van, en dan crasht het parsen. | Tekst is geen getal: eerst parsen. Omgieten weigert, want `(int)"40"` compileert niet. | Measure Twice: `Convert.ToByte("40")` parset ook, zolang het onder 256 blijft. Zonder kaart die tekst omzet krijg je de Rounder in zijn plaats |
 | The Rounder | `double`-HP. Hij rondt elke inkomende treffer af met `Math.Round`: 1.5 wordt 2, maar 2.5 ook, en 3.5 wordt 4. Welke meervoudige kaart je speelt, maakt het verschil. | Bankiersafronding, tegenover het afkappen van een `int` | Met Force Fit naar `int` omgieten: dan kapt hij af en rondt hij nooit meer af |
 | Raw Ingot | Een eenvoudige `int` die na elke aanval wat blok opbouwt | Niets nieuws: een adempauze tussen de puzzels | Gewoon slaan |
 
@@ -560,7 +560,7 @@ Een figuur van de fabriek die zichzelf na elke aanval in een andere mal giet: va
 | Kaart | Wat ze doet | Concept |
 | --- | --- | --- |
 | Measure Twice | Zet een vijand om naar `byte` met `Convert.ToByte`: afronden in plaats van afkappen. Past het niet, dan een `OverflowException`: de vijand crasht en slaat zijn aanval over. | Convert tegenover cast: checked tegenover unchecked |
-| Read the Label (nog te bouwen) | Tekst-HP wordt een getal (`int.Parse`). Op ongeldige tekst crasht ze, en je beurt eindigt. | Parse |
+| Read the Label | Tekst-HP wordt een getal (`int.Parse`). Op ongeldige tekst crasht ze, en je beurt eindigt. | Parse |
 
 Round Off (`Math.Round` op een vijand) en Square Root (`Math.Sqrt` op zijn HP) zijn voorlopig geschrapt. Round Off verschuift hoogstens een halve HP en doet dus te weinig; Square Root maakt van elke baas een gevecht van één kaart.
 
