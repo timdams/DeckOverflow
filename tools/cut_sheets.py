@@ -64,8 +64,9 @@ SHEETS_SPEC = [
     ]),
 ]
 
-# Vellen waarop de figuren naar rechts kijken: gespiegeld, zodat ze de held aankijken.
-FLIP = {"bugs"}
+# Figuren die op hun vel naar rechts kijken: gespiegeld, zodat ze vanaf rechts de held aankijken.
+# Per tekening, niet per vel: de inspecteur op het bugs-vel keek al naar links.
+FLIP = {"level-256", "flight-501", "the-index", "reckoner"}
 
 FILL = 12          # tot dit kanaalverschil met de achtergrond is een pixel achtergrond
 SOFT = (12, 60)    # zachte rand daarboven
@@ -151,7 +152,7 @@ def main() -> None:
             if not mask.any():
                 raise ValueError(f"{prefix}: vakje {name} is leeg")
             img = fit(thicken(crop(rgb, alpha, mask, shape), line), size)
-            if prefix in FLIP:
+            if name in FLIP:
                 img = img.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
             img.save(target / f"{name}.png", optimize=True)
         print(f"{folder}: {len(names)} uit {sheet_path.name}")
