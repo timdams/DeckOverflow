@@ -23,6 +23,12 @@ public abstract class Relic
     /// <summary>Blok waarmee je elk gevecht begint.</summary>
     public virtual double BlockAtCombatStart => 0;
 
+    /// <summary>Goud uit gevechten wordt vermenigvuldigd met deze factor, afgerond met <c>Math.Round</c>.</summary>
+    public virtual double GoldFactor => 1.0;
+
+    /// <summary>HP terug na het zoveelste gewonnen gevecht van de run.</summary>
+    public virtual int HealAfterWin(int combatsWon) => 0;
+
     // ---------- Gevecht ----------
 
     /// <param name="cardsPlayed">Hoeveel kaarten je in dit gevecht al speelde.</param>

@@ -30,7 +30,7 @@ public static class Acts
         EasyPool: [Bestiary.Slime, Bestiary.Knight],
         NormalPool: [Bestiary.Knight, Bestiary.Ghost, Bestiary.Dripper, Bestiary.Splitter],
         ElitePool: [Bestiary.Golem, Bestiary.EffectivePower],
-        Events: Adventures.All,
+        Events: [Adventures.Crucible, Adventures.LeakingBarrel, Adventures.CopyMachine, Adventures.ScrapBin],
         EarlyEvent: Bestiary.Jug,
         NewCards: CardCatalog.RewardPool);
 
@@ -40,7 +40,7 @@ public static class Acts
         EasyPool: [Bestiary.Ingot, Bestiary.Rounder],
         NormalPool: [Bestiary.Rounder, Bestiary.Label, Bestiary.Ingot, Bestiary.Knight, Bestiary.Ghost],
         ElitePool: [Bestiary.Colossus, Bestiary.Index],
-        Events: Adventures.All,
+        Events: [Adventures.RoundingDesk, Adventures.Crucible, Adventures.CopyMachine, Adventures.ScrapBin, Adventures.LeakingBarrel],
         EarlyEvent: null,
         NewCards: [CardCatalog.MeasureTwice, CardCatalog.ReadTheLabel]);
 

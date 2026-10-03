@@ -27,7 +27,10 @@
     "floating-point": "items/relic-floating-point",
     "scrap-pouch": "items/relic-scrap-pouch",
     "anchor-barrel": "items/relic-anchor-barrel",
-    "great-pot": "items/relic-great-pot"
+    "great-pot": "items/relic-great-pot",
+    "ink-well": "items/relic-floating-point",
+    "tally-counter": "items/relic-counter",
+    "coin-mold": "items/relic-great-pot"
   },
   "actors": {
     "player": "actors/hero-wrench",

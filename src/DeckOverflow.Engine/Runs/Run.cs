@@ -73,6 +73,7 @@ public sealed class Run
     private readonly HashSet<string> _xpanels = [];
     /// <summary>De vijand van het lopende of laatste gevecht, voor panelen die bij één vijand horen.</summary>
     private string? _enemyKey;
+    private int _combatsWon;
 
     private Run(ulong seed, RunSetup setup)
     {
@@ -314,6 +315,12 @@ public sealed class Run
         var snapshot = combat.Snapshot();
         var enemy = snapshot.Combatants.Single(c => c.IsEnemy);
         Hp = (int)snapshot.Combatants.Single(c => !c.IsEnemy).Hp;
+        if (combat.Outcome == CombatOutcome.Won)
+        {
+            _combatsWon++;
+            int heal = _relics.Sum(id => RelicCatalog.Create(id).HealAfterWin(_combatsWon));
+            if (heal > 0) ChangeHp(heal);
+        }
         UnlockCodex(combat, enemy, combat.Outcome == CombatOutcome.Won);
 
         if (combat.Outcome == CombatOutcome.Lost)
@@ -331,6 +338,9 @@ public sealed class Run
 
         bool elite = _node.Kind == NodeKind.Elite;
         int gold = Roll(elite ? EliteGold : FightGold);
+        double factor = _relics.Select(RelicCatalog.Create).Aggregate(1.0, (f, r) => f * r.GoldFactor);
+        // Math.Round: 22.5 wordt 22, 23.5 wordt 24
+        if (factor != 1.0) gold = (int)Math.Round(gold * factor);
         GainGold(gold);
 
         string? relic = elite ? RandomUnownedRelic() : null;
@@ -523,6 +533,29 @@ public sealed class Run
                 ];
             }
 
+            case Adventures.CopyMachine:
+                return
+                [
+                    Option(TextRef.Of("event.copy-machine.copy"), TextRef.Of("event.copy-machine.copy.detail", ("amount", Adventures.CopyHpCost)),
+                        Hp > Adventures.CopyHpCost ? null : "reject.not-enough-hp", all),
+                    Option(TextRef.Of("event.copy-machine.leave"), TextRef.Of("event.copy-machine.leave.detail"), null, []),
+                ];
+
+            case Adventures.ScrapBin:
+                return
+                [
+                    Option(TextRef.Of("event.scrap-bin.toss"), TextRef.Of("event.scrap-bin.toss.detail"), _deck.Count > 1 ? null : "reject.deck-too-small", all),
+                    Option(TextRef.Of("event.scrap-bin.dig"), TextRef.Of("event.scrap-bin.dig.detail", ("amount", Adventures.ScrapGold)), null, []),
+                ];
+
+            case Adventures.RoundingDesk:
+                return
+                [
+                    Option(TextRef.Of("event.rounding-desk.round"),
+                        TextRef.Of("event.rounding-desk.round.detail", ("gold", Gold), ("rounded", Adventures.RoundGold(Gold))), null, []),
+                    Option(TextRef.Of("event.rounding-desk.leave"), TextRef.Of("event.rounding-desk.leave.detail"), null, []),
+                ];
+
             case Adventures.LeakingBarrel:
                 return
                 [
@@ -593,6 +626,33 @@ public sealed class Run
                 RemoveCard(deckIndex);
                 ChangeHp(-Adventures.MeltHpCost);
                 _outcome = TextRef.Of("event.crucible.melt.outcome", ("card", id));
+                break;
+            }
+            case (Adventures.CopyMachine, 0):
+            {
+                CardDefinition copy = _deck[deckIndex];
+                ChangeHp(-Adventures.CopyHpCost);
+                AddCard(copy);
+                _outcome = TextRef.Of("event.copy-machine.copy.outcome", ("card", copy.Id));
+                break;
+            }
+            case (Adventures.ScrapBin, 0):
+            {
+                string id = _deck[deckIndex].Id;
+                RemoveCard(deckIndex);
+                _outcome = TextRef.Of("event.scrap-bin.toss.outcome", ("card", id));
+                break;
+            }
+            case (Adventures.ScrapBin, 1):
+                GainGold(Adventures.ScrapGold);
+                _outcome = TextRef.Of("event.scrap-bin.dig.outcome");
+                break;
+            case (Adventures.RoundingDesk, 0):
+            {
+                int before = Gold;
+                int rounded = Adventures.RoundGold(Gold);
+                GainGold(rounded - before);
+                _outcome = TextRef.Of("event.rounding-desk.round.outcome", ("gold", before), ("rounded", rounded));
                 break;
             }
             case (Adventures.LeakingBarrel, 0):

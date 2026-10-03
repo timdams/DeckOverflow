@@ -665,3 +665,124 @@ button.small { padding: 6px 12px; font-size: 12px; }
 .xpanel.earned .cross { color: var(--white); background: var(--zss); border-color: var(--ink); }
 .xpanel.earned { box-shadow: 3px 3px 0 var(--zss); }
 .xpanel .xpanel-art { width: 100%; height: 70px; object-fit: contain; margin-top: 4px; }
+
+/* ---------------------------------------------------------------- titelscherm */
+
+.title-screen {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--paper);
+}
+
+/* De sfeerplaat vult de rechterkant en vloeit links weg in het papier */
+.title-art-wide {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(78%, 1400px);
+  background-size: cover;
+  background-position: right center;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 28%);
+  mask-image: linear-gradient(to right, transparent 0%, #000 28%);
+}
+
+.title-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 18px;
+  height: 100%;
+  max-width: 460px;
+  padding: 0 0 0 clamp(24px, 7vw, 110px);
+}
+
+.title-word {
+  margin: 0;
+  font-size: clamp(54px, 8.5vw, 120px);
+  font-weight: 900;
+  line-height: 0.88;
+  letter-spacing: -0.04em;
+}
+.title-word span { color: var(--zss); }
+
+.tagline { margin: 0; font-size: 18px; color: var(--ink); max-width: 340px; }
+
+.title-actions, .title-links { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.title-links { margin-top: 6px; }
+
+/* De grote oranje knop: de enige plek waar het meteen duidelijk moet zijn wat je doet */
+button.play-big {
+  font-size: 22px;
+  font-weight: 800;
+  padding: 14px 40px;
+  color: var(--white);
+  background: var(--zss);
+  border: 3px solid var(--ink);
+  border-radius: 8px;
+  box-shadow: 5px 5px 0 var(--ink);
+}
+button.play-big:hover:not(:disabled) { background: #f08a1f; }
+button.play-big:active:not(:disabled) { transform: translate(3px, 3px); box-shadow: 2px 2px 0 var(--ink); }
+
+button.title-button {
+  font-size: 15px;
+  padding: 10px 18px;
+  background: var(--white);
+  border: 2.5px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+@media (max-width: 760px) {
+  .title-art-wide { width: 100%; opacity: 0.35; }
+}
+
+/* ---------------------------------------------------------------- intro en actkaart */
+
+.story-card, .act-card {
+  max-width: min(640px, 92vw);
+  background: var(--white);
+  border: 3px solid var(--ink);
+  border-radius: 10px;
+  box-shadow: 6px 6px 0 var(--zss);
+  padding: 26px 30px 28px;
+  align-items: flex-start;
+  text-align: left;
+}
+.story-card p, .act-card p { margin: 0; font-size: 17px; line-height: 1.5; }
+.story-card button, .act-card button { align-self: flex-end; margin-top: 6px; }
+
+.act-card { padding: 0 0 24px; overflow: hidden; gap: 10px; }
+.act-card .act-art { display: block; width: 100%; height: auto; border-bottom: 3px solid var(--ink); }
+.act-card .act-kicker, .act-card h2, .act-card p { padding: 0 28px; }
+.act-card .act-kicker { color: var(--zss); font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; font-size: 13px; margin-top: 8px; }
+.act-card h2 { margin: 0; font-size: 2em; }
+.act-card button { margin-right: 28px; }
+
+/* ---------------------------------------------------------------- banner boven de map */
+
+.act-banner {
+  position: relative;
+  flex: none;
+  height: 120px;
+  margin: 0 0 8px;
+  background-size: cover;
+  background-position: center 62%;
+  border-bottom: 2.5px solid var(--ink);
+}
+.act-banner span {
+  position: absolute;
+  left: 18px;
+  bottom: 12px;
+  padding: 4px 12px;
+  font-weight: 800;
+  background: var(--white);
+  border: 2.5px solid var(--ink);
+  border-radius: 6px;
+  box-shadow: 3px 3px 0 var(--zss);
+}
+
+.map-screen { display: flex; flex-direction: column; width: 100%; height: 100%; }
+.map-screen .map-board { flex: 1; min-height: 0; height: auto; }

@@ -12,26 +12,49 @@
 
     @if (_run is null || _snap is null)
     {
-        <div class="overlay">
-            <ArtImage Src="@Art.Scene("title")" Class="title-art" />
-            <h1>Deck Overflow</h1>
-            <p>@(S.Loaded ? S.T("ui.subtitle") : "")</p>
-            <button disabled="@(_starting || !S.Loaded)" @onclick="() => StartAsync(1)">@(_starting || !S.Loaded ? "..." : S.T("ui.play"))</button>
-            @* Startpunten: elke act die je ooit bereikte *@
-            @for (int act = 2; act <= _reachedAct; act++)
-            {
-                int start = act;
-                <button class="secondary" disabled="@(_starting || !S.Loaded)" @onclick="() => StartAsync(start)">@S.T("ui.start-at", ("act", start))</button>
-            }
-            @if (_codex.Count > 0)
-            {
-                <button class="secondary small" @onclick="() => OpenCodex(null)">@S.T("ui.codex") (@_codex.Count)</button>
-            }
-            @if (_xpanels.Count > 0)
-            {
-                <button class="secondary small" @onclick="() => _showXRegister = true">@S.T("ui.xregister") (@_xpanels.Count)</button>
-            }
+        @* Het titelscherm: de sfeerplaat rechts, die links in het papier wegvloeit; titel en knoppen links *@
+        <div class="title-screen">
+            <div class="title-art-wide" style="background-image: url('@ArtStyle.Wide("title")')" aria-hidden="true"></div>
+            <div class="title-panel">
+                <h1 class="title-word">Deck<br /><span>Overflow</span></h1>
+                <p class="tagline">@(S.Loaded ? S.T("ui.tagline") : "")</p>
+                <div class="title-actions">
+                    <button class="play-big" disabled="@(_starting || !S.Loaded)" @onclick="() => StartAsync(1)">@(_starting || !S.Loaded ? "..." : S.T("ui.play"))</button>
+                    @* Startpunten: elke act die je ooit bereikte *@
+                    @for (int act = 2; act <= _reachedAct; act++)
+                    {
+                        int start = act;
+                        <button class="title-button" disabled="@(_starting || !S.Loaded)" @onclick="() => StartAsync(start)">@S.T("ui.start-at", ("act", start))</button>
+                    }
+                </div>
+                @if (_codex.Count > 0 || _xpanels.Count > 0)
+                {
+                    <div class="title-links">
+                        @if (_codex.Count > 0)
+                        {
+                            <button class="title-button" @onclick="() => OpenCodex(null)">@S.T("ui.codex") · @_codex.Count</button>
+                        }
+                        @if (_xpanels.Count > 0)
+                        {
+                            <button class="title-button" @onclick="() => _showXRegister = true">@S.T("ui.xregister") · @_xpanels.Count</button>
+                        }
+                    </div>
+                }
+            </div>
         </div>
+        @if (_showIntro)
+        {
+            @* Eén keer, voor de eerste run: het thema in drie zinnen, geen regels *@
+            <div class="modal">
+                <div class="modal-body story-card">
+                    <h2>@S.T("ui.intro.title")</h2>
+                    <p>@S.T("ui.intro.1")</p>
+                    <p>@S.T("ui.intro.2")</p>
+                    <p>@S.T("ui.intro.3")</p>
+                    <button class="play-big" @onclick="FinishIntroAsync">@S.T("ui.intro.start")</button>
+                </div>
+            </div>
+        }
         @if (_showXRegister)
         {
             <XRegisterBook Earned="_xpanels" OnClose="() => _showXRegister = false" />
@@ -76,7 +99,12 @@
                     @switch (s.Phase)
                     {
                         case RunPhase.Map:
-                            <MapBoard Map="s.Map" OnChoose="ChooseNodeAsync" />
+                            <div class="map-screen">
+                                <div class="act-banner" style="background-image: url('@ArtStyle.Wide($"act-{s.ActKey}")')">
+                                    <span>@S.T("ui.act", ("act", s.Act), ("name", S.T($"act.{s.ActKey}")))</span>
+                                </div>
+                                <MapBoard Map="s.Map" OnChoose="ChooseNodeAsync" />
+                            </div>
                             break;
 
                         case RunPhase.Reward when s.Reward is { } reward:
@@ -276,6 +304,21 @@
         @if (_showDeck)
         {
             <DeckPicker Title="@S.T("ui.your-deck")" Deck="s.Deck" OnCancel="() => _showDeck = false" />
+        }
+
+        @if (_actCard is { } act && s.Phase != RunPhase.Combat)
+        {
+            string key = Acts.Get(act).Key;
+            @* Een nieuwe act: de plaat, de naam en één zin sfeer *@
+            <div class="modal">
+                <div class="modal-body act-card">
+                    <img class="act-art" src="@ArtStyle.Wide($"act-{key}")" alt="" />
+                    <span class="act-kicker">@S.T("ui.act-short", ("act", act))</span>
+                    <h2>@S.T($"act.{key}")</h2>
+                    <p>@S.T($"act.{key}.flavor")</p>
+                    <button class="play-big" @onclick="() => _actCard = null">@S.T("ui.act.continue")</button>
+                </div>
+            </div>
         }
 
         @if (_showXRegister)

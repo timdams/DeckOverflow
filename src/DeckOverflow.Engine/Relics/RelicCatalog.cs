@@ -6,7 +6,7 @@ using DeckOverflow.Engine.Values;
 namespace DeckOverflow.Engine.Relics;
 
 /// <summary>
-/// De relics van Act 1. De volgorde telt: als twee relics dezelfde kaart gratis kunnen maken,
+/// Alle relics. De volgorde telt: als twee relics dezelfde kaart gratis kunnen maken,
 /// wint de eerste. Counter staat voor Floating Point, zodat die laatste niet verspild wordt.
 /// </summary>
 public static class RelicCatalog
@@ -16,8 +16,11 @@ public static class RelicCatalog
     public const string ScrapPouch = "scrap-pouch";
     public const string AnchorBarrel = "anchor-barrel";
     public const string GreatPot = "great-pot";
+    public const string InkWell = "ink-well";
+    public const string TallyCounter = "tally-counter";
+    public const string CoinMold = "coin-mold";
 
-    public static readonly IReadOnlyList<string> All = [Counter, FloatingPoint, ScrapPouch, AnchorBarrel, GreatPot];
+    public static readonly IReadOnlyList<string> All = [Counter, InkWell, FloatingPoint, ScrapPouch, AnchorBarrel, GreatPot, TallyCounter, CoinMold];
 
     /// <summary>Een vers exemplaar, zonder status uit een vorig gevecht.</summary>
     public static Relic Create(string id) => id switch
@@ -27,6 +30,9 @@ public static class RelicCatalog
         ScrapPouch => new ScrapPouchRelic(),
         AnchorBarrel => new AnchorBarrelRelic(),
         GreatPot => new GreatPotRelic(),
+        InkWell => new InkWellRelic(),
+        TallyCounter => new TallyCounterRelic(),
+        CoinMold => new CoinMoldRelic(),
         _ => throw new ArgumentException($"Onbekende relic: {id}", nameof(id))
     };
 
@@ -95,4 +101,31 @@ public sealed class GreatPotRelic : Relic
     public override string Id => RelicCatalog.GreatPot;
     public override TextRef Text => TextRef.Of("relic.great-pot.text", ("amount", MaxHp));
     public override int MaxHpOnGain => MaxHp;
+}
+
+/// <summary>Je eerste Ink of Read per gevecht kost 0. Voor wie tekst wil plakken.</summary>
+public sealed class InkWellRelic : Relic
+{
+    private bool _used;
+
+    public override string Id => RelicCatalog.InkWell;
+    public override bool MakesFree(CardDefinition card, int cardsPlayed) =>
+        !_used && card.Effect is ModifierEffect { Operand.IsText: true } or ModifierEffect { Op: ModifierOp.Parse };
+    public override void OnMadeFree() => _used = true;
+}
+
+/// <summary>Na elk gewonnen gevecht heel je één meer dan de vorige keer: <c>++count</c>.</summary>
+public sealed class TallyCounterRelic : Relic
+{
+    public override string Id => RelicCatalog.TallyCounter;
+    public override int HealAfterWin(int combatsWon) => combatsWon;
+}
+
+/// <summary>50% meer goud uit gevechten, afgerond met <c>Math.Round</c>: 22.5 wordt 22.</summary>
+public sealed class CoinMoldRelic : Relic
+{
+    public const double Factor = 1.5;
+
+    public override string Id => RelicCatalog.CoinMold;
+    public override double GoldFactor => Factor;
 }

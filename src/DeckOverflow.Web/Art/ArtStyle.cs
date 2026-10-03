@@ -35,6 +35,9 @@ public sealed class ArtStyle
 
     public static string Icon(string name) => $"art/icons/{name}.png";
 
+    /// <summary>Een brede sfeerplaat (titelscherm, act): <c>art/wide/&lt;key&gt;.webp</c>, gemaakt met imagen.</summary>
+    public static string Wide(string key) => $"art/wide/{key}.webp";
+
     private static string? Url(Dictionary<string, string> map, string key) =>
         map.TryGetValue(key, out string? file) ? $"art/{file}.png" : null;
 

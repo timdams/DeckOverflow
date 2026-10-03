@@ -40,6 +40,9 @@ public partial class RunPage
     /// <summary>Verdiende ✗-panelen, over runs heen.</summary>
     private const string XPanelsKey = "deckoverflow.xpanels";
 
+    /// <summary>De intro is al eens getoond.</summary>
+    private const string IntroKey = "deckoverflow.intro-seen";
+
     private ElementReference _host;
     private DotNetObjectReference<RunPage>? _self;
     private Run? _run;
@@ -59,6 +62,10 @@ public partial class RunPage
     private Dictionary<string, int> _codexRead = [];
     private readonly HashSet<string> _xpanels = [];
     private bool _showXRegister;
+    private bool _introSeen;
+    private bool _showIntro;
+    /// <summary>Een act die net begon: de actkaart staat open tot je verdergaat.</summary>
+    private int? _actCard;
 
     /// <summary>Een verdiend paneel dat net opsprong.</summary>
     private sealed record PanelPopup(int Id, string Key);
@@ -104,6 +111,7 @@ public partial class RunPage
             catch (JsonException) { /* kapotte opslag: gewoon met een lege Codex verder */ }
         }
 
+        _introSeen = await JS.InvokeAsync<string?>("deckOverflow.load", IntroKey) is not null;
         _codexRead = await LoadJsonAsync<Dictionary<string, int>>(CodexReadKey) ?? [];
         foreach (string panel in await LoadJsonAsync<List<string>>(XPanelsKey) ?? []) _xpanels.Add(panel);
         StateHasChanged();
@@ -112,14 +120,28 @@ public partial class RunPage
     /// <summary>Start na een klik, zodat de browser audio toelaat.</summary>
     private async Task StartAsync(int startAct)
     {
-        _starting = true;
         _startAct = startAct;
+        // De allereerste keer: eerst de intro, dan pas de run
+        if (!_introSeen && FightQuery is null)
+        {
+            _showIntro = true;
+            return;
+        }
+        _starting = true;
         _self = DotNetObjectReference.Create(this);
         await Stage.InitAsync(_host, _self, _loadMs);
 
         ulong seed = ulong.TryParse(SeedQuery, out ulong s) ? s : NewSeed();
         await NewRunAsync(seed);
         _starting = false;
+    }
+
+    private async Task FinishIntroAsync()
+    {
+        _introSeen = true;
+        _showIntro = false;
+        await JS.InvokeVoidAsync("deckOverflow.save", IntroKey, "1");
+        await StartAsync(_startAct);
     }
 
     private async Task NewRunAsync(ulong seed)
@@ -129,6 +151,8 @@ public partial class RunPage
             : new RunSetup(StartAct: _startAct);
         _run = Run.Start(seed, setup);
         _snap = _run.Snapshot();
+        // Elke run begint met de kaart van zijn act, behalve op de testroute ?fight=
+        _actCard = FightQuery is null ? _run.Act.Number : null;
         _picker = null;
         _showDeck = false;
         _lastEnemy = null;
@@ -251,6 +275,7 @@ public partial class RunPage
     {
         foreach (var started in events.OfType<ActStarted>())
         {
+            _actCard = started.Act;
             if (started.Act <= _reachedAct) continue;
             _reachedAct = started.Act;
             await JS.InvokeVoidAsync("deckOverflow.save", ReachedActKey, _reachedAct.ToString(CultureInfo.InvariantCulture));

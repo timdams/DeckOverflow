@@ -567,6 +567,28 @@ Een figuur van de fabriek die zichzelf na elke aanval in een andere mal giet: va
 
 Round Off (`Math.Round` op een vijand) en Square Root (`Math.Sqrt` op zijn HP) zijn voorlopig geschrapt. Round Off verschuift hoogstens een halve HP en doet dus te weinig; Square Root maakt van elke baas een gevecht van één kaart.
 
+## Inhoud voor de eerste playtest
+
+Gebouwd op 3 oktober 2026, zodat een run gevarieerd genoeg is om te testen.
+
+**Events.** Naast de Smeltkroes en het Lekkende Vat:
+
+| Event | Act | Keuze | C#-knipoog |
+| --- | --- | --- | --- |
+| The Copy Machine | 1 en 2 | Kopieer een kaart, verlies 6 HP | De handleiding verbiedt kopiëren |
+| The Scrap Bin | 1 en 2 | Verwijder gratis een kaart, of neem 40 goud | Deck slanker maken |
+| The Rounding Desk | 2 | Laat je goud afronden op honderdtallen met `Math.Round` | Bankiersafronding: 150 wordt 200, 250 ook 200, 50 wordt 0. De keuze toont vooraf wat er gebeurt |
+
+**Relics.** Naast de vijf van act 1:
+
+| Relic | Effect | Concept |
+| --- | --- | --- |
+| Ink Well | Je eerste Ink of Read per gevecht kost 0 | `string` |
+| Tally Counter | Na elk gewonnen gevecht heel je `++count`: 1, dan 2, dan 3 | `++` |
+| Coin Mold | 50% meer goud uit gevechten, afgerond met `Math.Round` | Afronden |
+
+**Sfeer en schermen.** Een titelscherm met een nieuwe sfeerplaat (imagen, GPT-5.4 Image 2, het scènevel als stijlreferentie) en het oranje van Zie Scherp Scherper (#e2790a) als enige accent; een intro van drie zinnen bij de allereerste run ("Not by the manual"); een actkaart met plaat, naam en één zin sfeer bij elke nieuwe act; en een banner van de actplaat boven de map. De platen staan in `art/wide/`, als lichte `.webp` in `wwwroot/art/wide/`.
+
 ## De Codex
 
 De Codex is de brug van spel naar cursus, en hij is nooit verplicht. Een pagina opent pas als een regel een gevecht echt heeft beslist, niet bij de eerste ontmoeting.
