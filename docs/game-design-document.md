@@ -20,10 +20,10 @@ Het hart is een roguelike deckbuilder. Rond dat hart ligt een fabriek met afdeli
 Op 3 oktober 2026 is **The Card Hall** speelbaar: de deckbuilder met drie acts, één per hoofdstuk (H2, H3, H4), van titelscherm tot eindscherm. Wat erin zit:
 
 - **Drie acts** van 6 rijen plus een baas, elk met eigen vijanden, elites, baas en nieuwe kaarten. Een run kan ook in act 2 of 3 starten.
-- **21 vijanden** (de Bottomless Jug meegeteld), waarvan 6 elites (echte bugs) en 3 bazen. **23 kaarten**, **8 relics**, **6 events**.
+- **23 vijanden** (de Bottomless Jug meegeteld), waarvan 6 elites (echte bugs) en 3 bazen. **25 kaarten**, **8 relics**, **6 events**.
 - **De getypeerde aanval**: je aanval is een waarde met een type die door modifiers stroomt, met echte C#-regels. Modifiers wachten over je beurt heen en zijn weg te vegen met Scrap.
 - **Bewuste intents** die rekenen met jouw blok, kaarten, energie of HP.
-- **De Codex**: 13 pagina's, geordend per hoofdstuk, met jouw moment als mini-animatie en een link naar het boek.
+- **De Codex**: 15 pagina's, geordend per hoofdstuk, met jouw moment als mini-animatie en een link naar het boek.
 - **Het ✗-register**: 11 panelen.
 - **De wereld**: teases, de onthulling en de fabrieksplattegrond met zes afdelingen. Alleen de Card Hall is echt speelbaar; de Controlekamer is een los prototype (spike 8).
 - **Score van een run** en een dagelijkse seed in de motor; accounts en klascodes in Supabase. Het klassement zelf (de Prikklok) is nog niet aangesloten.
@@ -462,6 +462,8 @@ Beslist op 3 oktober 2026: de deckbuilder, voortaan **The Card Hall**, heeft dri
 | Gewoon | Dripper | Een `double` die halve schade uitdeelt, intent `energy * 4 + 2.5` |
 | Gewoon | The Splitter | Intent `30 / (block + 1)`: blokken is delen |
 | Gewoon | The Stray Automaton | Een tease uit de Controlekamer, intent `block > 0 ? 16 : 8` |
+| Gewoon | Bool Ghost | Een `bool` die elke treffer omdraait; intent `isSolid ? 6 : 14` |
+| Gewoon | Rhythm Turtle | Schild open als `cards % 3 == 0`; intent `turn % 2 == 0 ? 16 : 4` |
 | Vroeg event | Bottomless Jug | Een `byte` die zich heelt tot hij omklapt: het wondermoment van act 1 |
 | Elite | Level 256 | Heelt zichzelf tot hij omklapt |
 | Elite | The Counter | 30 onder `int.MaxValue`, telt op tot hij unchecked omklapt |
@@ -557,7 +559,7 @@ Het starterdeck is bewust saai, zodat elke beloning een echte keuze wordt.
 
 **Starterdeck (10 kaarten, gebouwd):** 4× Whack (6 schade), 2× Floating Bolts (3× 2.5), 3× Hold Firmly (5 blok), 1× Spare Screw (+3 op je volgende kaart).
 
-**Gebouwd (23 kaarten).** Elke kaart heeft een verbeterde versie aan het rustvuur.
+**Gebouwd (25 kaarten).** Elke kaart heeft een verbeterde versie aan het rustvuur.
 
 | Kaart | Kost | Effect | Concept |
 | --- | --- | --- | --- |
@@ -580,6 +582,8 @@ Het starterdeck is bewust saai, zodat elke beloning een echte keuze wordt.
 | Letter A (act 2, zeldzaam) | 2 | `+ 'A'` op je volgende kaart | `char` is een getal |
 | Measure Twice (act 3) | 1 | `Convert.ToByte` op een vijand | Convert tegenover cast |
 | Read the Label (act 3) | 1 | `int.Parse` op tekst-HP | parse |
+| Flip | 1 | `isSolid = !isSolid` op een vijand met een `bool` | `bool`, `!` |
+| Remainder | 1 | `% 5` op de aanval van een vijand | modulo |
 
 Molded Bolts en Molded Parts zijn de omgegoten versies van de Floating-kaarten (event De Smeltkroes).
 
@@ -738,6 +742,8 @@ Wie een pagina leest, krijgt niets extra. De beloning zit in de volgende run: je
 | Variables | H2 | een bewuste intent die met jouw blok, kaarten of energie rekent |
 | Integer truncation | H2 | schade met decimalen op een `int` |
 | Integer division | H2 | Split, of een bewuste intent met `/` |
+| Modulo | H2 | een treffer op de Rhythm Turtle, of Remainder |
+| Booleans | H2 | de Bool Ghost omdraaien, met een treffer of Flip |
 | Integer overflow | H2 | helen tot een `byte` omklapt |
 | Operator precedence | H2 | de Rekenmeester verslaan |
 | String concatenation | H3 | Ink, een treffer op The Label of Effective Power, of Y2K die `"19" + 100` schrijft |
@@ -830,8 +836,7 @@ De grootste onzekerheid blijft of studenten de regels in de game herkennen wanne
 
 Uit het oorspronkelijke ontwerp, nog niet gebouwd. Elk punt moet eerst als gevecht leuk zijn (de ontwerptoets).
 
-- [ ] **Bool-schim** (`bool`), uitgewerkt hieronder.
-- [ ] **Ritmeschildpad** (`%`), uitgewerkt hieronder. Modulo zit in H2 maar nu nergens in het spel.
+- [x] **Bool-schim** (`bool`) en **Ritmeschildpad** (`%`), gebouwd, zie hieronder.
 - [ ] **Tweelingschutters** (`i++` tegenover `++i`) met Snelle Steek en Voorsprong. De Tally Counter (`++count`) is de eerste smaak.
 - [ ] **De Naamloze en De Etiketkamer** (identifiers): blijft het zwakste concept als mechaniek. Testen op fun, niet alleen op leerwaarde, of schrappen.
 - [ ] **De patch met `const`**: na een paar keer Wrong Label op dezelfde soort vijand maakt een revisie zijn aanval `const`. Zit in het ontwerp van act 1, nog niet in het spel.
@@ -839,28 +844,28 @@ Uit het oorspronkelijke ontwerp, nog niet gebouwd. Elk punt moet eerst als gevec
 - [ ] **Exceptions met een catch**: de beurt als call stack en de blueprints. Een eigen act, of een afdeling na H10.
 - [ ] **Een derde elite voor act 3?** Nu Flight 501 en The Index. The Counter kan ook in act 3 terugkomen; Mars Climate Orbiter (verwisselde eenheden) heeft al een tekening.
 
-### Voorstel: de Bool-schim (act 1)
+### Gebouwd: de Bool-schim (act 1)
 
-Een geest met gewone `int`-HP en één `bool`: `isSolid`. Hij is een gewone vijand in act 1, met een bewuste intent.
+Gebouwd op 3 oktober 2026, in het spel **Bool Ghost**, 30 HP, met de tekening van de schakelaar. Een geest met gewone `int`-HP en één `bool`: `isSolid`. Hij is een gewone vijand in act 1, met een bewuste intent.
 
 - **Elke treffer draait `isSolid` om**, raak of niet. Is hij solid, dan neemt hij de schade; is hij het niet, dan gaat de treffer erdoor. De eerste treffer raakt dus, de tweede niet, de derde weer.
 - **Meervoudige kaarten worden een telspel.** Floating Bolts (3 treffers) raakt twee keer, Floating Parts (4) ook maar twee. Split (twee treffers) raakt één keer. Eén grote Hammer It In is hier sterk.
 - **Zijn intent is `isSolid ? 6 : 14`.** Wie zijn beurt eindigt terwijl hij doorzichtig is, krijgt het hard. Je wil eindigen op een oneven aantal treffers.
-- **Een nieuwe kaart Flip** (0 energie): `isSolid = !isSolid`, zonder treffer. Een gereedschap om de telling recht te zetten.
+- **Een nieuwe kaart Flip** (1 energie, verbeterd 0): `isSolid = !isSolid`, zonder treffer. Een gereedschap om de telling recht te zetten. Op een vijand zonder `bool` weigert ze: `!hp` compileert niet.
 - **Wat je ontdekt:** een `bool` kent twee standen, en `!` draait om. Het tellen is pariteit, zonder dat het spel het zo noemt. Logische operatoren (`&&`, `||`) wachten op de Controlekamer.
-- **Codex:** een pagina **Booleans** (H2), die opent als je hem verslaat.
+- **Codex:** een pagina **Booleans** (H2), met jouw moment: `!true` werd `false`. Onder zijn balk staat altijd `isSolid = true` of `false`.
 - **Andere manier om te winnen:** gewoon slaan en de 14 opvangen met blok.
 
-### Voorstel: de Ritmeschildpad (act 1)
+### Gebouwd: de Ritmeschildpad (act 1)
 
-Een schildpad met een schild dat alleen open is in het ritme van jouw beurt. De voorwaarde staat op zijn schild, zoals een intent: `cards % 3 == 0`.
+Gebouwd op 3 oktober 2026, in het spel **Rhythm Turtle**, 30 HP, nog zonder tekening. Een schildpad met een schild dat alleen open is in het ritme van jouw beurt. De voorwaarde staat op zijn schild, zoals een intent: `cards % 3 == 0`.
 
 - **Zijn schild is dicht, behalve bij elke derde kaart** die je deze beurt speelt. Een treffer op een dicht schild ketst af (0 schade). Je derde en zesde kaart raken.
 - **Dus speel je eerst twee goedkope kaarten** (Spare Screw, Split, Floating Point: die kosten 0) en dan je zware slag. De Counter-relic (elke derde kaart kost 0) wordt hier ineens goud waard.
 - **Zijn intent is `turn % 2 == 0 ? 16 : 4`**: om de andere beurt slaat hij hard. Je ziet het ritme in de ballon.
-- **Een nieuwe kaart Remainder** (1 energie): `% 5` op de aanval van een vijand. Een aanval van 16 wordt 1, 23 wordt 3, maar 25 wordt 0. De rest is altijd kleiner dan 5: modulo als verdediging. Werkt op elke vijand, dus ook buiten dit gevecht nuttig.
+- **Een nieuwe kaart Remainder** (1 energie, verbeterd `% 3`): `% 5` op de aanval van een vijand. Een aanval van 16 wordt 1, 23 wordt 3, maar 25 wordt 0. De rest is altijd kleiner dan 5: modulo als verdediging. Werkt op elke vijand, dus ook buiten dit gevecht nuttig.
 - **Wat je ontdekt:** `%` geeft de rest, en "elke derde" is `% 3 == 0`.
-- **Codex:** een pagina **Modulo** (H2), die opent bij een treffer door zijn open schild of bij Remainder.
+- **Codex:** een pagina **Modulo** (H2), met jouw moment: een treffer op zijn schild (`2 % 3` is 2) of Remainder (`16 % 5` is 1). Onder zijn balk staat `cards % 3 == 0`.
 - **Andere manier om te winnen:** Force Fit naar `byte` en helen, zoals bij Level 256; zijn schild houdt schade tegen, geen heling.
 
 ### Codex

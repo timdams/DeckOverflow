@@ -18,6 +18,8 @@ public sealed record CombatantSetup(string Key, ValueKind Kind, double Hp, doubl
 /// <param name="ResetTemplate">String interpolatie: <c>{0}</c> wordt de schade die hij die beurt kreeg.</param>
 /// <param name="YearPrefix">Een jaartal als tekst (Y2K): na elke beurt wordt zijn tekst <c>YearPrefix + jaar</c>, echte concatenatie.
 /// Na <c>"19" + 99</c> komt <c>"19" + 100</c>, en dat is <c>"19100"</c>.</param>
+/// <param name="Toggles">Een <c>bool</c> <c>isSolid</c> die elke treffer omdraait. Alleen als hij solid is, raakt de treffer (de Bool Ghost).</param>
+/// <param name="OpenEvery">Zijn schild is alleen open bij elke zoveelste kaart van jouw beurt: <c>cards % OpenEvery == 0</c> (de Rhythm Turtle).</param>
 /// <param name="StartYear">Het jaar zonder eeuw bij de start. Na beurt N is het <c>StartYear + N</c>.</param>
 public sealed record EnemySetup(
     CombatantSetup Stats,
@@ -32,7 +34,9 @@ public sealed record EnemySetup(
     int ResetTextEvery = 0,
     string? ResetTemplate = null,
     string? YearPrefix = null,
-    int StartYear = 0);
+    int StartYear = 0,
+    bool Toggles = false,
+    int OpenEvery = 0);
 
 /// <param name="Relics">Ids uit <see cref="Relics.RelicCatalog"/> die in dit gevecht meespelen.</param>
 public sealed record CombatSetup(

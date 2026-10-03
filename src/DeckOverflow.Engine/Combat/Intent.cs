@@ -17,7 +17,10 @@ public sealed partial record Intent(string Expression, double Value, bool Hidden
 
     public bool IsLive => Formula is not null;
 
-    /// <summary>Een bewuste intent. De variabelen in de expressie heten <c>block</c>, <c>cards</c>, <c>energy</c> en <c>hp</c>.</summary>
+    /// <summary>
+    /// Een bewuste intent. De variabelen in de expressie heten <c>block</c>, <c>cards</c>, <c>energy</c> en <c>hp</c>
+    /// (van jou), en <c>isSolid</c> en <c>turn</c> (van het gevecht).
+    /// </summary>
     public static Intent Live(string expression, Func<IntentContext, double> formula) =>
         new(expression, formula(default)) { Formula = formula };
 
@@ -30,14 +33,19 @@ public sealed partial record Intent(string Expression, double Value, bool Hidden
         "cards" => Num(context.Cards),
         "energy" => Num(context.Energy),
         "hp" => Num(context.Hp),
+        "isSolid" => context.Solid ? "true" : "false",
+        "turn" => Num(context.Turn),
         _ => m.Value
     });
 
     private static string Num(int value) => value.ToString(CultureInfo.InvariantCulture);
 
-    [GeneratedRegex(@"\b(block|cards|energy|hp)\b")]
+    [GeneratedRegex(@"\b(block|cards|energy|hp|isSolid|turn)\b")]
     private static partial Regex Variable();
 }
 
-/// <summary>Wat een bewuste intent van de speler mag zien: blok, gespeelde kaarten deze beurt, overgebleven energie, HP.</summary>
-public readonly record struct IntentContext(int Block, int Cards, int Energy, int Hp);
+/// <summary>
+/// Wat een bewuste intent mag zien: jouw blok, gespeelde kaarten deze beurt, overgebleven energie en HP,
+/// plus de <c>bool</c> van de Bool Ghost en het nummer van de beurt.
+/// </summary>
+public readonly record struct IntentContext(int Block, int Cards, int Energy, int Hp, bool Solid = false, int Turn = 0);

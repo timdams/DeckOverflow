@@ -21,6 +21,8 @@ public static class CardText
         ParseEffect => TextRef.Of("effect.parse-enemy"),
         LengthEffect => TextRef.Of("effect.length"),
         SetAttackEffect s => TextRef.Of("effect.set-attack", ("value", s.Value)),
+        FlipEffect => TextRef.Of("effect.flip"),
+        RemainderEffect r => TextRef.Of("effect.remainder", ("amount", r.Divisor)),
         ModifierEffect { Op: ModifierOp.Add } m => TextRef.Of("effect.add", ("amount", m.Operand.Literal)),
         ModifierEffect { Op: ModifierOp.Multiply } m => TextRef.Of("effect.multiply", ("amount", m.Operand.Literal)),
         ModifierEffect { Op: ModifierOp.Divide, DoubleHits: true } m => TextRef.Of("effect.split", ("amount", m.Operand.Literal)),

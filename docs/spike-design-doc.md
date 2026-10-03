@@ -135,6 +135,9 @@ Het eventcontract is de enige afspraak tussen C# en JavaScript. Elk event heeft 
 | `IntentAssigned` | enemyId, expressionBefore, value | Toekenning (Zet op 1): de intent wordt overschreven door het nieuwe getal |
 | `ModifierQueued` | label, pending | "+3" springt op bij de energiebol; wat wacht staat ernaast |
 | `ModifiersScrapped` | pending, cost | wat wachtte, valt doorgestreept weg (command `ScrapModifiers`) |
+| `SolidFlipped` | targetId, solid | de regel onder de Bool Ghost springt op; doorzichtig als hij niet solid is |
+| `HitPassedThrough` | targetId | "passed through" boven de Bool Ghost, geen schade |
+| `HitBounced` | targetId, expression, value | `1 % 3 = 1` boven de Rhythm Turtle, hij schudt even |
 | `ModifiersApplied` | cardId, before, after, expression | De som "(6 + 3) × 2" verschijnt en rekent uit tot 18 |
 | `RelicTriggered` | relicId | De naam van de relic licht op; het effect volgt als gewone events |
 | `ValueRounded` | targetId, before, after, subject | `Math.Round` of `Convert` rondde af: "2.5 → 2" met de naam eronder (The Rounder, Measure Twice) |

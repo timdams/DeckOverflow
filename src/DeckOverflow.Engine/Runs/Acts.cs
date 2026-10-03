@@ -28,7 +28,7 @@ public static class Acts
     public static readonly ActDefinition VatValley = new(
         1, "vat-valley", Bestiary.Reckoner,
         EasyPool: [Bestiary.Slime, Bestiary.Knight],
-        NormalPool: [Bestiary.Knight, Bestiary.Ghost, Bestiary.Dripper, Bestiary.Splitter, Bestiary.Stray],
+        NormalPool: [Bestiary.Knight, Bestiary.Ghost, Bestiary.Dripper, Bestiary.Splitter, Bestiary.Stray, Bestiary.BoolGhost, Bestiary.RhythmTurtle],
         ElitePool: [Bestiary.Golem, Bestiary.Counter],
         Events: [Adventures.Crucible, Adventures.LeakingBarrel, Adventures.CopyMachine, Adventures.ScrapBin],
         EarlyEvent: Bestiary.Jug,

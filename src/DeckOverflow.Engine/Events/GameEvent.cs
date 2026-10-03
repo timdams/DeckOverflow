@@ -39,6 +39,9 @@ namespace DeckOverflow.Engine.Events;
 [JsonDerivedType(typeof(IntentAssigned), nameof(IntentAssigned))]
 [JsonDerivedType(typeof(ModifierQueued), nameof(ModifierQueued))]
 [JsonDerivedType(typeof(ModifiersScrapped), nameof(ModifiersScrapped))]
+[JsonDerivedType(typeof(SolidFlipped), nameof(SolidFlipped))]
+[JsonDerivedType(typeof(HitPassedThrough), nameof(HitPassedThrough))]
+[JsonDerivedType(typeof(HitBounced), nameof(HitBounced))]
 [JsonDerivedType(typeof(ModifiersApplied), nameof(ModifiersApplied))]
 [JsonDerivedType(typeof(RelicTriggered), nameof(RelicTriggered))]
 [JsonDerivedType(typeof(NodeEntered), nameof(NodeEntered))]
@@ -141,6 +144,12 @@ public sealed record IntentAssigned(int EnemyId, string ExpressionBefore, double
 
 /// <summary>Een modifier wacht op je volgende kaart. <paramref name="Pending"/> is alles wat wacht, bv. "+3 ×2".</summary>
 public sealed record ModifierQueued(string Label, string Pending) : GameEvent;
+/// <summary>De <c>bool</c> van de Bool Ghost is omgedraaid, door een treffer of door Flip.</summary>
+public sealed record SolidFlipped(int TargetId, bool Solid) : GameEvent;
+/// <summary>Een treffer ging door de Bool Ghost heen: hij was niet solid.</summary>
+public sealed record HitPassedThrough(int TargetId) : GameEvent;
+/// <summary>Een treffer ketste af op een dicht schild: <paramref name="Expression"/> was niet 0, bv. <c>2 % 3</c>.</summary>
+public sealed record HitBounced(int TargetId, string Expression, int Value) : GameEvent;
 /// <summary>De wachtende modifiers zijn weggeveegd, voor <paramref name="Cost"/> energie.</summary>
 public sealed record ModifiersScrapped(string Pending, int Cost) : GameEvent;
 

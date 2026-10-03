@@ -35,6 +35,8 @@ public sealed class Combat
     /// <summary>De vijand liep over en heelt niet meer (<see cref="EnemySetup.StopsHealingOnOverflow"/>).</summary>
     private bool _enemyStoppedHealing;
     private int _typeCycleIndex;
+    /// <summary>De <c>bool</c> van de Bool Ghost (<see cref="EnemySetup.Toggles"/>): alleen als hij solid is, raakt een treffer.</summary>
+    private bool _enemySolid = true;
     private int _cardsPlayed;
     /// <summary>Kaarten deze beurt: een variabele voor bewuste intents.</summary>
     private int _cardsThisTurn;
@@ -139,6 +141,13 @@ public sealed class Combat
         if (card.Effect is CastEffect or ComboEffect { First: CastEffect } && target.Kind == ValueKind.String)
         {
             Emit(new PlayRejected(play.HandIndex, "reject.cast-text"));
+            return;
+        }
+
+        // !hp compileert niet: alleen een bool kan je omdraaien
+        if (card.Effect is FlipEffect && !(target.IsEnemy && _setup.Enemy.Toggles))
+        {
+            Emit(new PlayRejected(play.HandIndex, "reject.not-bool"));
             return;
         }
 
@@ -324,8 +333,11 @@ public sealed class Combat
                 (TypedValue perHit, int hitFactor) = Modify(card, d.Amount, card.Kind);
                 for (int hit = 0; hit < d.Hits * hitFactor && !target.IsDead; hit++)
                 {
+                    if (!Lands(target)) continue;
                     if (perHit.IsText) AppendText(target, perHit.Text);
                     else DealDamage(target, perHit.Number, fromPlayer: true);
+                    // De Bool Ghost: eerst de treffer, dan draait hij om
+                    if (target.IsEnemy && _setup.Enemy.Toggles && !target.IsDead) FlipSolid();
                 }
                 break;
             }
@@ -350,6 +362,8 @@ public sealed class Combat
             case LengthEffect: break;
 
             case SetAttackEffect s: AssignAttack(s.Value); break;
+            case FlipEffect: FlipSolid(); break;
+            case RemainderEffect r: TakeRemainder(r.Divisor); break;
             case ModifierEffect m: QueueModifier(m); break;
 
             case ComboEffect combo:
@@ -357,6 +371,54 @@ public sealed class Combat
                 if (!target.IsDead) Apply(card, combo.Then, target);
                 break;
         }
+    }
+
+    /// <summary>
+    /// Raakt deze treffer? De Bool Ghost draait bij elke treffer om en neemt alleen schade als hij solid was.
+    /// De Rhythm Turtle laat alleen je derde, zesde, ... kaart van de beurt door.
+    /// </summary>
+    private bool Lands(Combatant target)
+    {
+        if (!target.IsEnemy) return true;
+        if (_setup.Enemy.OpenEvery > 0)
+        {
+            int rest = _cardsThisTurn % _setup.Enemy.OpenEvery;
+            string expression = $"{_cardsThisTurn} % {_setup.Enemy.OpenEvery}";
+            Moment(CodexCatalog.Modulo, ("expression", expression), ("value", rest));
+            if (rest != 0)
+            {
+                Emit(new HitBounced(target.Id, expression, rest));
+                return false;
+            }
+        }
+        if (_setup.Enemy.Toggles && !_enemySolid)
+        {
+            // Doorzichtig: de treffer gaat erdoor, en maakt hem weer solid
+            Emit(new HitPassedThrough(target.Id));
+            FlipSolid();
+            return false;
+        }
+        return true;
+    }
+
+    private void FlipSolid()
+    {
+        bool before = _enemySolid;
+        _enemySolid = !_enemySolid;
+        Emit(new SolidFlipped(EnemyId, _enemySolid));
+        Moment(CodexCatalog.Booleans, ("expression", before ? "!true" : "!false"), ("value", _enemySolid ? "true" : "false"));
+    }
+
+    /// <summary>Remainder: de aanval wordt <c>aanval % deler</c>, met echte C#. Op een <c>double</c> blijft de rest een <c>double</c>.</summary>
+    private void TakeRemainder(int divisor)
+    {
+        Intent before = CurrentIntent;
+        double value = before.ValueIn(Context());
+        double rest = value % divisor;
+        string expression = $"{Num(value)} % {divisor}";
+        _assignedAttack = new Intent(Num(rest), rest);
+        Emit(new IntentAssigned(EnemyId, expression, rest));
+        Moment(CodexCatalog.Modulo, ("expression", expression), ("value", rest));
     }
 
     /// <summary>Toekenning: wat er stond, doet er niet meer toe.</summary>
@@ -824,11 +886,13 @@ public sealed class Combat
     };
 
     /// <summary>De variabelen van een bewuste intent, zoals ze nu staan.</summary>
-    private IntentContext Context() => new((int)_player.Block, _cardsThisTurn, Energy, (int)_player.Hp);
+    private IntentContext Context() => new((int)_player.Block, _cardsThisTurn, Energy, (int)_player.Hp, _enemySolid, Turn);
 
     private CombatantView View(Combatant c, Intent? intent, IntentContext context) => new(
         c.Id, c.Key, c.Kind, c.Hp, c.MaxHp, c.Block, c.IsEnemy,
         intent is null ? null : new IntentView(intent.Expression, intent.Hidden ? null : intent.ValueIn(context), intent.IsLive ? intent.FilledIn(context) : null),
         c.Text,
-        c.Text is not null && c.IsEnemy && _setup.Enemy.CrashLength > 0 ? _setup.Enemy.CrashLength : null);
+        c.Text is not null && c.IsEnemy && _setup.Enemy.CrashLength > 0 ? _setup.Enemy.CrashLength : null,
+        c.IsEnemy && _setup.Enemy.Toggles ? (_enemySolid ? "isSolid = true" : "isSolid = false")
+            : c.IsEnemy && _setup.Enemy.OpenEvery > 0 ? $"cards % {_setup.Enemy.OpenEvery} == 0" : null);
 }

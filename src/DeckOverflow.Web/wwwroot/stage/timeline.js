@@ -711,6 +711,37 @@ const handlers = {
     await wait(200);
   },
 
+  /** De bool van de Bool Ghost draait om: hij wordt doorzichtig of weer vast. */
+  async SolidFlipped(S, e) {
+    const a = S.actor(e.targetId);
+    if (!a) return;
+    a.setRule(e.solid ? 'isSolid = true' : 'isSolid = false');
+    a.pulseRule();
+    sfx('tick', { volume: 0.5 });
+    gsap.to(a.sprite.container, { alpha: e.solid ? 1 : 0.35, duration: sec(180) });
+    await wait(80);
+  },
+
+  /** Een treffer gaat dwars door de doorzichtige Bool Ghost heen. */
+  async HitPassedThrough(S, e) {
+    const a = S.actor(e.targetId);
+    const head = a.head();
+    sfx('click', { volume: 0.5 });
+    floatText(S.layers.fx, t('stage.passed-through'), head.x, head.y - 30, { size: 16, rise: 24 });
+    await wait(160);
+  },
+
+  /** Een treffer ketst af op het dichte schild van de Rhythm Turtle: de rest was niet 0. */
+  async HitBounced(S, e) {
+    const a = S.actor(e.targetId);
+    const head = a.head();
+    a.pulseRule();
+    sfx('click', { volume: 0.6 });
+    floatText(S.layers.fx, `${e.expression} = ${e.value}`, head.x, head.y - 30, { size: 16, rise: 24 });
+    gsap.fromTo(a.container, { x: a.home.x + 6 }, { x: a.home.x, duration: sec(200), ease: 'elastic.out(1, 0.4)' });
+    await wait(200);
+  },
+
   /** De wachtende modifiers zijn weggeveegd: ze vallen weg boven de batterij. */
   async ModifiersScrapped(S, e) {
     sfx('click', { volume: 0.6 });

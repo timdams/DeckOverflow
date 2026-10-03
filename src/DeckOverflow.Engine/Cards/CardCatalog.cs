@@ -99,13 +99,21 @@ public static class CardCatalog
     public static readonly CardDefinition LetterA =
         new("letter-a", 2, TargetMode.Self, new ModifierEffect(ModifierOp.Add, TypedValue.Char('A')), Rarity: Rarity.Rare);
 
+    /// <summary><c>isSolid = !isSolid</c>: zet de telling van de Bool Ghost recht, zonder treffer.</summary>
+    public static readonly CardDefinition Flip =
+        new("flip", 1, TargetMode.Enemy, new FlipEffect(), Rarity: Rarity.Common);
+
+    /// <summary><c>% 5</c> op de aanval van een vijand: 16 wordt 1, 23 wordt 3, 25 wordt 0. Modulo als verdediging.</summary>
+    public static readonly CardDefinition Remainder =
+        new("remainder", 1, TargetMode.Enemy, new RemainderEffect(5), Rarity: Rarity.Uncommon);
+
     /// <summary>Wat je in act 1 na een gevecht, in de winkel of in een kist kan vinden.</summary>
     public static readonly IReadOnlyList<CardDefinition> RewardPool =
     [
         FloatingStrike, HeavyStrike, FloatingRain, ThickShield, Mend, RemoldInt, RemoldByte,
         SetTo1, Add, DoubleUp,
         FloatingPoint, Split, Ink, Read,
-        ByteTrap
+        ByteTrap, Flip, Remainder
     ];
 
     /// <summary>
@@ -146,6 +154,8 @@ public static class CardCatalog
         FloatingPoint with { Id = "floating-point+", Effect = new ModifierEffect(ModifierOp.Multiply, TypedValue.Double(1.5)) },
         Ink with { Id = "ink+", Cost = 0 },
         Read with { Id = "read+", Cost = 1 },
+        Flip with { Id = "flip+", Cost = 0 },
+        Remainder with { Id = "remainder+", Effect = new RemainderEffect(3) },
     }.ToDictionary(c => c.BaseId);
 
     /// <summary>De verbeterde versie, of null als de kaart niet (meer) beter kan.</summary>

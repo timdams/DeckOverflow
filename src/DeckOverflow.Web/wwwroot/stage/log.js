@@ -71,6 +71,12 @@ function describe(S, e) {
       return [t('stage.log.assigned', { enemy: who(e.enemyId), before: e.expressionBefore, value: num(e.value) }), COLORS.ink];
     case 'ModifierQueued':
       return [t('stage.log.next-card', { pending: e.pending }), COLORS.ink];
+    case 'SolidFlipped':
+      return [t('stage.log.solid', { target: who(e.targetId), value: e.solid ? 'true' : 'false' }), COLORS.ink];
+    case 'HitPassedThrough':
+      return [t('stage.log.passed-through', { target: who(e.targetId) }), COLORS.ink];
+    case 'HitBounced':
+      return [t('stage.log.bounced', { target: who(e.targetId), expression: e.expression, value: e.value }), COLORS.ink];
     case 'ModifiersScrapped':
       return [t('stage.log.scrapped', { pending: e.pending }), COLORS.ink];
     case 'ModifiersApplied':

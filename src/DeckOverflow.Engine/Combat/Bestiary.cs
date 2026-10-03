@@ -20,6 +20,10 @@ public static class Bestiary
     public const string EffectivePower = "effective-power";
     /// <summary>De millenniumbug: zijn HP is een jaartal als tekst, <c>"19" + jaar</c>.</summary>
     public const string Y2K = "y2k";
+    /// <summary>Een <c>bool</c> die elke treffer omdraait: alleen als hij solid is, raak je hem.</summary>
+    public const string BoolGhost = "bool-ghost";
+    /// <summary>Zijn schild is alleen open bij elke derde kaart van je beurt: <c>cards % 3 == 0</c>.</summary>
+    public const string RhythmTurtle = "rhythm-turtle";
     public const string Counter = "counter";
     /// <summary>Een tease: een robotje dat ontsnapte uit de Controlekamer, met een regel als intent.</summary>
     public const string Stray = "stray";
@@ -41,7 +45,7 @@ public static class Bestiary
 
     public static readonly IReadOnlyList<string> Bosses = [Reckoner, Typesetter, Caster];
 
-    public static readonly IReadOnlyList<string> All = [Slime, Knight, Ghost, Dripper, Jug, Colossus, Golem, Reckoner, Splitter, Counter, Stray, EffectivePower, Y2K, TypeBlock, PaperGolem, Typesetter, Ingot, Rounder, Index, Caster, Label];
+    public static readonly IReadOnlyList<string> All = [Slime, Knight, Ghost, Dripper, Jug, Colossus, Golem, Reckoner, Splitter, Counter, Stray, BoolGhost, RhythmTurtle, EffectivePower, Y2K, TypeBlock, PaperGolem, Typesetter, Ingot, Rounder, Index, Caster, Label];
 
     public static bool Exists(string? key) => key is not null && All.Contains(key);
 
@@ -100,6 +104,20 @@ public static class Bestiary
         Stray => new(
             new CombatantSetup(Stray, ValueKind.Int, Hp: 26, MaxHp: 26),
             [Intent.Live("block > 0 ? 16 : 8", c => c.Block > 0 ? 16 : 8), new("5 + 5", 5 + 5)]),
+
+        // De Bool Ghost: elke treffer draait isSolid om. Alleen als hij solid is, neemt hij de schade.
+        // Meervoudige kaarten worden een telspel; wie eindigt terwijl hij doorzichtig is, krijgt het hard.
+        BoolGhost => new(
+            new CombatantSetup(BoolGhost, ValueKind.Int, Hp: 30, MaxHp: 30),
+            [Intent.Live("isSolid ? 6 : 14", c => c.Solid ? 6 : 14)],
+            Toggles: true),
+
+        // De Rhythm Turtle: zijn schild staat alleen open bij je derde, zesde, ... kaart van de beurt.
+        // Om de andere beurt slaat hij hard; Remainder (% 5) maakt van 16 een 1.
+        RhythmTurtle => new(
+            new CombatantSetup(RhythmTurtle, ValueKind.Int, Hp: 30, MaxHp: 30),
+            [Intent.Live("turn % 2 == 0 ? 16 : 4", c => c.Turn % 2 == 0 ? 16 : 4)],
+            OpenEvery: 3),
 
         // ---------- Act 2: de Drukkerij ----------
 

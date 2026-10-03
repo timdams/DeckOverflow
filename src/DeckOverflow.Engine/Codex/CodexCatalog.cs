@@ -17,6 +17,8 @@ public static class CodexCatalog
     public const string Variables = "variables";
     public const string IntTruncation = "int-truncation";
     public const string IntegerDivision = "integer-division";
+    public const string Modulo = "modulo";
+    public const string Booleans = "booleans";
     public const string Overflow = "overflow";
     public const string OperatorPrecedence = "operator-precedence";
     public const string StringConcat = "string-concat";
@@ -34,6 +36,8 @@ public static class CodexCatalog
         new(Variables, 2, "1_csharpbasics/1b_variabelen.html"),
         new(IntTruncation, 2, "1_csharpbasics/1_datatypes.html"),
         new(IntegerDivision, 2, "1_csharpbasics/2_expressies.html"),
+        new(Modulo, 2, "1_csharpbasics/2_expressies.html"),
+        new(Booleans, 2, "1_csharpbasics/1_datatypes.html"),
         new(Overflow, 2, "1_csharpbasics/1_datatypes.html"),
         new(OperatorPrecedence, 2, "1_csharpbasics/2_expressies.html"),
         new(StringConcat, 3, "2_tekst/5_chars_strings.html", MinAct: 2),

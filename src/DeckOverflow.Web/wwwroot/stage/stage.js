@@ -119,6 +119,7 @@ export function sync(snapshot) {
     a.setKind(c.kind, c.maxHp);
     a.setHp(c.hp);
     a.setBlock(c.block);
+    a.setRule(c.rule);
     if (c.intent && !a.intentShown) a.typeIntent(c.intent.expression, c.intent.value);
     // Een bewuste intent rekent mee terwijl je speelt: het totaal springt naar zijn nieuwe waarde
     else if (c.intent?.filled && a.intentShown) a.refreshIntent(c.intent.value);
@@ -440,6 +441,12 @@ function createActor(c) {
   badgeSlot.position.set(barW + 10, 9);
   bar.addChild(badgeSlot);
 
+  // Een regel die bij de vijand hoort, naast zijn typelabel: isSolid = true, of cards % 3 == 0
+  const ruleText = text('', { size: 14, color: COLORS.ink, halo: true, anchor: 0 });
+  ruleText.anchor.set(0, 0.5);
+  ruleText.position.set(barW + 52, 9);
+  bar.addChild(ruleText);
+
   // Schild links van de balk, met het getal erin
   const blockBox = new PIXI.Container();
   // Blok is een beschermplaat: vastgeschroefd, gearceerd, zoals een afschermkap in een handleiding
@@ -532,6 +539,15 @@ function createActor(c) {
       return roll(from, to, (v) => a.setHp(v), { decimals: a.kind === 'Double' ? 1 : 0 });
     },
 
+    setRule(rule) {
+      ruleText.text = rule ?? '';
+    },
+
+    /** Even oplichten als de regel iets deed: een treffer ging erdoor of ketste af. */
+    pulseRule() {
+      gsap.fromTo(ruleText.scale, { x: 1.35, y: 1.35 }, { x: 1, y: 1, duration: sec(260), ease: 'back.out(2)' });
+    },
+
     setBlock(value) {
       blockBox.visible = value > 0;
       blockBox.alpha = 1;
@@ -618,6 +634,7 @@ function createActor(c) {
   a.setKind(c.kind, c.maxHp);
   a.setHp(c.hp);
   a.setBlock(c.block);
+  a.setRule(c.rule);
   a.setIntent(null);
   a.idle();
   S.actors.set(c.id, a);

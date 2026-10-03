@@ -28,6 +28,12 @@ public sealed record ParseEffect : Effect;
 /// <summary>Toekenning: de aanval van de vijand wordt deze beurt <paramref name="Value"/>, wat er ook stond.</summary>
 public sealed record SetAttackEffect(int Value) : Effect;
 
+/// <summary><c>isSolid = !isSolid</c>: draait de <c>bool</c> van een vijand om. Op een vijand zonder <c>bool</c> compileert het niet.</summary>
+public sealed record FlipEffect : Effect;
+
+/// <summary>De aanval van de vijand wordt <c>aanval % Divisor</c>: altijd kleiner dan de deler.</summary>
+public sealed record RemainderEffect(int Divisor) : Effect;
+
 /// <summary>
 /// Verandert de waarde van je volgende kaart, met echte C#-operatoren op een waarde met een type.
 /// De volgorde van modifiers telt. <paramref name="DoubleHits"/>: de kaart slaat twee keer zo vaak (Split).

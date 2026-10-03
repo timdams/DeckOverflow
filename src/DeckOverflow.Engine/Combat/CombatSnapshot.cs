@@ -38,7 +38,8 @@ public sealed record CombatantView(
     bool IsEnemy,
     IntentView? Intent,
     string? Text = null,
-    int? TextLimit = null);
+    int? TextLimit = null,
+    string? Rule = null);
 
 /// <param name="Value">Leeg als het totaal verborgen blijft. Bij een bewuste intent: wat het nu zou zijn.</param>
 /// <param name="Filled">Alleen bij een bewuste intent: de expressie met jouw getallen ingevuld, bv. <c>30 / (5 + 1)</c>.</param>

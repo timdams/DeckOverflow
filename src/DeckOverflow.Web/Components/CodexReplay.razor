@@ -91,6 +91,8 @@
             }
 
             case CodexCatalog.IntegerDivision:
+            case CodexCatalog.Modulo:
+            case CodexCatalog.Booleans:
             case CodexCatalog.StringConcat:
             case CodexCatalog.Convert:
                 yield return new(V("expression"), "code", 250);

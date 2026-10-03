@@ -53,6 +53,7 @@
     "effective-power": "actors/effective-power",
     "y2k": "actors/y2k",
     "stray": "actors/stray",
+    "bool-ghost": "actors/switch",
     "counter": "actors/counter",
     "type-block": "actors/type-block",
     "paper-golem": "actors/paper-golem",
