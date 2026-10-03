@@ -1,7 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <!-- Pure regelmotor: geen package- of projectreferenties. -->
-  <PropertyGroup>
-    <RootNamespace>DeckOverflow.Engine</RootNamespace>
-    <IsTrimmable>true</IsTrimmable>
-  </PropertyGroup>
-</Project>

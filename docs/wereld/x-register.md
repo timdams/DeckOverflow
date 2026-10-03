@@ -23,19 +23,18 @@ Beslist op 3 oktober 2026: het register is één systeem dat elke afdeling gebru
 
 **Sleutels zijn uniek over de hele fabriek**, zodat de wereld ze in één verzameling kan bewaren. Een afdeling kiest ze vrij; een prefix is niet nodig zolang ze niet botsen.
 
-**Stand van de code.** Nu staat het register nog in de motor van de Card Hall (`Achievements/XRegister.cs`, met `All` en `Earned(events, enemy)`), en leest de shell `XRegister.All` rechtstreeks. Bij het opsplitsen van de code (zie [todo.md](todo.md)) wordt dat een gedeeld contract, ongeveer:
+**Gebouwd op 3 oktober 2026.** Het contract staat in Core (`DeckOverflow.Core.Achievements`):
 
 ```csharp
-// Gedeeld (Core): wat elke afdeling aanlevert
-public sealed record XPanel(string Key, string Department, bool Hidden = false);
+public sealed record XPanel(string Key, bool Hidden = false);
 public interface IXPanelSource
 {
+    string Department { get; }            // card-hall, of world
     IReadOnlyList<XPanel> Panels { get; }
-    IEnumerable<string> Earned(IReadOnlyList<GameEvent> events);
 }
 ```
 
-De Card Hall levert dan haar elf panelen, de Controlekamer later de hare, en het register in de shell toont ze per afdeling.
+Hoe een afdeling een paneel herkent, blijft in haar eigen motor (bij de Card Hall `XRegister.Earned(events, enemy)`, uitgevoerd door `Run`, die `XPanelEarned` emitteert); het contract vraagt alleen de lijst. De wereld verzamelt alle bronnen in `World/XPanels.cs` (`Sources`, `All`), met daarin ook haar eigen paneel Do not read the manual. Een nieuwe afdeling voegt daar haar bron toe. Het register toont nog één lijst; een pagina per afdeling komt met de tweede afdeling (zie [todo.md](todo.md)).
 
 ## Gebouwd: de panelen van de Card Hall
 

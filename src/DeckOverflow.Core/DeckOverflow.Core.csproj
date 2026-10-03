@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Wat elke afdeling deelt: seeded RNG, getypeerde waarden met echte C#-regels, teksten,
+       en de contracten van de wereld (Codex, ✗-register). Geen package- of projectreferenties. -->
+  <PropertyGroup>
+    <RootNamespace>DeckOverflow.Core</RootNamespace>
+    <IsTrimmable>true</IsTrimmable>
+  </PropertyGroup>
+</Project>

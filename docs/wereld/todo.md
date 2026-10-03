@@ -15,6 +15,9 @@ Wat bewust is uitgesteld voor de wereld (plattegrond, backend, Codex, ✗-regist
 
 ## Code modulair maken
 
-- **De code opsplitsen zoals de docs** (beslist op 3 oktober 2026). Een gedeeld project `DeckOverflow.Core` (seeded RNG, getypeerde waarden en C#-regels, teksten, de basis van events en commands, de contracten voor Codex en ✗-register) en per afdeling een eigen project, eerst `DeckOverflow.CardHall` (gevecht, kaarten, relics, map, runs). In de shell blijven `World/`, `Backend/` en `Progress/` de wereld; de deckbuilder (RunPage, kaartcomponenten, `wwwroot/stage/`) gaat naar een map `CardHall/`. Tests volgen dezelfde splitsing. Eerst afstemmen met de sessie die aan de backend werkt, want veel bestanden verhuizen.
-- **Het ✗-register als gedeeld systeem**: `IXPanelSource` per afdeling, zie [x-register.md](x-register.md).
-- **De Codex als gedeeld systeem**: elke afdeling registreert haar pagina's (sleutel, hoofdstuk, boekpagina, minimale act of stap) in één catalogus, zie [codex.md](codex.md).
+Gedaan op 3 oktober 2026: `DeckOverflow.Core` en `DeckOverflow.CardHall` als aparte projecten met eigen tests, de shell met `World/` en `Features/CardHall/`, de stage in `wwwroot/card-hall/stage/`, en het ✗-register met `IXPanelSource` (`World/XPanels.cs`). Wat nog rest:
+
+- **`RunPage` splitsen.** Eén pagina toont nu titelscherm, plattegrond, onthulling én de run van de deckbuilder. De wereld (titel, plattegrond, onthulling, Codex, register, account) hoort in een eigen pagina of component in `World/`; de run in `Features/CardHall/`. Pas nodig als een tweede afdeling in het spel komt.
+- **De Codex per afdeling registreren.** De catalogus staat in Core, maar alle pagina's staan nog in één lijst, en `MinAct` is een begrip van de Card Hall. Bij een tweede afdeling: elke afdeling levert haar pagina's (zoals `IXPanelSource`), en de minimale act wordt een minimale stap van die afdeling. Zie [codex.md](codex.md).
+- **Het register toont nog één lijst.** `XRegisterBook` loopt over `XPanels.All`; een pagina per afdeling (met `IXPanelSource.Department`) komt als er een tweede afdeling is.
+- **Teksten van wereldpanelen testen.** `StringsTests` (in de Card Hall-tests) kijkt alleen de panelen van de Card Hall na; "Do not read the manual" staat in `World/XPanels.cs` en heeft geen test. Een klein testproject voor de shell, of de wereldpanelen naar Core.

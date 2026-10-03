@@ -135,7 +135,7 @@ public sealed class StageBridge(IJSRuntime js) : IAsyncDisposable
 
     public async Task InitAsync(ElementReference host, DotNetObjectReference<CombatPage> page)
     {
-        _stage = await js.InvokeAsync<IJSObjectReference>("import", "./stage/stage.js");
+        _stage = await js.InvokeAsync<IJSObjectReference>("import", "./card-hall/stage/stage.js");
         await _stage.InvokeVoidAsync("init", host, page);
     }
 

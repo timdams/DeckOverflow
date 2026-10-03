@@ -12,5 +12,6 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
-      - run: dotnet test tests/DeckOverflow.Engine.Tests
+      - run: dotnet test tests/DeckOverflow.Core.Tests
+      - run: dotnet test tests/DeckOverflow.CardHall.Tests
       - run: dotnet build src/DeckOverflow.Web

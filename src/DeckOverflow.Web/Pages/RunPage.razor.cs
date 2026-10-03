@@ -1,12 +1,12 @@
 using System.Diagnostics;
 using System.Globalization;
-using DeckOverflow.Engine.Cards;
-using DeckOverflow.Engine.Combat;
-using DeckOverflow.Engine.Commands;
-using DeckOverflow.Engine.Events;
-using DeckOverflow.Engine.Maps;
-using DeckOverflow.Engine.Runs;
-using DeckOverflow.Engine.Text;
+using DeckOverflow.CardHall.Cards;
+using DeckOverflow.CardHall.Combat;
+using DeckOverflow.CardHall.Commands;
+using DeckOverflow.CardHall.Events;
+using DeckOverflow.CardHall.Maps;
+using DeckOverflow.CardHall.Runs;
+using DeckOverflow.Core.Text;
 using Microsoft.AspNetCore.Components;
 using DeckOverflow.Web.Backend;
 using DeckOverflow.Web.Progress;
@@ -345,7 +345,7 @@ public partial class RunPage
         if (turn.Layer <= _progress.CodexRead.GetValueOrDefault(turn.Key, 1)) return;
         _progress.CodexRead[turn.Key] = turn.Layer;
         await Store.SaveAsync(_progress);
-        if (turn.Layer >= 4) await EarnXPanelAsync(Engine.Achievements.XRegister.ReadTheManual);
+        if (turn.Layer >= 4) await EarnXPanelAsync(World.XPanels.ReadTheManual);
     }
 
     /// <summary>Panelen uit de motor bewaren en melden.</summary>

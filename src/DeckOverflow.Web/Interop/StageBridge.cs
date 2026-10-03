@@ -1,5 +1,5 @@
-using DeckOverflow.Engine.Combat;
-using DeckOverflow.Engine.Events;
+using DeckOverflow.CardHall.Combat;
+using DeckOverflow.CardHall.Events;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
@@ -16,7 +16,7 @@ public sealed class StageBridge(IJSRuntime js) : IAsyncDisposable
     public async Task InitAsync<TPage>(ElementReference host, DotNetObjectReference<TPage> page, double loadMs)
         where TPage : class
     {
-        _stage = await js.InvokeAsync<IJSObjectReference>("import", "./stage/stage.js");
+        _stage = await js.InvokeAsync<IJSObjectReference>("import", "./card-hall/stage/stage.js");
         await _stage.InvokeVoidAsync("init", host, page, loadMs);
     }
 

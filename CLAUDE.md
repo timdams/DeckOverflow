@@ -30,7 +30,8 @@ Eerst de core game loop: vechten, een beloning kiezen, de map. Geluid, definitie
 Het spel draai je vanuit de root; een spike vanuit zijn eigen map, met dezelfde commando's:
 
 ```bash
-dotnet test tests/DeckOverflow.Engine.Tests      # wat CI draait
+dotnet test tests/DeckOverflow.Core.Tests        # wat CI draait: de gedeelde regels
+dotnet test tests/DeckOverflow.CardHall.Tests    # en de deckbuilder
 dotnet run --project src/DeckOverflow.Web        # /?seed=255, of /?fight=golem
 python tools/cut_sheets.py                       # tekeningen opnieuw uitsnijden
 ```
@@ -39,9 +40,9 @@ python tools/cut_sheets.py                       # tekeningen opnieuw uitsnijden
 
 Bewezen in spike 1 en de basis voor het spel. De motor beslist, de stage speelt af. Houd die grens scherp.
 
-- **Motor** (`DeckOverflow.Engine`) kent alle spelregels. Pure C#, geen dependencies, geen `DateTime`, `Task.Delay` of `System.Random`. Status verandert alleen via `Combat.Handle(ICommand)` of, voor een hele run, `Run.Handle(ICommand)`; beide geven een lijst `GameEvent`s terug.
-- **Shell** (`DeckOverflow.Web`, Blazor WebAssembly) orkestreert en bevat geen regels. Alleen `StageBridge` praat met JavaScript.
-- **Stage** (`wwwroot/stage/`, PixiJS + GSAP + Howler) zet events om in animatie en geluid. Geen spelregels, en ze leest nooit zelf de spelstatus. Na elke `play` volgt een `sync` met de snapshot als waarheid.
+- **Motor** kent alle spelregels, één project per afdeling (nu `DeckOverflow.CardHall`) bovenop **`DeckOverflow.Core`** (seeded RNG, getypeerde waarden en C#-regels, teksten, de Codex-catalogus en het contract van het ✗-register). Een afdeling verwijst alleen naar Core, nooit naar een andere afdeling. Pure C#, geen dependencies, geen `DateTime`, `Task.Delay` of `System.Random`. Status verandert alleen via `Combat.Handle(ICommand)` of, voor een hele run, `Run.Handle(ICommand)`; beide geven een lijst `GameEvent`s terug.
+- **Shell** (`DeckOverflow.Web`, Blazor WebAssembly) orkestreert en bevat geen regels. De wereld staat in `World/` (plattegrond, Codex, ✗-register, accountpaneel), `Backend/` en `Progress/`; een afdeling in `Features/<Afdeling>/`. Alleen `StageBridge` praat met JavaScript.
+- **Stage** (per afdeling, nu `wwwroot/card-hall/stage/`, PixiJS + GSAP + Howler) zet events om in animatie en geluid. Geen spelregels, en ze leest nooit zelf de spelstatus. Na elke `play` volgt een `sync` met de snapshot als waarheid.
 - **Typeregels zijn echt .NET-gedrag**, geen nabootsing: `ByteRules` gebruikt `unchecked((byte)…)`, `IntRules` een gewone cast. Een nieuw type krijgt een eigen `XxxRules`-klasse.
 - **Elke regel die iets bijzonders doet, meldt het met een eigen event.** Dat is de haak voor juice en de Codex.
 - **Events zijn klein en plat**: ids en getallen, polymorf geserialiseerd met `[JsonDerivedType]`. Een nieuw event komt ook in de `events.md` van zijn afdeling en in de handlers van de stage. De stage negeert onbekende types.

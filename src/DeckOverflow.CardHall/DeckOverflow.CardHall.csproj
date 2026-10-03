@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The Card Hall: de regelmotor van de deckbuilder. Alleen Core als referentie, geen packages. -->
+  <PropertyGroup>
+    <RootNamespace>DeckOverflow.CardHall</RootNamespace>
+    <IsTrimmable>true</IsTrimmable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DeckOverflow.Core\DeckOverflow.Core.csproj" />
+  </ItemGroup>
+</Project>

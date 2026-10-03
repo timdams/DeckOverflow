@@ -13,9 +13,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DeckOverflow.Engine\DeckOverflow.Engine.csproj" />
+    <ProjectReference Include="..\DeckOverflow.Core\DeckOverflow.Core.csproj" />
+    <ProjectReference Include="..\DeckOverflow.CardHall\DeckOverflow.CardHall.csproj" />
     <!-- Events en snapshots gaan via reflectie naar JSON: niets uit de motor wegtrimmen -->
-    <TrimmerRootAssembly Include="DeckOverflow.Engine" />
+    <TrimmerRootAssembly Include="DeckOverflow.Core" />
+    <TrimmerRootAssembly Include="DeckOverflow.CardHall" />
   </ItemGroup>
 
 </Project>

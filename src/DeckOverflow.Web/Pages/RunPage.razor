@@ -96,7 +96,7 @@
                     @if (_run.CombatSnapshot() is { Modifiers.Count: > 0 } pending)
                     {
                         @* Wachtende modifiers wegvegen: nooit vast met tekst die niets kan raken *@
-                        <button class="scrap secondary" disabled="@(_busy || pending.Energy < DeckOverflow.Engine.Combat.Combat.ScrapCost)" title="@S.T("ui.scrap.hint")" @onclick="ScrapAsync">@S.T("ui.scrap", ("cost", DeckOverflow.Engine.Combat.Combat.ScrapCost))</button>
+                        <button class="scrap secondary" disabled="@(_busy || pending.Energy < DeckOverflow.CardHall.Combat.Combat.ScrapCost)" title="@S.T("ui.scrap.hint")" @onclick="ScrapAsync">@S.T("ui.scrap", ("cost", DeckOverflow.CardHall.Combat.Combat.ScrapCost))</button>
                     }
                     <button class="end-turn" disabled="@(_busy || s.Phase != RunPhase.Combat)" @onclick="EndTurnAsync"><img src="@ArtStyle.Icon("end-turn")" alt="" />@S.T("ui.end-turn")</button>
                 </span>

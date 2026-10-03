@@ -1,13 +1,13 @@
 using System.Globalization;
 using System.Net.Http.Json;
 using System.Text.RegularExpressions;
-using DeckOverflow.Engine.Text;
+using DeckOverflow.Core.Text;
 
 namespace DeckOverflow.Web.Text;
 
 /// <summary>
 /// Alle spelteksten komen uit <c>wwwroot/text/en.json</c>. De motor geeft sleutels en getallen,
-/// hier worden het zinnen. De stage doet hetzelfde in <c>stage/strings.js</c>.
+/// hier worden het zinnen. De stage doet hetzelfde in <c>card-hall/stage/strings.js</c>.
 /// Een ontbrekende sleutel toont zichzelf, zodat je hem meteen ziet staan.
 /// </summary>
 public sealed partial class Strings

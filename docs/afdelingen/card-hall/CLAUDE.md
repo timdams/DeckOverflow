@@ -4,12 +4,11 @@ Geldt bovenop de [CLAUDE.md op de root](../../../CLAUDE.md). Het ontwerp staat i
 
 ## Waar de code staat
 
-Nog niet in een eigen project (zie [de todo van de wereld](../../wereld/todo.md#code-modulair-maken)). Nu:
-
-- **Motor:** `src/DeckOverflow.Engine`: `Combat/` (gevecht, `Bestiary`, intents), `Cards/`, `Relics/`, `Maps/`, `Runs/` (run, acts, events, score). `Values/`, `Random/`, `Text/` zijn gedeeld; `Codex/` en `Achievements/` worden gedeelde systemen van de wereld.
-- **Shell:** `Pages/RunPage.razor(.cs)`, `Components/` (behalve `WorldMap`, `AccountPanel`), `Art/`.
-- **Stage:** `wwwroot/stage/` (PixiJS): `timeline.js` speelt events af, `log.js` schrijft het log, `juice.js` heeft de getallen voor de feel.
-- **Tests:** `tests/DeckOverflow.Engine.Tests`.
+- **Motor:** `src/DeckOverflow.CardHall` (verwijst alleen naar `DeckOverflow.Core`): `Combat/` (gevecht, `Bestiary`, intents), `Cards/`, `Relics/`, `Maps/`, `Runs/` (run, acts, score), `Events/`, `Commands/`, `Achievements/XRegister.cs` (haar ✗-panelen en hoe ze die herkent).
+- **Gedeeld, in Core:** `Values/` (getypeerde waarden, `IntRules`, `ByteRules`, `CastRules`), `Random/`, `Text/`, `Codex/` (de catalogus van alle pagina's), `Achievements/` (`XPanel`, `IXPanelSource`). Wijzig je daar iets, dan raakt het elke afdeling.
+- **Shell:** `Features/CardHall/` (kaarten, map, deckkeuze). `Pages/RunPage.razor(.cs)` speelt de run, maar toont ook titelscherm en plattegrond: die splitsing staat in [de todo van de wereld](../../wereld/todo.md#code-modulair-maken).
+- **Stage:** `wwwroot/card-hall/stage/` (PixiJS): `timeline.js` speelt events af, `log.js` schrijft het log, `juice.js` heeft de getallen voor de feel.
+- **Tests:** `tests/DeckOverflow.CardHall.Tests`.
 
 ## Ontwerpregels die alleen hier gelden
 
@@ -24,5 +23,5 @@ Nog niet in een eigen project (zie [de todo van de wereld](../../wereld/todo.md#
 1. Motor: `Bestiary` of `CardCatalog` of een `Relic`-klasse, en in de juiste act (`Acts.cs`). Een kaart heeft een verbeterde versie nodig.
 2. Teksten in `en.json` (`enemy.*`, `card.*`, `effect.*`, `relic.*`, en `bug.*` voor een elite).
 3. Een nieuw event: in `GameEvent.cs`, in [events.md](events.md), en in `timeline.js` en `log.js`.
-4. Tests in `tests/DeckOverflow.Engine.Tests`.
+4. Tests in `tests/DeckOverflow.CardHall.Tests`.
 5. De Codex- en ✗-toets uit de root-CLAUDE.md, en de docs in deze map bijwerken.

@@ -38,7 +38,8 @@ Playtest 1 bevestigde de techniek en dat de golem-ontdekking werkt, maar toonde 
 Vereist: .NET 10 SDK. Vanuit de root van de repo:
 
 ```bash
-dotnet test tests/DeckOverflow.Engine.Tests      # wat CI draait
+dotnet test tests/DeckOverflow.Core.Tests        # wat CI draait: de gedeelde regels
+dotnet test tests/DeckOverflow.CardHall.Tests    # en de deckbuilder
 dotnet run --project src/DeckOverflow.Web        # /?seed=255, of /?fight=golem voor één gevecht
 python tools/cut_sheets.py                       # tekeningen opnieuw uitsnijden uit art/sheets/
 ```
@@ -47,9 +48,10 @@ python tools/cut_sheets.py                       # tekeningen opnieuw uitsnijden
 
 ```text
 ├─ src/
-│  ├─ DeckOverflow.Engine/  de regelmotor: pure C#, geen dependencies
-│  └─ DeckOverflow.Web/     Blazor-shell en PixiJS-stage
-├─ tests/                   xUnit-tests van de motor
+│  ├─ DeckOverflow.Core/      wat elke afdeling deelt: RNG, getypeerde waarden, teksten, Codex, ✗-register
+│  ├─ DeckOverflow.CardHall/  de regelmotor van de deckbuilder: pure C#, alleen Core
+│  └─ DeckOverflow.Web/       Blazor-shell (World/, Backend/, Progress/, Features/CardHall/) en PixiJS-stage
+├─ tests/                     xUnit-tests: DeckOverflow.Core.Tests en DeckOverflow.CardHall.Tests
 ├─ art/sheets/              de gegenereerde tekenvellen
 ├─ tools/                   cut_sheets.py: van vel naar losse tekeningen
 ├─ docs/                ontwerpdocumenten
