@@ -1,6 +1,8 @@
 # Deck Overflow: Game Design Document
 
-1 oktober 2026 · Tim Dams
+1 oktober 2026 · Tim Dams · bijgewerkt op 3 oktober 2026
+
+**Hoe je dit document leest.** Het mengt wat gebouwd is met wat nog ontwerp is. Een sectie of regel met **Gebouwd** beschrijft het spel zoals het nu draait; de rest is richting. Wat nog open ligt, staat samen in [Ideeën en open vragen](#ideeën-en-open-vragen). De korte versie staat in [Stand van zaken](#stand-van-zaken).
 
 ## Visie
 
@@ -12,6 +14,22 @@ Het hart is een roguelike deckbuilder. Rond dat hart ligt een fabriek met afdeli
 - **Bron:** de leerlijn van Zie Scherp Scherper. Elke afdeling volgt een blok hoofdstukken.
 - **Wat we bewust niet maken:** geen gamification (punten en badges op oefeningen), geen visuele programmeeromgeving. Een eerste versie met kaarten als codestatements is verworpen: dat was Scratch met een zwaard, een dunne laag over code schrijven. Ook de afdelingen waarin je regels of machines bouwt, blijven aan de goede kant van die lijn: zie [Afdelingen](#afdelingen-elk-hoofdstuk-zijn-eigen-spelvorm).
 - **De kern:** C#-semantiek zijn de natuurwetten. Types, operatoren, overflow en scope bepalen hoe gevechten verlopen. Begrijpen is de sterkste strategie.
+
+## Stand van zaken
+
+Op 3 oktober 2026 is **The Card Hall** speelbaar: de deckbuilder met drie acts, één per hoofdstuk (H2, H3, H4), van titelscherm tot eindscherm. Wat erin zit:
+
+- **Drie acts** van 6 rijen plus een baas, elk met eigen vijanden, elites, baas en nieuwe kaarten. Een run kan ook in act 2 of 3 starten.
+- **21 vijanden** (de Bottomless Jug meegeteld), waarvan 6 elites (echte bugs) en 3 bazen. **23 kaarten**, **8 relics**, **6 events**.
+- **De getypeerde aanval**: je aanval is een waarde met een type die door modifiers stroomt, met echte C#-regels. Modifiers wachten over je beurt heen en zijn weg te vegen met Scrap.
+- **Bewuste intents** die rekenen met jouw blok, kaarten, energie of HP.
+- **De Codex**: 13 pagina's, geordend per hoofdstuk, met jouw moment als mini-animatie en een link naar het boek.
+- **Het ✗-register**: 11 panelen.
+- **De wereld**: teases, de onthulling en de fabrieksplattegrond met zes afdelingen. Alleen de Card Hall is echt speelbaar; de Controlekamer is een los prototype (spike 8).
+- **Score van een run** en een dagelijkse seed in de motor; accounts en klascodes in Supabase. Het klassement zelf (de Prikklok) is nog niet aangesloten.
+- **Tijdelijk:** de sneltoets W wint het lopende gevecht. Die moet eruit voor een playtest.
+
+Nog niet met spelers getest. Eén bevinding van de ontwikkelaar zelf: Ink tegen een getal zette een run vast (opgelost met Scrap).
 
 ## Pijlers
 
@@ -58,26 +76,26 @@ Elke kaartnaam is een instructie of een overtreding, nooit een wapen. "Floating"
 
 ### Elites: echte bugs
 
-Gewone vijanden zijn producten van de fabriek, bazen zijn figuren van de fabriek. Elites zijn beroemde softwarefouten, elk bij een concept uit hun act.
+Gewone vijanden zijn producten van de fabriek, bazen zijn figuren van de fabriek. Elites zijn beroemde softwarefouten, elk bij een concept uit hun act. De kolom Act geeft de act van de Card Hall, of de afdeling voor bugs die nog niet gebouwd zijn. Voor Zune en Heartbleed staan al tekeningen klaar, net als voor Mars Climate Orbiter (1999: een verwisseling van eenheden, een kandidaat rond types).
 
 | Elite | Act | Echte bug | Concept |
 | --- | --- | --- | --- |
 | Level 256 | 1 | Pac-Man (1980): het levelnummer is een `byte`. Op level 256 loopt het over en wordt de rechterhelft van het doolhof rommel. | `byte`-overflow |
-| Effective Power | 1 | iPhone (2015): één bericht met een reeks Arabische Unicode-tekens liet het toestel crashen zodra het die tekst probeerde te tonen. | tekst, Unicode |
+| The Counter | 1 | Gangnam Style (2014): YouTube zette zijn weergaventeller van 32 naar 64 bits omdat de maximumwaarde in zicht kwam. | `int`-overflow |
+| Effective Power | 2 | iPhone (2015): één bericht met een reeks Arabische Unicode-tekens liet het toestel crashen zodra het die tekst probeerde te tonen. | tekst, Unicode |
 | Y2K | 2 | De millenniumbug (1999): websites schreven het jaar als `"19" + (jaar - 1900)`. Op 1 januari 2000 stond er 19100. | string-concatenatie |
-| Flight 501 | 2 | Ariane 5 (1996): een `double` werd omgezet naar een 16-bits geheel getal, dat liep over. De raket vernietigde zichzelf na 37 seconden. | casting |
-| The Index | 2 | Vancouver Stock Exchange (1982): de index werd na elke berekening afgekapt in plaats van afgerond en zakte in 22 maanden tot ongeveer de helft van zijn echte waarde. | afronden |
-| Zune | 4 | Zune (2008): alle spelers van één model bevroren op 31 december, de 366e dag van een schrikkeljaar, in een `while`-lus die nooit stopte. | loops |
-| Heartbleed | 6 | OpenSSL (2014): een server las voorbij het einde van een buffer en stuurde geheime data mee terug. | arrays |
-| The Counter | later | Gangnam Style (2014): YouTube zette zijn weergaventeller van 32 naar 64 bits omdat de maximumwaarde in zicht kwam. | `int`-overflow |
+| Flight 501 | 3 | Ariane 5 (1996): een `double` werd omgezet naar een 16-bits geheel getal, dat liep over. De raket vernietigde zichzelf na 37 seconden. | casting |
+| The Index | 3 | Vancouver Stock Exchange (1982): de index werd na elke berekening afgekapt in plaats van afgerond en zakte in 22 maanden tot ongeveer de helft van zijn echte waarde. | afronden |
+| Zune | Lopende Band | Zune (2008): alle spelers van één model bevroren op 31 december, de 366e dag van een schrikkeljaar, in een `while`-lus die nooit stopte. | loops |
+| Heartbleed | Magazijn | OpenSSL (2014): een server las voorbij het einde van een buffer en stuurde geheime data mee terug. | arrays |
 
 We gebruiken geen bugs met doden (zoals de Patriot-raket in 1991). "Nuclear Gandhi" is een mythe; die kan hoogstens als Codex-grap: deze bug heeft nooit bestaan. Geen merknamen of logo's in beeld: een speelhalkast, geen Pac-Man.
 
 ## Core loop
 
-Dit is de loop van de deckbuilder, de afdelingen Vatenvallei en Gieterij. De andere afdelingen krijgen elk een eigen loop, die eerst als spike moet bewijzen dat hij leuk is.
+Dit is de loop van de deckbuilder, The Card Hall. De andere afdelingen krijgen elk een eigen loop, die eerst als spike moet bewijzen dat hij leuk is.
 
-Een run begint in Act 1, en je probeert zo ver mogelijk te geraken. Eén act duurt 10 tot 15 minuten. De deckbuilder heeft voorlopig twee acts (H2-H3 en H4), dus een volledige run past ruim in een lesblok. Elke act die je in een run bereikt, wordt een startpunt: een volgende run mag daar beginnen, met een deck dat je eerst draft uit de kaarten van de vorige acts. De docent kan een act ook voor de hele klas vrijgeven. Meta-progressie is kennis van de speler en startpunten, nooit extra kracht.
+Een run begint in Act 1, en je probeert zo ver mogelijk te geraken. Eén act duurt 10 tot 15 minuten. De deckbuilder heeft drie acts (H2, H3 en H4), dus een volledige run duurt 30 tot 45 minuten: één act past in een stukje les, een hele run in een lesblok. Elke act die je in een run bereikt, wordt een startpunt: een volgende run mag daar beginnen, met een deck dat je eerst draft uit de kaarten van de vorige acts. De docent kan een act ook voor de hele klas vrijgeven. Meta-progressie is kennis van de speler en startpunten, nooit extra kracht.
 
 - **Een act** is een map van 6 rijen met een baas erboven.
 - **Na de baas** heel je volledig en kies je 1 baasrelic uit 3. Dan begint de volgende act.
@@ -326,7 +344,7 @@ Drie regels houden het één spel:
 | Afdeling | Hoofdstuk | Spelvorm | Waarom deze vorm | Echte bug |
 | --- | --- | --- | --- | --- |
 | The Card Hall, act 1: De Vatenvallei | H2 basis | Roguelike deckbuilder | Getallen: types, afkappen, overflow, deling, voorrang; Omgieten als ervaring | Level 256, The Counter |
-| The Card Hall, act 2: De Drukkerij | H3 tekst | Roguelike deckbuilder | Tekst: `string` plakt, `char` is een getal, `Length`, Unicode | Effective Power |
+| The Card Hall, act 2: De Drukkerij | H3 tekst | Roguelike deckbuilder | Tekst: `string` plakt, `char` is een getal, `Length`, Unicode | Effective Power, Y2K |
 | The Card Hall, act 3: De Gieterij | H4 werken met data | Roguelike deckbuilder | Expliciet omzetten: cast kapt af, Convert rondt af, Parse kan crashen, Math als gereedschap | Flight 501, The Index |
 | De Controlekamer | H5 beslissingen | Gambits: je stelt de regels van een automaat op ("als een vijand onder 10 HP staat: aanvallen") en kijkt dan hoe hij vecht | De eerste regel die klopt wint: volgorde, `else if`, logische operatoren. `switch` is een tabel van gevallen | nog te kiezen |
 | De Lopende Band | H6 loops | Automatiseringspuzzel: banden en machines die herhalen tot een voorwaarde waar is | Herhaling met een stopvoorwaarde; een band die nooit stopt, is de oneindige lus | Zune (2008): een `while`-lus die op 31 december van een schrikkeljaar nooit stopte |
@@ -337,7 +355,7 @@ Drie regels houden het één spel:
 
 **De lijn met visuele programmeeromgevingen.** Een regel in de Controlekamer of een machine op de band is een strategische keuze over wat er moet gebeuren, geen statement dat je regel per regel uitschrijft. Het voorbeeld is Opus Magnum, niet Scratch. Het grootste risico zit in de Lopende Band: die mag niet afglijden naar een opdrachtenlijstje. Dezelfde ontwerptoets geldt: zou iemand zonder interesse in programmeren dit willen spelen?
 
-Alleen de Vatenvallei wordt nu gebouwd. De tabel is een richting, geen belofte: elke afdeling moet eerst als spel leuk zijn. De volgende spike is een klein gambit-prototype voor de Controlekamer, omdat dat genre het verst van de deckbuilder ligt, goedkoop te bouwen is en meteen test of gambits als intents in de deckbuilder werken.
+Alleen de Card Hall is gebouwd, en de Controlekamer als prototype. De tabel is een richting, geen belofte: elke afdeling moet eerst als spel leuk zijn. De volgende spike is een klein gambit-prototype voor de Controlekamer, omdat dat genre het verst van de deckbuilder ligt, goedkoop te bouwen is en meteen test of gambits als intents in de deckbuilder werken.
 
 ## De wereld: de fabrieksplattegrond
 
@@ -366,7 +384,7 @@ De plattegrond verschijnt pas na [de onthulling](#de-onthulling). Tussen de afde
 - Een gesloten afdeling staat gestippeld getekend, met de onderdelen nog in de zak. Een open afdeling is uitgetekend.
 - Een afdeling gaat open als je de baas of eindpuzzel van de vorige verslaat, of als de docent ze vrijgeeft met de klascode, zodat de klas de lesplanning kan volgen.
 - Open blijft open. Een sterke student gaat vooruit, een zwakkere keert terug naar een eerdere afdeling. Dat terugkeren is nooit een straf: elke afdeling blijft even leuk om opnieuw te spelen.
-- De startpunten binnen de deckbuilder (een run in act 2 beginnen) blijven bestaan, binnen de Vatenvallei en de Gieterij.
+- De startpunten binnen de deckbuilder (een run in act 2 of 3 beginnen) blijven bestaan, binnen de Card Hall.
 
 ### Mastery: de onderdelenlijst
 
@@ -436,7 +454,23 @@ De onderdelenlijst wordt vanaf run 1 in stilte bijgehouden. Bij de onthulling zo
 
 ## Act 1: De Vatenvallei
 
-Beslist op 3 oktober 2026: de deckbuilder, voortaan **The Card Hall**, heeft drie acts, één per hoofdstuk. Act 1 dekt hoofdstuk 2, act 2 (De Drukkerij) hoofdstuk 3, act 3 (De Gieterij) hoofdstuk 4. De rijen met H3 in de tabel hieronder verhuizen naar act 2. De run-lengte blijft: acts van 6 rijen.
+Beslist op 3 oktober 2026: de deckbuilder, voortaan **The Card Hall**, heeft drie acts, één per hoofdstuk. Act 1 dekt hoofdstuk 2, act 2 (De Drukkerij) hoofdstuk 3, act 3 (De Gieterij) hoofdstuk 4. De run-lengte blijft: acts van 6 rijen. In het Engelse spel heet act 1 **The Vat Valley**.
+
+**Gebouwd:**
+
+| Rol | Vijand | Mechaniek |
+| --- | --- | --- |
+| Eerste rijen | Slime Blob, Tin Knight | Een eenvoudige vijand om in te komen; een `int` met een `int`-schild en intent `24 / (cards + 1)` |
+| Gewoon | Floating Ghost | Een `double` met een decimaal schild; naar `int` omgegoten verliest hij de restjes |
+| Gewoon | Dripper | Een `double` die halve schade uitdeelt, intent `energy * 4 + 2.5` |
+| Gewoon | The Splitter | Intent `30 / (block + 1)`: blokken is delen |
+| Gewoon | The Stray Automaton | Een tease uit de Controlekamer, intent `block > 0 ? 16 : 8` |
+| Vroeg event | Bottomless Jug | Een `byte` die zich heelt tot hij omklapt: het wondermoment van act 1 |
+| Elite | Level 256 | Heelt zichzelf tot hij omklapt |
+| Elite | The Counter | 30 onder `int.MaxValue`, telt op tot hij unchecked omklapt |
+| Baas | The Reckoner | Toont zijn totaal niet: rekenen is hier de kern |
+
+De concepttabel hieronder is het oorspronkelijke ontwerp. De rijen voor H3 en H4 zijn verhuisd naar act 2 en 3. Wat niet gebouwd is (de Bool-schim, De Naamloze, de Ritmeschildpad, de Tweelingschutters, `const` via de patch), staat in [Ideeën en open vragen](#ideeën-en-open-vragen).
 
 Act 1 dekt hoofdstuk 2 van Zie Scherp Scherper: variabelen, datatypes, identifiers, operatoren, expressies en constanten. Het thema maakt die concepten tastbaar: in de Vatenvallei is alles een waarde in een vat, en elk vat heeft een vorm (type) en een etiket (naam).
 
@@ -461,14 +495,14 @@ Structuur: een map van 6 rijen, 1 elite per pad, 1 baas. Samen 10 tot 15 minuten
 | Operatorvoorrang | Baas De Rekenmeester, relic Haakjes | H2 |
 | `++` en `--` | Tweelingschutters | H2 |
 | Constanten (`const`) | De patch: een revisie maakt een waarde `const` | H2 |
-| Overflow | Elite Level 256 (vroeger De Byte-Golem) | H2 |
-| `string` en `+` | Ink-kaarten (`"1" + "2"` is `"12"`), Read zet tekst om naar een getal, Papieren Golem | H3 |
-| `char` is een getal | Letterkaarten: `'A' + 1` is 66 | H3 |
-| Unicode, `Length` | Elite Effective Power: een bericht dat crasht vanaf 32 tekens | H3 |
-| Casting | Omgieten-kaarten (kernsysteem), event De Smeltkroes; Codex pas in Act 2 | H4 |
-| Parse | Read; Codex pas in Act 2 | H4 |
+| Overflow | Elites Level 256 en The Counter, de Bottomless Jug | H2 |
+| `string` en `+` | Ink (ervaren in act 1); verder in act 2 | H3 |
+| Casting | Omgieten (Force Fit), event De Smeltkroes; Codex pas in act 3 | H4 |
+| Parse | Read; Codex pas in act 3 | H4 |
 
 ## Encounters
+
+Ontwerp, deels gebouwd: de Tinnen Ridder (Tin Knight) zit in het spel, de Splitsbende als één vijand (The Splitter), de Slijmklodder als eenvoudige vijand zonder `=`-tegenover-`+=`-puzzel. De rest wacht.
 
 Elke gewone vijand draait rond één regel. De valkuil is wat een beginner intuïtief doet. De slimme zet is wat iemand doet die de regel doorheeft.
 
@@ -490,6 +524,8 @@ Elke gewone vijand draait rond één regel. De valkuil is wat een beginner intu�
 
 Elites combineren een regel met druk. De baas test of je expressies kan lezen terwijl alles tegelijk gebeurt.
 
+Dit is het oorspronkelijke ontwerp van act 1. Effective Power en Flight 501 zijn sindsdien verhuisd naar act 2 en act 3, De Naamloze is niet gebouwd, en de Rekenmeester heet in het spel The Reckoner. Wat nu in act 1 zit, staat in de tabel bij [Act 1](#act-1-de-vatenvallei).
+
 ### Elite: Level 256 (overflow)
 
 250 van 255 HP, onkwetsbaar voor schade, heelt zichzelf elke beurt met 2. Na een paar beurten zit hij op 255 en zijn volgende heling laat hem klappen. Wie het doorheeft, speelt een Herstel-kaart op hem en wint in één beurt. Wie het niet doorheeft, kan hem ook uitzitten, maar verliest onderweg veel HP.
@@ -500,7 +536,7 @@ Vroeger De Byte-Golem. Hij is nu een speelhalkast waarvan de rechterhelft van he
 
 Een bericht dat ontploft als je het leest. Zijn HP is een `string`, `"effective. Power"`: elke treffer plakt eraan vast, net als bij The Label. Maar hier is plakken de bedoeling: vanaf 32 tekens crasht het bericht, zoals de echte bug van 2015 waarbij één reeks Unicode-tekens iPhones liet crashen zodra ze de tekst probeerden te tonen. Een Whack plakt één teken (`"6"`), Floating Bolts drie keer `"2.5"`, samen negen. Wie snapt dat `"2.5"` drie tekens is, wint snel; wie gewoon hard slaat, niet. Ink werkt hier wel, want tekst op tekst is geldige C#. De HP-balk loopt vol naar de crash: 16/32. Gebouwd op 3 oktober 2026; de Codex-pagina String length opent na de crash. Het oorspronkelijke idee (teken per teken afbreken via `char`) wacht op de letterkaarten.
 
-### Elite: Flight 501 (casting, Act 2)
+### Elite: Flight 501 (casting, act 3)
 
 Een raket met 506 HP als `int`, te sterk om met schade te verslaan. Wie hem naar `byte` omgiet, ziet 506 terugspringen naar 250, en dan is hij te doen. Het is de echte bug van Ariane 5 (1996): een getal dat niet in zijn nieuwe type paste. In spike 4 tot 6 heette hij de Tinnen Kolos.
 
@@ -522,7 +558,37 @@ Wie de Rekenmeester verslaat, heeft zonder het te merken tientallen C#-expressie
 
 Het starterdeck is bewust saai, zodat elke beloning een echte keuze wordt.
 
-**Starterdeck (10 kaarten):** 5× Slag (6 schade), 4× Schild (5 blok), 1× Snelle Steek (postfix: slaat met huidige kracht, kracht +1 daarna).
+**Starterdeck (10 kaarten, gebouwd):** 4× Whack (6 schade), 2× Floating Bolts (3× 2.5), 3× Hold Firmly (5 blok), 1× Spare Screw (+3 op je volgende kaart).
+
+**Gebouwd (23 kaarten).** Elke kaart heeft een verbeterde versie aan het rustvuur.
+
+| Kaart | Kost | Effect | Concept |
+| --- | --- | --- | --- |
+| Whack | 1 | 6 schade (`int`) | |
+| Floating Bolts | 1 | 3× 2.5 schade (`double`) | `double`, afkappen op een `int` |
+| Hammer It In | 2 | 14 schade | |
+| Floating Parts | 1 | 4× 1.5 schade | `double` |
+| Hold Firmly / Two-Person Lift | 1 / 2 | 5 / 13 blok | |
+| Fill Past the Line | 1 | +6 HP op een doelwit naar keuze | overflow, als je het doorhebt |
+| Force Fit | 1 | Giet een vijand om naar `int` of naar `byte` (twee kaarten) | casting |
+| Squeeze In (zeldzaam) | 2 | Omgieten naar `byte` en dan 6 helen | overflow |
+| Wrong Label | 1 | Zet de aanval van een vijand op 1 | toekenning |
+| Spare Screw | 0 | `+ 3` op je volgende kaart | `+=` |
+| Second Pair of Hands | 1 | `× 2` op je volgende kaart | |
+| Floating Point | 0 | `× 1.0`: je volgende aanval wordt een `double` | type van een expressie |
+| Split | 0 | `/ 2`, maar je volgende kaart slaat twee keer | deling van gehele getallen |
+| Ink | 1 | `+ "1"`: tekst plakt aan je volgende kaart | `string` en `+` |
+| Read (zeldzaam) | 2 | `int.Parse(…)` op je volgende kaart | parsen |
+| Count Letters (act 2) | 1 | Een tekstvijand wordt een `int` met zijn `Length` als HP | `Length` |
+| Letter A (act 2, zeldzaam) | 2 | `+ 'A'` op je volgende kaart | `char` is een getal |
+| Measure Twice (act 3) | 1 | `Convert.ToByte` op een vijand | Convert tegenover cast |
+| Read the Label (act 3) | 1 | `int.Parse` op tekst-HP | parse |
+
+Molded Bolts en Molded Parts zijn de omgegoten versies van de Floating-kaarten (event De Smeltkroes).
+
+**Gebouwde relics (8):** Counter (elke derde kaart kost 0), Floating Point (eerste Floating-kaart kost 0), Scrap Pouch (bewaart wat afkappen verliest en vuurt het af), Anchor Barrel (blok bij de start), Great Pot (max HP), Ink Well (eerste Ink of Read kost 0), Tally Counter (heel `++count` na elk gewonnen gevecht), Coin Mold (50% meer goud, afgerond met `Math.Round`).
+
+**Oorspronkelijk ontwerp.** De tabellen hieronder zijn de eerste kaartenlijst. Flip, Voorsprong, Snelle Steek, Haakjes en Etiketmaker wachten op hun vijanden.
 
 | Kaart | Kost | Effect | Concept |
 | --- | --- | --- | --- |
@@ -570,7 +636,7 @@ Daarnaast blijven vijanden uit act 1 in de pool, want de regels van eerdere acts
 ### Elites
 
 - **Effective Power** verhuist van act 1 naar hier: een bericht dat crasht vanaf 32 tekens. Plakken is de bedoeling, en `"2.5"` plakt drie tekens.
-- **Y2K** (gebouwd op 3 oktober 2026): zijn HP is een jaartal als tekst, `"1997"`. Na elke beurt schrijft hij het opnieuw als `"19" + jaar`, met echte concatenatie: `"1998"`, `"1999"`, en dan `"19100"`. Wat je eraan plakte, is dan weg. Hij crasht vanaf 12 tekens, dus je moet hem in één beurt lang genoeg maken: een Strike plakt `"6"` (één teken), een Floating Strike drie keer `"2.5"` (negen tekens). De les: een `double` is lange tekst, en `"19" + 100` is geen 2000. Na middernacht is hij een teken langer en dus makkelijker; wie wacht, krijgt het ✗-paneel *Do not wait for midnight*. Count Letters werkt ook: zijn HP wordt 4 of 5, maar alleen tot zijn volgende beurt. Aanvallen 12, 14, 18. Het Codex-moment is de omslag zelf: `"19" + 100` werd `"19100"`..
+- **Y2K** (gebouwd op 3 oktober 2026): zijn HP is een jaartal als tekst, `"1997"`. Na elke beurt schrijft hij het opnieuw als `"19" + jaar`, met echte concatenatie: `"1998"`, `"1999"`, en dan `"19100"`. Wat je eraan plakte, is dan weg. Hij crasht vanaf 12 tekens, dus je moet hem in één beurt lang genoeg maken: een Strike plakt `"6"` (één teken), een Floating Strike drie keer `"2.5"` (negen tekens). De les: een `double` is lange tekst, en `"19" + 100` is geen 2000. Na middernacht is hij een teken langer en dus makkelijker; wie wacht, krijgt het ✗-paneel *Do not wait for midnight*. Count Letters werkt ook: zijn HP wordt 4 of 5, maar alleen tot zijn volgende beurt. Aanvallen 12, 14, 18. Het Codex-moment is de omslag zelf: `"19" + 100` werd `"19100"`.
 
 ### Baas: The Typesetter
 
@@ -668,7 +734,7 @@ Een Codex-pagina heeft vier lagen, die de speler zelf openklikt:
 
 Wie een pagina leest, krijgt niets extra. De beloning zit in de volgende run: je weet nu iets wat je vijand niet verwacht. Docenten zien in hun dashboard welke pagina's per student ontgrendeld zijn, en dus welke regels al eens gevoeld zijn.
 
-**Zo werkt het nu (3 oktober 2026).** Tijdens een gevecht onthoudt de motor per regel het eerste moment waarop ze iets deed, met de getallen erbij. Als het gevecht voorbij is, gewonnen of verloren, gaan die pagina's open. De getallen vullen "wat er gebeurde" en de code, zodat de pagina jouw moment naspeelt: `byte hp = 250; hp += 6; // 0`. Een pagina heeft een minimale act: Omgieten voel je in act 1, maar "Casting" en "Parsing" openen pas in act 2. Open pagina's bewaart de browser over runs heen; later komt dat in Supabase.
+**Zo werkt het nu (3 oktober 2026).** Tijdens een gevecht onthoudt de motor per regel het eerste moment waarop ze iets deed, met de getallen erbij. Als het gevecht voorbij is, gewonnen of verloren, gaan die pagina's open. De getallen vullen "wat er gebeurde" en de code, zodat de pagina jouw moment naspeelt: `byte hp = 250; hp += 6; // 0`. Een pagina heeft een minimale act: Omgieten voel je in act 1, maar "Casting" en "Parsing" openen pas in act 3, bij het hoofdstuk waar ze in het boek staan. Open pagina's bewaart de browser over runs heen; later komt dat in Supabase.
 
 | Pagina | Hoofdstuk | Gaat open bij |
 | --- | --- | --- |
@@ -678,11 +744,12 @@ Wie een pagina leest, krijgt niets extra. De beloning zit in de volgende run: je
 | Integer overflow | H2 | helen tot een `byte` omklapt |
 | Operator precedence | H2 | de Rekenmeester verslaan |
 | String concatenation | H3 | Ink, een treffer op The Label of Effective Power, of Y2K die `"19" + 100` schrijft |
-| String length | H3 | Effective Power laten crashen |
-| Casting | H4, vanaf act 2 | omgieten, ook de baas die zichzelf omgiet |
-| Convert | H4, vanaf act 2 | Measure Twice |
-| Math.Round | H4, vanaf act 2 | de Rounder |
-| Parsing | H4, vanaf act 2 | Read of Read the Label |
+| String length | H3 | Effective Power, Y2K of de Typesetter laten crashen, of Count Letters |
+| A char is a number | H3 | schade op Type Block, of Letter A |
+| Casting | H4, vanaf act 3 | omgieten, ook de baas die zichzelf omgiet |
+| Convert | H4, vanaf act 3 | Measure Twice |
+| Math.Round | H4, vanaf act 3 | de Rounder |
+| Parsing | H4, vanaf act 3 | Read of Read the Label |
 | Exceptions | H10 | een `FormatException` of `OverflowException` |
 
 De laatste laag linkt naar de juiste pagina in de [online versie van het boek](https://timdams.github.io/ziescherpscherper/content/README.html), waar het kan met een anker (bv. `#conversie`).
@@ -737,42 +804,85 @@ Zodra een van deze erin sluipt, zijn we terug bij gamification. Ze zijn verboden
 - **Code typen in Act 1.** Pas in latere afdelingen, en dan nog als optionele laag.
 - **Eén juiste oplossing.** Elk gevecht moet op meerdere manieren te winnen zijn. Begrijpen maakt het efficiënter, niet verplicht.
 
-## Open vragen en volgende stappen
+## Ideeën en open vragen
 
-De grootste onzekerheid is of studenten de regels in de game herkennen wanneer ze later echte code lezen. Een kleine playtest moet dat vroeg uitwijzen.
+Bijgewerkt op 3 oktober 2026. Een plek om verder te denken: elk punt heeft een vraag en, waar er een is, een voorstel. Wat beslist is, verhuist naar zijn sectie hierboven; wat bewust is uitgesteld voor de techniek, staat in [todo.md](../todo.md).
 
-- [x] Hoofdstuknummers uit Zie Scherp Scherper invullen in de concepttabel
-- [x] `char` een eigen vijand of mechaniek geven, of bewust naar een latere act schuiven
-- [ ] Identifiers zijn het zwakste concept als mechaniek: De Naamloze testen op fun, niet alleen op leerwaarde
-- [x] Runlengte afstemmen op een lesblok
-- [x] Techniekkeuze: Blazor WebAssembly of een JavaScript-game-engine
-- [ ] Papieren prototype van 3 encounters en de Rekenmeester, playtest met 5 studenten
-- [ ] Transfer meten: na de playtest dezelfde studenten 5 korte C#-expressies laten voorspellen
+### De eerste playtest
 
-- [ ] Per archetype de jackpot-combo uitwerken en testen of hij echt alleen zichtbaar is voor wie het concept snapt
-- [ ] Zeldzaamheidskansen en pity timer afstellen
-- [ ] Dagelijkse run: seeds en klasklassement, met of zonder server
-- [ ] Standaard speelduurlimiet bepalen samen met collega's
-- [ ] Geluidsontwerp: een eerste set van tien kerngeluiden maken en testen
+De grootste onzekerheid blijft of studenten de regels in de game herkennen wanneer ze later echte code lezen.
 
-- [ ] Typetabel uitwerken: welk aanvalstype werkt hoe op welk doelwittype
-- [x] Bepalen hoe de Codex-pagina Casting opengaat: via het docentendashboard of gekoppeld aan de lesplanning
+- [ ] **Klaarmaken.** De sneltoets W eruit (`DebugWin`, gemarkeerd TIJDELIJK). Een korte lijst van wat we willen zien.
+- [ ] **Wie.** 5 studenten en 2 collega's, zoals eerder beslist. Liefst ook één leerling uit het middelbaar, voor de ondergrens.
+- [ ] **Wat we meten.**
+  - Begrijpen ze zonder uitleg wat een intent met `block` of `cards` doet?
+  - Merken ze de teases op (paginanummer, deur, zakje, de Stray), en worden ze er nieuwsgierig van?
+  - Lezen ze de Codex, en hoe ver (de teller `1/4` toont het)?
+  - Waar zitten ze vast? De Ink-vastloper werd pas gevonden door te spelen; er zijn er vast meer.
+- [ ] **Transfer meten.** Na de playtest dezelfde studenten 5 korte C#-expressies laten voorspellen, bv. `7 / 2`, `"1" + 2`, `(byte)300`, `(int)2.9`, `'A' + 1`.
 
-Beslist op 2 oktober 2026: Act 1 is H2 en H3, een act duurt 10 tot 15 minuten, de Codex opent na het gevecht met echte C# en een link naar het hoofdstuk, `char` hoort bij Act 1. Nog open:
+### Balans van de Card Hall
 
-- [x] Art: de AI-gegenereerde art in de handleidingstijl is definitief (beslist op 2 oktober 2026). Nieuwe tekeningen komen van hetzelfde model met het manualvel als referentiebeeld, zodat de stijl gelijk blijft.
-- [x] Startpunten: starterdeck plus vijf keer 1 uit 3, 1 relic uit 3, volle HP, 100 goud (beslist op 3 oktober 2026)
-- [ ] Echte bugs kiezen voor de Controlekamer (beslissingen) en de Gereedschapsmuur (methoden)
-- [x] Acts 7 en verder (H9 tot H21) uitwerken: vervangen door afdelingen met een eigen spelvorm (3 oktober 2026)
-- [ ] Playtest pas na Act 1: 5 studenten en 2 collega's
+- [ ] **Run-lengte.** Drie acts van 6 rijen: halen we 30 tot 45 minuten, of wordt het langer? Meten in de playtest.
+- [ ] **De 613-combo.** Ink, Spare Screw, Read en Whack blijven over beurten heen werken. Scrap maakt dat niet sterker, maar test of de combo te vaak valt.
+- [ ] **Scrap.** 1 energie is een gok. Te duur als het vaak nodig is, te goedkoop als het een gratis "oeps" wordt. Een relic **Undo** (Ctrl+Z: de eerste Scrap per gevecht is gratis) kan het later verzachten.
+- [ ] **Y2K.** Zonder Floating-kaart of Count Letters moet je drie beurten wachten. Is dat spannend (de klok tikt naar middernacht) of saai?
+- [ ] **Score.** De gewichten (100 per verdieping, 10 per HP, 5 per bespaarde beurt onder 150) zijn een eerste voorstel. Kijken naar de verdeling zodra de Prikklok scores verzamelt; het histogram moet spreiding tonen, geen muur bij 2100.
+- [ ] **Zeldzaamheden en pity timer** afstellen. Er is nu geen pity timer.
 
-Beslist op 3 oktober 2026: elke afdeling krijgt de spelvorm die past bij haar hoofdstuk, rond één fabrieksplattegrond. Nog open:
+### Inhoud die nog wacht
 
-- [x] Spike 8: gambit-prototype voor de Controlekamer gebouwd ([spikes/08-controlekamer](../spikes/08-controlekamer/)), nog niet met spelers getest
-- [ ] Gambits als intents in de deckbuilder: pas proberen als spike 8 toont dat spelers de regels van de vijand lezen
-- [ ] Per afdeling vastleggen wanneer een onderdeel "gemonteerd" is
-- [ ] Spelvorm voor OOP kiezen: tower defense of eigen kaarten ontwerpen
-- [ ] Wat ontgrendelt een afdeling precies: de baas van de vorige, of al een bepaald aantal gemonteerde onderdelen?
-- [ ] Plattegrond als papieren mock testen: begrijpt een student zonder uitleg waar er te oefenen valt?
-- [x] Vangnet voor de onthulling: na 5 gestarte runs (3 oktober 2026); speeltijd telt nog niet mee
-- [ ] Teases testen: merken studenten het paginanummer, de deur en de onderdelen op, en worden ze er nieuwsgierig van?
+Uit het oorspronkelijke ontwerp, nog niet gebouwd. Elk punt moet eerst als gevecht leuk zijn (de ontwerptoets).
+
+- [ ] **Bool-schim** (`bool`): elke treffer draait hem om. Simpel en duidelijk; een kandidaat voor act 1.
+- [ ] **Ritmeschildpad** (`%`) met de kaart Remainder en de relic Restzak. Modulo zit in H2 maar nu nergens in het spel.
+- [ ] **Tweelingschutters** (`i++` tegenover `++i`) met Snelle Steek en Voorsprong. De Tally Counter (`++count`) is de eerste smaak.
+- [ ] **De Naamloze en De Etiketkamer** (identifiers): blijft het zwakste concept als mechaniek. Testen op fun, niet alleen op leerwaarde, of schrappen.
+- [ ] **De patch met `const`**: na een paar keer Wrong Label op dezelfde soort vijand maakt een revisie zijn aanval `const`. Zit in het ontwerp van act 1, nog niet in het spel.
+- [ ] **Operatorvoorrang in je eigen aanval** (Haakjes): nu werken modifiers van links naar rechts.
+- [ ] **Exceptions met een catch**: de beurt als call stack en de blueprints. Een eigen act, of een afdeling na H10.
+- [ ] **Een derde elite voor act 3?** Nu Flight 501 en The Index. The Counter kan ook in act 3 terugkomen; Mars Climate Orbiter (verwisselde eenheden) heeft al een tekening.
+
+### Codex
+
+- [ ] **Een pagina voor `++`.** De Tally Counter heelt `++count`, maar daar opent geen pagina. Een pagina "Increment" (H2) kan opengaan bij de eerste heling.
+- [ ] **Stempels voor gemonteerd** (zie hieronder) wachten op een definitie.
+- [ ] **Waar je de regel voelde**: icoontjes per afdeling op een pagina, zodra er een tweede spelvorm meedoet.
+
+### Mastery: wanneer is een onderdeel gemonteerd?
+
+De drie toestanden staan in [Mastery](#mastery-de-onderdelenlijst); de derde is nog niet vastgelegd.
+
+- **Voorstel:** een onderdeel is gemonteerd als zijn Codex-moment gebeurt in een **gewonnen** gevecht, in **drie verschillende runs**. Of als je de elite van dat concept verslaat (Level 256 voor overflow, Y2K voor concatenatie).
+- Waarom: de motor kent de momenten al per gevecht, dus de shell hoeft alleen runs te tellen. Winnen telt, omdat een regel die je bewust gebruikt, meestal helpt. Drie runs, omdat één keer toeval kan zijn.
+- Nadeel: een regel die je alleen *ondergaat* (de Dripper die afkapt), telt ook. Een strengere versie telt alleen momenten die jij veroorzaakte (jouw schade, jouw heling).
+- [ ] Beslissen, en per afdeling uitschrijven.
+
+### De wereld
+
+- [ ] **Wat ontgrendelt een afdeling?** Voorstel: de baas van de vorige, of de docent. Een drempel van gemonteerde onderdelen voelt als een poort en botst met de antipatronen.
+- [ ] **De Controlekamer** als tweede echte afdeling. Spike 8 staat los; eerst testen of spelers de regels van een automaat lezen. Een echte bug voor H5 kiezen.
+- [ ] **Gambits als intents** in de deckbuilder: de Stray is de eerste. Meer pas als spike 8 toont dat spelers ze lezen.
+- [ ] **Spelvorm voor OOP**: tower defense of eigen kaarten ontwerpen.
+- [ ] **De plattegrond** als papieren mock testen: ziet een student zonder uitleg waar er te oefenen valt?
+- [ ] **Echte bugs** kiezen voor de Controlekamer (H5) en de Gereedschapsmuur (H7).
+
+### De Prikklok en de klas
+
+- [ ] **Dagelijkse run.** Altijd vanaf act 1, met `DailySeed.For(datum)`, één poging per dag die telt? Of de beste van de dag? Voorstel: de eerste voltooide run telt, zodat er geen reden is om eindeloos opnieuw te starten.
+- [ ] **Dagelijkse modifier**, zoals "vandaag geen Ink" of "alle vijanden `checked`".
+- [ ] **Speelduurlimiet** per dag: een standaard bepalen samen met collega's.
+- [ ] **Zachte streak** voor dagelijkse runs, zonder straf als je een dag mist.
+
+### Sfeer en art
+
+- [ ] **Tekeningen die klaarliggen** (het vel `extras`): de held die juicht en die onderuitgaat, voor het eindscherm; de held die leest, voor de Codex; de Prikklok en het zakje, voor hun knoppen; de lusslang, de kratten, het doosspook, de schakelaar en de voorman voor latere afdelingen.
+- [ ] **Geluid**: een eerste set van tien kerngeluiden maken en testen. Geen prioriteit voor de playtest.
+- [ ] **Een changelog** als tease ("Controlekamer: regels bijgewerkt"), nog niet gebouwd.
+
+### Beslist
+
+Kort, met de datum; de uitwerking staat in de secties hierboven.
+
+- 2 oktober 2026: Blazor WebAssembly met PixiJS; de AI-art in handleidingstijl is definitief; runlengte afgestemd op een lesblok.
+- 3 oktober 2026: elke afdeling krijgt haar eigen spelvorm rond één plattegrond; de Card Hall heeft drie acts, één per hoofdstuk; startpunten met vijf keer 1 uit 3; de Codex is het boek; het vangnet voor de onthulling na 5 gestarte runs; de score van een run; Scrap voor wachtende modifiers.
