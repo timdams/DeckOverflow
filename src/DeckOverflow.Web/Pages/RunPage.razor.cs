@@ -60,6 +60,13 @@ public partial class RunPage
     private readonly HashSet<string> _xpanels = [];
     private bool _showXRegister;
 
+    /// <summary>Een verdiend paneel dat net opsprong.</summary>
+    private sealed record PanelPopup(int Id, string Key);
+    private readonly List<PanelPopup> _panelPopups = [];
+
+    /// <summary>Zo lang blijft een paneel staan voor het weer wegzakt; gelijk aan de animatie in run.css.</summary>
+    private const int PanelPopupMs = 4600;
+
     /// <summary>De vijand van het laatste gevecht, voor het verhaal in de Codex op het beloningsscherm.</summary>
     private string? _lastEnemy;
     private Picker? _picker;
@@ -282,8 +289,17 @@ public partial class RunPage
     private async Task EarnXPanelAsync(string key)
     {
         if (!_xpanels.Add(key)) return;
-        AddToast(S.T("ui.toast.xpanel", ("name", S.T($"xpanel.{key}.name"))), "xpanel");
+        var popup = new PanelPopup(++_toastId, key);
+        _panelPopups.Add(popup);
+        _ = RemovePopupLaterAsync(popup);
         await JS.InvokeVoidAsync("deckOverflow.save", XPanelsKey, JsonSerializer.Serialize(_xpanels));
+    }
+
+    private async Task RemovePopupLaterAsync(PanelPopup popup)
+    {
+        await Task.Delay(PanelPopupMs);
+        _panelPopups.Remove(popup);
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task<T?> LoadJsonAsync<T>(string key)

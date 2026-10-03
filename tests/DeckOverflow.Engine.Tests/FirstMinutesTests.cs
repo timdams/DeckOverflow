@@ -144,6 +144,43 @@ public class FirstMinutesTests
     }
 
     [Fact]
+    public void Na_het_omklappen_is_de_kruik_leeg_en_heelt_hij_niet_meer()
+    {
+        var setup = new CombatSetup(Scenarios.Player(), Bestiary.Create(Bestiary.Jug), CardCatalog.StarterDeck());
+        var combat = Combat.Start(setup, Scenarios.DefaultSeed);
+
+        combat.Handle(new EndTurn());
+        var wrap = combat.Handle(new EndTurn()).WithoutSeq();
+        var after = combat.Handle(new EndTurn()).WithoutSeq();
+
+        Assert.Contains(new HealingStopped(E), wrap);
+        Assert.DoesNotContain(after, e => e is Healed or ValueOverflowed or HealingStopped);
+        Assert.Equal(24, combat.Enemy().Hp);
+    }
+
+    [Fact]
+    public void Ook_na_een_verloren_beurt_versla_je_de_kruik_na_het_omklappen()
+    {
+        var setup = new CombatSetup(Scenarios.Player(), Bestiary.Create(Bestiary.Jug), CardCatalog.StarterDeck());
+        var combat = Combat.Start(setup, Scenarios.DefaultSeed);
+
+        // Twee beurten tot hij omklapt op 24, en dan nog een beurt niets doen
+        for (int i = 0; i < 3; i++) combat.Handle(new EndTurn());
+
+        for (int turn = 0; turn < 5 && combat.Outcome == CombatOutcome.Ongoing; turn++)
+        {
+            while (combat.Snapshot().Hand.ToList().FindIndex(c => c.Playable && c.Target == TargetMode.Enemy) is var i and >= 0
+                   && combat.Outcome == CombatOutcome.Ongoing)
+            {
+                combat.Handle(new PlayCard(i, E));
+            }
+            if (combat.Outcome == CombatOutcome.Ongoing) combat.Handle(new EndTurn());
+        }
+
+        Assert.Equal(CombatOutcome.Won, combat.Outcome);
+    }
+
+    [Fact]
     public void De_kruik_klapt_ook_om_als_je_elke_beurt_slaat()
     {
         var run = OnPath(new RunSetup(), (NodeKind.Event, Bestiary.Jug), (NodeKind.Rest, null));

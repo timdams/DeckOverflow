@@ -63,5 +63,17 @@
     "rest": "scenes/rest",
     "shop": "scenes/shop",
     "title": "scenes/title"
+  },
+  "panels": {
+    "feed-the-machine": "items/fill-past-the-line",
+    "message-too-long": "actors/ghost",
+    "divided-to-nothing": "items/hold-firmly",
+    "big-number": "items/hammer-it-in",
+    "bad-text": "items/wrong-label",
+    "again-ariane": "actors/flight-501",
+    "frozen-index": "actors/the-index",
+    "caster-wraps": "actors/reckoner",
+    "factory-cleared": "icons/victory",
+    "read-the-manual": "scenes/title"
   }
 }

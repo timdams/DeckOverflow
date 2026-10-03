@@ -651,6 +651,15 @@ const handlers = {
     await wait(500);
   },
 
+  /** Hij liep over en is leeg: vanaf nu heelt hij niet meer. */
+  async HealingStopped(S, e) {
+    const a = S.actor(e.targetId);
+    const head = a.head();
+    sfx('click', { volume: 0.6 });
+    floatText(S.layers.fx, t('stage.empty'), head.x, head.y - 60, { size: 18, rise: 20 });
+    await wait(400);
+  },
+
   /** De vijand crashte vorige beurt: geen aanval. */
   async AttackSkipped(S, e) {
     const a = S.actor(e.enemyId);

@@ -8,6 +8,7 @@ namespace DeckOverflow.Engine.Combat;
 public sealed record CombatantSetup(string Key, ValueKind Kind, double Hp, double MaxHp, double Block = 0, string? Text = null);
 
 /// <param name="Pattern">Aanvallen in volgorde, één per beurt. Na de laatste begint hij opnieuw.</param>
+/// <param name="StopsHealingOnOverflow">Na zijn eerste overflow heelt hij niet meer (de Bottomless Jug is leeg).</param>
 /// <param name="BlockAfterAttack">Blok dat de vijand na zijn aanval opbouwt. Volgt de regels van zijn type.</param>
 /// <param name="RoundsIncoming">Zolang hij een <c>double</c> is, rondt hij elke treffer af met <c>Math.Round</c> (bankiersafronding).</param>
 /// <param name="GrowthAfterAttack">Na zijn aanval wordt zijn HP <c>HP * factor</c>, volgens de regels van zijn type. 0 is geen groei.</param>
@@ -21,7 +22,8 @@ public sealed record EnemySetup(
     bool RoundsIncoming = false,
     double GrowthAfterAttack = 0,
     IReadOnlyList<ValueKind>? TypeCycle = null,
-    int CrashLength = 0);
+    int CrashLength = 0,
+    bool StopsHealingOnOverflow = false);
 
 /// <param name="Relics">Ids uit <see cref="Relics.RelicCatalog"/> die in dit gevecht meespelen.</param>
 public sealed record CombatSetup(

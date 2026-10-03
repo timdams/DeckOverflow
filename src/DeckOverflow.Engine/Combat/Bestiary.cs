@@ -74,10 +74,12 @@ public static class Bestiary
 
         // Het wondermoment: een byte die zoveel drinkt dat hij omklapt. Hij heelt meer dan
         // een starterdeck per beurt kan slaan, dus hij klapt altijd om, wat je ook doet.
+        // Daarna is hij leeg en heelt hij niet meer, anders kwam hij elke beurt boven je schade uit.
         Jug => new(
             new CombatantSetup(Jug, ValueKind.Byte, Hp: 200, MaxHp: 255),
             [new("7 / 2", 7 / 2), new("2 * 2", 2 * 2)],
-            HealAfterAttack: 40),
+            HealAfterAttack: 40,
+            StopsHealingOnOverflow: true),
 
         // Te groot om plat te slaan. (byte)506 is 250, en dan werkt Herstel als bij de golem.
         Colossus => new(

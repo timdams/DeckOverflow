@@ -1,5 +1,6 @@
 @using DeckOverflow.Engine.Achievements
 @inject Strings S
+@inject ArtStyle Art
 
 @* Het ✗-register: de panelen uit de handleiding die zeggen wat niet mag, en die jij toch deed.
    Een verdiend paneel is doorkruist en uitgelegd. Een gewoon paneel dat je nog niet hebt, toont
@@ -25,6 +26,10 @@
 
                 <div class="xpanel @(earned ? "earned" : "open")">
                     <span class="cross">✗</span>
+                    @if (earned && Art.Panel(panel.Key) is { } art)
+                    {
+                        <ArtImage Src="@art" Class="xpanel-art" />
+                    }
                     <strong>@S.T($"xpanel.{panel.Key}.name")</strong>
                     <p>@(earned ? S.T($"xpanel.{panel.Key}.text") : S.T("ui.xregister.unknown"))</p>
                 </div>

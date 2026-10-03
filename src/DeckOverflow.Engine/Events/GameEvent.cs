@@ -29,6 +29,7 @@ namespace DeckOverflow.Engine.Events;
 [JsonDerivedType(typeof(ValueGrew), nameof(ValueGrew))]
 [JsonDerivedType(typeof(ConversionCrashed), nameof(ConversionCrashed))]
 [JsonDerivedType(typeof(AttackSkipped), nameof(AttackSkipped))]
+[JsonDerivedType(typeof(HealingStopped), nameof(HealingStopped))]
 [JsonDerivedType(typeof(ExceptionThrown), nameof(ExceptionThrown))]
 [JsonDerivedType(typeof(TextAppended), nameof(TextAppended))]
 [JsonDerivedType(typeof(TextParsed), nameof(TextParsed))]
@@ -119,6 +120,9 @@ public sealed record TextCrashed(int TargetId, int Length, int Limit) : GameEven
 
 /// <summary>De vijand slaat zijn aanval over, bv. na een crash.</summary>
 public sealed record AttackSkipped(int EnemyId) : GameEvent;
+
+/// <summary>De vijand liep over en is leeg: hij heelt niet meer (de Bottomless Jug).</summary>
+public sealed record HealingStopped(int TargetId) : GameEvent;
 
 // Gevecht: verloop en relics
 

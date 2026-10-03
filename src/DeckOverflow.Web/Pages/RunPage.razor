@@ -295,6 +295,25 @@
         }
     }
 
+    @* Een verdiend ✗-paneel springt vanaf de onderkant op, in een eigen kader; een klik opent het register *@
+    <div class="xpanel-popups">
+        @foreach (var popup in _panelPopups)
+        {
+            <button class="xpanel-popup" @key="popup.Id" @onclick="() => { _panelPopups.Remove(popup); _showXRegister = true; }">
+                <span class="badge">✗</span>
+                @if (Art.Panel(popup.Key) is { } art)
+                {
+                    <ArtImage Src="@art" Class="popup-art" />
+                }
+                <span class="words">
+                    <span class="label">@S.T("ui.xregister.earned")</span>
+                    <strong>@S.T($"xpanel.{popup.Key}.name")</strong>
+                    <small>@S.T($"xpanel.{popup.Key}.text")</small>
+                </span>
+            </button>
+        }
+    </div>
+
     @* Meldingen staan buiten de schermen, zodat ze ook op het titelscherm verschijnen *@
     <div class="toasts">
         @foreach (var toast in _toasts)

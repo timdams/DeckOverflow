@@ -107,6 +107,8 @@ function describe(S, e) {
       return [t('stage.log.text-crashed', { target: who(e.targetId), length: e.length }), COLORS.ink];
     case 'ExceptionThrown':
       return [t('stage.log.exception', { exception: e.exception, expression: e.expression }), COLORS.ink];
+    case 'HealingStopped':
+      return [t('stage.log.healing-stopped', { target: who(e.targetId) }), COLORS.muted];
     case 'AttackSkipped':
       return [t('stage.log.skipped', { source: who(e.enemyId) }), COLORS.muted];
     case 'CombatantDied':

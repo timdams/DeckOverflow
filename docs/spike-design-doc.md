@@ -140,6 +140,7 @@ Het eventcontract is de enige afspraak tussen C# en JavaScript. Elk event heeft 
 | `ValueGrew` | targetId, before, factor, raw, after | "× 1.05" boven de vijand, HP rolt op; een afgekapt restje volgt als `ValueTruncated` (The Index) |
 | `ConversionCrashed` | targetId, to, value | `Convert` paste niet: "OverflowException", de vijand schudt, zijn intent vervaagt |
 | `AttackSkipped` | enemyId | De vijand crashte vorige beurt en valt niet aan |
+| `HealingStopped` | targetId | De vijand liep over en is leeg: "EMPTY" boven zijn hoofd, hij heelt niet meer (Bottomless Jug) |
 | `TextAppended` | targetId, before, added, after | Een treffer op tekst: "+ 6" plakt achteraan, de tekst in de balk wordt langer (The Label) |
 | `TextParsed` | targetId, method, text, value, to | `int.Parse("406") = 406`: de tekst wordt een getal, de balk toont weer HP |
 | `TextCrashed` | targetId, length, limit | De tekst werd te lang: "32/32", een glitch, en de vijand valt om (Effective Power) |

@@ -11,7 +11,7 @@ namespace DeckOverflow.Web.Art;
 /// </summary>
 public sealed class ArtStyle
 {
-    private Manifest _manifest = new([], [], [], []);
+    private Manifest _manifest = new([], [], [], [], []);
 
     public bool Loaded { get; private set; }
 
@@ -30,6 +30,9 @@ public sealed class ArtStyle
 
     public string? Scene(string key) => Url(_manifest.Scenes, key);
 
+    /// <summary>De tekening bij een ✗-paneel.</summary>
+    public string? Panel(string key) => Url(_manifest.Panels ?? [], key);
+
     public static string Icon(string name) => $"art/icons/{name}.png";
 
     private static string? Url(Dictionary<string, string> map, string key) =>
@@ -39,5 +42,6 @@ public sealed class ArtStyle
         Dictionary<string, string> Cards,
         Dictionary<string, string> Relics,
         Dictionary<string, string> Nodes,
-        Dictionary<string, string> Scenes);
+        Dictionary<string, string> Scenes,
+        Dictionary<string, string>? Panels);
 }

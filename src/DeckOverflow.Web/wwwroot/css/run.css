@@ -581,4 +581,87 @@ button.small { padding: 6px 12px; font-size: 12px; }
 .xpanel.open { color: var(--muted); border-style: dashed; border-color: var(--muted); }
 .xpanel.hidden { color: var(--muted); border-style: dashed; border-color: var(--rule); justify-content: center; }
 
-.toast.xpanel { border-width: 3px; }
+
+/* ---- ✗-paneel verdiend: springt vanaf de onderkant op ---- */
+
+.xpanel-popups {
+  position: absolute;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  z-index: 30;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.xpanel-popup {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: min(460px, 90vw);
+  padding: 14px 18px 14px 14px;
+  text-align: left;
+  font-weight: 400;
+  background: var(--white);
+  border: 3px solid var(--ink);
+  border-radius: 8px;
+  box-shadow: 6px 6px 0 var(--zss);
+  pointer-events: auto;
+  animation: popup-up 560ms cubic-bezier(.18, 1.6, .4, 1) both, popup-down 420ms ease-in 4.2s forwards;
+}
+.xpanel-popup:hover:not(:disabled) { background: var(--white); }
+.xpanel-popup:active:not(:disabled) { transform: none; box-shadow: 6px 6px 0 var(--zss); }
+
+/* Een oranje kenteken met het kruis, zoals op het ✗-paneel van een handleiding */
+.xpanel-popup .badge {
+  position: absolute;
+  top: -16px;
+  left: -16px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--white);
+  background: var(--zss);
+  border: 3px solid var(--ink);
+  border-radius: 50%;
+  animation: badge-pop 400ms cubic-bezier(.2, 1.8, .4, 1) 300ms both;
+}
+
+.xpanel-popup .popup-art {
+  flex: none;
+  width: 76px;
+  height: 76px;
+  padding: 4px;
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  background: var(--paper);
+}
+
+.xpanel-popup .words { display: flex; flex-direction: column; gap: 3px; }
+.xpanel-popup .label { color: var(--zss); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; }
+.xpanel-popup strong { font-size: 19px; }
+.xpanel-popup small { font-size: 13px; line-height: 1.35; color: var(--ink); }
+
+@keyframes popup-up {
+  from { transform: translateY(140%) scale(0.92); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+@keyframes popup-down { to { transform: translateY(140%); opacity: 0; } }
+@keyframes badge-pop { from { transform: scale(0) rotate(-90deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .xpanel-popup { animation: popup-down 1ms linear 4.2s forwards; }
+  .xpanel-popup .badge { animation: none; }
+}
+
+/* De tekening op een verdiend paneel in het register, en het oranje kruis */
+.xpanel.earned .cross { color: var(--white); background: var(--zss); border-color: var(--ink); }
+.xpanel.earned { box-shadow: 3px 3px 0 var(--zss); }
+.xpanel .xpanel-art { width: 100%; height: 70px; object-fit: contain; margin-top: 4px; }

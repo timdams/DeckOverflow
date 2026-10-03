@@ -32,6 +32,8 @@ public sealed class Combat
     private Intent? _assignedAttack;
     /// <summary>De vijand crashte: zijn volgende aanval valt weg.</summary>
     private bool _enemyCrashed;
+    /// <summary>De vijand liep over en heelt niet meer (<see cref="EnemySetup.StopsHealingOnOverflow"/>).</summary>
+    private bool _enemyStoppedHealing;
     private int _typeCycleIndex;
     private int _cardsPlayed;
     /// <summary>Kaarten deze beurt: een variabele voor bewuste intents.</summary>
@@ -239,10 +241,15 @@ public sealed class Combat
         }
 
         // Helen en schild opbouwen volgen ook de regels van zijn (misschien omgegoten) type
-        if (_setup.Enemy.HealAfterAttack > 0)
+        if (_setup.Enemy.HealAfterAttack > 0 && !_enemyStoppedHealing)
         {
-            Heal(_enemy, _setup.Enemy.HealAfterAttack);
+            bool overflowed = Heal(_enemy, _setup.Enemy.HealAfterAttack);
             if (CheckOutcome()) return;
+            if (overflowed && _setup.Enemy.StopsHealingOnOverflow)
+            {
+                _enemyStoppedHealing = true;
+                Emit(new HealingStopped(EnemyId));
+            }
         }
         if (_setup.Enemy.BlockAfterAttack > 0) GainBlock(_enemy, _setup.Enemy.BlockAfterAttack);
         if (_setup.Enemy.GrowthAfterAttack > 0) Grow(_enemy, _setup.Enemy.GrowthAfterAttack);
@@ -513,21 +520,24 @@ public sealed class Combat
         Emit(new BlockGained(target.Id, amount, target.Block));
     }
 
-    private void Heal(Combatant target, int amount)
+    /// <returns>Of de byte omklapte.</returns>
+    private bool Heal(Combatant target, int amount)
     {
         if (target.Kind == ValueKind.String)
         {
             AppendText(target, amount);
-            return;
+            return false;
         }
 
         double before = target.Hp;
+        bool wrapped = false;
 
         switch (target.Kind)
         {
             case ValueKind.Byte:
                 (byte result, bool overflowed) = ByteRules.Add((byte)before, amount);
                 target.Hp = result;
+                wrapped = overflowed;
                 if (overflowed)
                 {
                     Emit(new ValueOverflowed(target.Id, (int)before, amount, result, byte.MaxValue));
@@ -547,6 +557,7 @@ public sealed class Combat
         }
 
         if (target.IsDead) Emit(new CombatantDied(target.Id));
+        return wrapped;
     }
 
     /// <summary>Omgieten: HP en blok gaan door een echte C#-conversie.</summary>
