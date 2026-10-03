@@ -189,6 +189,10 @@ public partial class RunPage
 
     private Task EndTurnAsync() => RunCombatAsync(new EndTurn());
 
+    /// <summary>TIJDELIJK: sneltoets W wint het lopende gevecht meteen.</summary>
+    [JSInvokable]
+    public Task OnDebugWin() => RunCombatAsync(new DebugWin());
+
     private async Task RunCombatAsync(ICommand command)
     {
         if (_run is null || _busy || _run.Phase != RunPhase.Combat) return;

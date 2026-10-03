@@ -79,6 +79,7 @@ public sealed class Combat
         {
             case PlayCard play: HandlePlayCard(play); break;
             case EndTurn: HandleEndTurn(); break;
+            case DebugWin: HandleDebugWin(); break;
             default: throw new ArgumentException($"Onbekend command: {command.GetType().Name}", nameof(command));
         }
 
@@ -265,6 +266,22 @@ public sealed class Combat
 
         Intent next = CurrentIntent;
         Emit(new IntentRevealed(EnemyId, next.Expression, next.Hidden ? null : next.ValueIn(Context())));
+    }
+
+    /// <summary>TIJDELIJK: de vijand valt meteen om, wat zijn type ook is.</summary>
+    private void HandleDebugWin()
+    {
+        double before = _enemy.Hp;
+        _enemy.Block = 0;
+        if (_enemy.Kind == ValueKind.String)
+        {
+            _enemy.Kind = ValueKind.Int;
+            _enemy.Text = null;
+        }
+        _enemy.Hp = 0;
+        Emit(new DamageDealt(EnemyId, before, before, 0));
+        Emit(new CombatantDied(EnemyId));
+        CheckOutcome();
     }
 
     // ---------- Kaarteffecten ----------

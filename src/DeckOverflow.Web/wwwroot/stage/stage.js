@@ -775,6 +775,8 @@ function setupInput() {
 function onKey(e) {
   if (e.key === 'f' || e.key === 'F') juice.speed = juice.speed < 1 ? 1 : 0.5;
   if (e.key === 'm' || e.key === 'M') toggleMute();
+  // TIJDELIJK: win het gevecht meteen, om snel te testen
+  if ((e.key === 'w' || e.key === 'W') && S.dotnet) S.dotnet.invokeMethodAsync('OnDebugWin');
 }
 
 function onCardDown(card, e) {

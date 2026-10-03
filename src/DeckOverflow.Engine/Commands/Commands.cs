@@ -6,6 +6,9 @@ public interface ICommand;
 public sealed record PlayCard(int HandIndex, int TargetId) : ICommand;
 public sealed record EndTurn : ICommand;
 
+/// <summary>TIJDELIJK, om snel te testen: win het lopende gevecht meteen (sneltoets W). Weg voor een playtest.</summary>
+public sealed record DebugWin : ICommand;
+
 // Map
 public sealed record ChooseNode(int NodeId) : ICommand;
 

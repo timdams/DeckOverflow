@@ -249,7 +249,7 @@
   "stage.won": "VICTORY",
   "stage.crashed": "CRASHED",
   "stage.next-card": "next card",
-  "stage.fast": "[F] fast {state}  [M] sound",
+  "stage.fast": "[F] fast {state}  [M] sound  [W] win (test)",
   "stage.on": "on",
   "stage.off": "off",
   "stage.on-block": "{amount} on block",
