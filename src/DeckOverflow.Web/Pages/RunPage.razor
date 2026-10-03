@@ -23,7 +23,15 @@
                 int start = act;
                 <button class="secondary" disabled="@(_starting || !S.Loaded)" @onclick="() => StartAsync(start)">@S.T("ui.start-at", ("act", start))</button>
             }
+            @if (_codex.Count > 0)
+            {
+                <button class="secondary small" @onclick="() => OpenCodex(null)">@S.T("ui.codex") (@_codex.Count)</button>
+            }
         </div>
+        @if (_showCodex)
+        {
+            <CodexBook Pages="_codex" Focus="_codexFocus" OnClose="() => _showCodex = false" />
+        }
     }
     else
     {
@@ -51,6 +59,7 @@
                             <span class="relic" title="@S.T(relic.Text)"><ArtImage Src="@Art.Relic(relic.Id)" />@S.Relic(relic.Id)</span>
                         }
                     </span>
+                    <button class="secondary small" @onclick="() => OpenCodex(null)">@S.T("ui.codex")</button>
                     <button class="secondary small" @onclick="() => _showDeck = true">@S.T("ui.deck", ("count", s.Deck.Count))</button>
                 </header>
 
@@ -85,6 +94,7 @@
                                         <p>@S.T($"bug.{bug}.story")</p>
                                     </aside>
                                 }
+                                @NewPages()
                                 <p>@S.T("ui.choose-card")</p>
                                 <div class="card-row">
                                     @for (int i = 0; i < reward.Cards.Count; i++)
@@ -116,6 +126,7 @@
                             <section class="panel">
                                 <h2>@S.T($"ui.relic.{choice.Reason}.title")</h2>
                                 <p>@S.T($"ui.relic.{choice.Reason}.text")</p>
+                                @NewPages()
                                 <div class="choices column">
                                     @for (int i = 0; i < choice.Relics.Count; i++)
                                     {
@@ -241,6 +252,7 @@
                                     <div class="near-miss"><div style="width:@(Percent(end.EnemyHp, end.EnemyMaxHp))%"></div></div>
                                 }
                                 <p class="stats">@S.T("ui.end.stats", ("deck", end.DeckSize), ("relics", end.RelicCount), ("gold", end.Gold))</p>
+                                @NewPages()
                                 <div class="buttons">
                                     <button @onclick="() => NewRunAsync(NewSeed())">@S.T("ui.new-run")</button>
                                     <button class="secondary" @onclick="() => NewRunAsync(s.Seed)">@S.T("ui.same-seed")</button>
@@ -255,6 +267,11 @@
         @if (_showDeck)
         {
             <DeckPicker Title="@S.T("ui.your-deck")" Deck="s.Deck" OnCancel="() => _showDeck = false" />
+        }
+
+        @if (_showCodex)
+        {
+            <CodexBook Pages="_codex" Focus="_codexFocus" OnClose="() => _showCodex = false" />
         }
 
         @if (_picker is { } picker)

@@ -58,6 +58,17 @@ public partial class StringsTests
         }
     }
 
+    [Fact]
+    public void Elke_codexpagina_heeft_een_naam_een_verhaal_en_code()
+    {
+        foreach (var entry in Engine.Codex.CodexCatalog.All)
+        {
+            AssertKey($"codex.{entry.Key}.name");
+            AssertKey($"codex.{entry.Key}.happened");
+            AssertKey($"codex.{entry.Key}.code");
+        }
+    }
+
     /// <summary>
     /// Elke sleutel die letterlijk in de code staat, in motor, shell of stage, moet in en.json staan.
     /// Zo vang je ook weigeringen en knoppen die geen andere test raakt.

@@ -1,0 +1,66 @@
+@using DeckOverflow.Engine.Codex
+@inject Strings S
+
+@* De Codex: regels die je in een gevecht voelde, met hun echte naam. Een dichte pagina is een silhouet.
+   Een open pagina heeft vier lagen die je zelf openklikt: wat er gebeurde, de naam, de code, het boek. *@
+
+<div class="modal" @onclick="OnClose">
+    <div class="modal-body codex-book" @onclick:stopPropagation="true">
+        <h2>@S.T("ui.codex")</h2>
+        <p class="hint">@S.T("ui.codex.intro") · @S.T("ui.codex.count", ("open", Pages.Count), ("total", CodexCatalog.All.Count))</p>
+
+        <div class="codex-pages">
+            @foreach (var entry in CodexCatalog.All)
+            {
+                if (!Pages.TryGetValue(entry.Key, out var values))
+                {
+                    <div class="codex-page locked" title="@S.T("ui.codex.locked-hint")">
+                        <span class="chapter">H@(entry.Chapter?.ToString() ?? "?")</span>
+                        <strong>@S.T("ui.codex.locked")</strong>
+                    </div>
+                    continue;
+                }
+
+                int layer = _layers.GetValueOrDefault(entry.Key, 1);
+                <div class="codex-page open @(entry.Key == _focus ? "focus" : "")">
+                    <span class="chapter">H@(entry.Chapter?.ToString() ?? "?")</span>
+                    <h3>@(layer >= 2 ? S.T($"codex.{entry.Key}.name") : S.T("ui.codex.happened"))</h3>
+                    <p>@S.T(new TextRef($"codex.{entry.Key}.happened", values))</p>
+
+                    @if (layer >= 3)
+                    {
+                        <pre class="code">@S.T(new TextRef($"codex.{entry.Key}.code", values))</pre>
+                    }
+                    @if (layer >= 4)
+                    {
+                        <p class="read">@(entry.Chapter is { } chapter ? S.T("ui.codex.chapter", ("chapter", chapter)) : S.T("ui.codex.chapter-later"))</p>
+                    }
+
+                    @if (layer < 4)
+                    {
+                        string next = layer switch { 1 => "ui.codex.reveal-name", 2 => "ui.codex.reveal-code", _ => "ui.codex.reveal-read" };
+                        <button class="secondary small" @onclick="() => _layers[entry.Key] = layer + 1">@S.T(next)</button>
+                    }
+                </div>
+            }
+        </div>
+
+        <button class="secondary" @onclick="OnClose">@S.T("ui.close")</button>
+    </div>
+</div>
+
+@code {
+    /// <summary>Open pagina's, met de getallen van het moment waarop ze opengingen.</summary>
+    [Parameter, EditorRequired] public IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> Pages { get; set; } = default!;
+
+    /// <summary>Een pagina om meteen te tonen, bv. de nieuwe na een gevecht.</summary>
+    [Parameter] public string? Focus { get; set; }
+
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    /// <summary>Hoeveel lagen per pagina open staan: 1 wat er gebeurde, 2 de naam, 3 de code, 4 het boek.</summary>
+    private readonly Dictionary<string, int> _layers = [];
+    private string? _focus;
+
+    protected override void OnParametersSet() => _focus = Focus;
+}

@@ -47,6 +47,7 @@ namespace DeckOverflow.Engine.Events;
 [JsonDerivedType(typeof(RunEnded), nameof(RunEnded))]
 [JsonDerivedType(typeof(ActCompleted), nameof(ActCompleted))]
 [JsonDerivedType(typeof(ActStarted), nameof(ActStarted))]
+[JsonDerivedType(typeof(CodexUnlocked), nameof(CodexUnlocked))]
 public abstract record GameEvent
 {
     public int Seq { get; init; }
@@ -145,5 +146,10 @@ public sealed record RunRejected(string Reason) : GameEvent;
 public sealed record RunEnded(bool Won) : GameEvent;
 /// <summary>De baas van deze act is verslagen; de volgende act wacht.</summary>
 public sealed record ActCompleted(int Act) : GameEvent;
+/// <summary>
+/// Een regel deed iets in een gevecht dat nu voorbij is: de Codex-pagina mag open.
+/// <paramref name="Values"/> zijn de getallen van dat moment, voor de tekst en de code op de pagina.
+/// </summary>
+public sealed record CodexUnlocked(string Key, IReadOnlyDictionary<string, string> Values) : GameEvent;
 /// <summary>Een nieuwe act met een nieuwe map. Wordt ook een startpunt voor volgende runs.</summary>
 public sealed record ActStarted(int Act) : GameEvent;

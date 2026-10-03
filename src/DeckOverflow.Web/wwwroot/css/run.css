@@ -372,3 +372,62 @@ button.small { padding: 6px 12px; font-size: 12px; }
 }
 
 .codex p { font-size: 0.95em; }
+
+/* ---------------------------------------------------------------- codex */
+
+.codex-book { width: min(980px, 92vw); align-items: stretch; }
+.codex-book h2, .codex-book > .hint { text-align: center; }
+.codex-pages { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+
+.codex-page {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px 16px;
+  background: var(--white);
+  border: 2.5px solid var(--ink);
+  border-radius: 6px;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.codex-page h3 { margin: 0; font-size: 1.15em; padding-right: 36px; }
+.codex-page p { margin: 0; line-height: 1.4; }
+.codex-page .chapter {
+  position: absolute; top: 10px; right: 10px;
+  font-size: 12px; font-weight: 700; color: var(--muted);
+  border: 1.5px solid currentColor; border-radius: 50%;
+  width: 30px; height: 30px; display: grid; place-items: center;
+}
+.codex-page button { align-self: flex-start; }
+.codex-page .read { color: var(--muted); font-style: italic; }
+.codex-page.focus { box-shadow: 5px 5px 0 var(--ink); transform: translate(-2px, -2px); }
+
+/* Een dichte pagina: een silhouet, zoals een leeg vak in een verzamelalbum */
+.codex-page.locked {
+  background: transparent;
+  border-style: dashed;
+  border-color: var(--muted);
+  box-shadow: none;
+  color: var(--muted);
+  min-height: 90px;
+  justify-content: center;
+  align-items: center;
+}
+
+.codex-page .code {
+  margin: 0;
+  padding: 10px 12px;
+  background: var(--ink);
+  color: #f1eee4;
+  border-radius: 4px;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 13px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.codex-new {
+  border-style: dashed;
+  font-size: 14px;
+  padding: 6px 14px;
+}

@@ -93,6 +93,7 @@ Een run begint in Act 1, en je probeert zo ver mogelijk te geraken. Eén act duu
 De C#-regels moeten beslissingen veranderen, niet elke beurt een som opleggen. Verplicht hoofdrekenen om te weten hoeveel je moet blokken, is een quiz met een zwaard erop.
 
 - **Verdediging is leesbaar.** Een intent toont standaard het totaal, groot, zoals in Slay the Spire. De expressie staat er klein onder. Een dodelijk-icoon toont wanneer een intent je zou doden.
+- **Gebouwd op 3 oktober 2026:** bewuste intents met de variabelen `block`, `cards` (deze beurt gespeeld), `energy` (over) en `hp`. The Splitter slaat `30 / (block + 1)`, de Tin Knight `24 / (cards + 1)`, de Dripper `energy * 4 + 2.5`. De ballon toont de formule met namen; het totaal springt mee terwijl je speelt. Bij de aanval telt wat je aan het eind van je beurt hebt.
 - **Leren door te kijken.** Tijdens de vijandbeurt wordt de expressie zichtbaar stap voor stap uitgerekend. Spelers zien operatorvoorrang honderden keren gebeuren, zoals ze in Balatro het scoresysteem leren door te kijken.
 - **Verdedigen is variabelen manipuleren.** De interessante intents bevatten variabelen die de speler beïnvloedt, zoals `20 / x` met `x` jouw aantal schilden. Het totaal past zich live aan terwijl je kaarten overweegt. De vraag is niet "hoeveel is dit?" maar "welke variabele verander ik het goedkoopst?"
 - **In de aanval is hoger niet altijd beter.** Volgorde telt ("+3" en "×2" in de juiste volgorde), te veel kan fout zijn (overflow, de Bool-schim, de Ritmeschildpad) en types sturen keuzes (decimalen zijn verspild op een `int`-vijand). Hier zit de puzzel, en die is leuk omdat je iets wil maximaliseren.
@@ -576,6 +577,24 @@ Een Codex-pagina heeft vier lagen, die de speler zelf openklikt:
 4. **Verder lezen.** Link naar het hoofdstuk in Zie Scherp Scherper.
 
 Wie een pagina leest, krijgt niets extra. De beloning zit in de volgende run: je weet nu iets wat je vijand niet verwacht. Docenten zien in hun dashboard welke pagina's per student ontgrendeld zijn, en dus welke regels al eens gevoeld zijn.
+
+**Zo werkt het nu (3 oktober 2026).** Tijdens een gevecht onthoudt de motor per regel het eerste moment waarop ze iets deed, met de getallen erbij. Als het gevecht voorbij is, gewonnen of verloren, gaan die pagina's open. De getallen vullen "wat er gebeurde" en de code, zodat de pagina jouw moment naspeelt: `byte hp = 250; hp += 6; // 0`. Een pagina heeft een minimale act: Omgieten voel je in act 1, maar "Casting" en "Parsing" openen pas in act 2. Open pagina's bewaart de browser over runs heen; later komt dat in Supabase.
+
+| Pagina | Hoofdstuk | Gaat open bij |
+| --- | --- | --- |
+| Variables | H2 | een bewuste intent die met jouw blok, kaarten of energie rekent |
+| Integer truncation | H2 | schade met decimalen op een `int` |
+| Integer division | H2 | Split, of een bewuste intent met `/` |
+| Integer overflow | H2 | helen tot een `byte` omklapt |
+| Operator precedence | H2 | de Rekenmeester verslaan |
+| String concatenation | H3 | Ink, of een treffer op The Label |
+| Casting | H4, vanaf act 2 | omgieten, ook de baas die zichzelf omgiet |
+| Convert | H4, vanaf act 2 | Measure Twice |
+| Math.Round | H4, vanaf act 2 | de Rounder |
+| Parsing | H4, vanaf act 2 | Read of Read the Label |
+| Exceptions | later | een `FormatException` of `OverflowException` |
+
+Nog open: een link naar het hoofdstuk online. De pagina noemt nu "Zie Scherp Scherper, chapter 2" zonder link, tot we de juiste URL's hebben.
 
 ## Platform en techniek
 

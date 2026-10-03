@@ -1,4 +1,5 @@
 using DeckOverflow.Engine.Cards;
+using DeckOverflow.Engine.Codex;
 using DeckOverflow.Engine.Combat;
 using DeckOverflow.Engine.Commands;
 using DeckOverflow.Engine.Events;
@@ -65,6 +66,8 @@ public sealed class Run
     private int _draftRound;
     private List<string> _relicChoice = [];
     private string? _relicReason;
+    /// <summary>Codex-pagina's die in deze run al opengingen; de shell onthoudt ze over runs heen.</summary>
+    private readonly HashSet<string> _codex = [];
 
     private Run(ulong seed, RunSetup setup)
     {
@@ -299,6 +302,7 @@ public sealed class Run
         var snapshot = combat.Snapshot();
         var enemy = snapshot.Combatants.Single(c => c.IsEnemy);
         Hp = (int)snapshot.Combatants.Single(c => !c.IsEnemy).Hp;
+        UnlockCodex(combat, enemy, combat.Outcome == CombatOutcome.Won);
 
         if (combat.Outcome == CombatOutcome.Lost)
         {
@@ -331,6 +335,29 @@ public sealed class Run
         Phase = won ? RunPhase.Won : RunPhase.Lost;
         _end = new EndView(won, _node!.Row + 1, enemy.Key, enemy.Hp, enemy.MaxHp, Gold, _deck.Count, _relics.Count, _act.Number);
         Emit(new RunEnded(won));
+    }
+
+    /// <summary>
+    /// Na een gevecht: elke regel die erin iets deed, krijgt zijn Codex-pagina, als de act ver genoeg is.
+    /// Eerst ervaren, dan benoemen: Omgieten in act 1 opent "Casting" nog niet.
+    /// </summary>
+    private void UnlockCodex(Combat.Combat combat, CombatantView enemy, bool won)
+    {
+        var moments = combat.Moments.ToList();
+        // De Rekenmeester verslaan is operatorvoorrang doorhebben
+        if (won && enemy.Key == Bestiary.Reckoner)
+        {
+            moments.Add(new CodexMoment(CodexCatalog.OperatorPrecedence, new Dictionary<string, string>
+            {
+                ["expression"] = "3 + 2 * 4", ["value"] = (3 + 2 * 4).ToString(System.Globalization.CultureInfo.InvariantCulture),
+            }));
+        }
+
+        foreach (var moment in moments)
+        {
+            if (CodexCatalog.Get(moment.Key).MinAct > _act.Number || !_codex.Add(moment.Key)) continue;
+            Emit(new CodexUnlocked(moment.Key, moment.Values));
+        }
     }
 
     // ---------- Tussen de acts ----------

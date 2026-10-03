@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Globalization;
+using System.Text.Json;
 using DeckOverflow.Engine.Cards;
 using DeckOverflow.Engine.Combat;
 using DeckOverflow.Engine.Commands;
@@ -30,6 +31,9 @@ public partial class RunPage
     /// <summary>Waar de startpunten in de browser staan: de hoogste act die je ooit bereikte.</summary>
     private const string ReachedActKey = "deckoverflow.reached-act";
 
+    /// <summary>Open Codex-pagina's, over runs heen: per pagina de getallen van het eerste moment.</summary>
+    private const string CodexKey = "deckoverflow.codex";
+
     private ElementReference _host;
     private DotNetObjectReference<RunPage>? _self;
     private Run? _run;
@@ -40,6 +44,12 @@ public partial class RunPage
     private bool _showDeck;
     private int _startAct = 1;
     private int _reachedAct = 1;
+
+    private Dictionary<string, IReadOnlyDictionary<string, string>> _codex = [];
+    /// <summary>Pagina's die na het laatste gevecht opengingen, voor de melding op het volgende scherm.</summary>
+    private readonly List<string> _newPages = [];
+    private bool _showCodex;
+    private string? _codexFocus;
 
     /// <summary>De vijand van het laatste gevecht, voor het verhaal in de Codex op het beloningsscherm.</summary>
     private string? _lastEnemy;
@@ -65,11 +75,19 @@ public partial class RunPage
         _loadMs = await JS.InvokeAsync<double>("deckOverflow.now");
 
         string? reached = await JS.InvokeAsync<string?>("deckOverflow.load", ReachedActKey);
-        if (int.TryParse(reached, out int act) && act > 1)
+        if (int.TryParse(reached, out int act) && act > 1) _reachedAct = Math.Min(act, Acts.All[^1].Number);
+
+        string? codex = await JS.InvokeAsync<string?>("deckOverflow.load", CodexKey);
+        if (!string.IsNullOrEmpty(codex))
         {
-            _reachedAct = Math.Min(act, Acts.All[^1].Number);
-            StateHasChanged();
+            try
+            {
+                var saved = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(codex) ?? [];
+                _codex = saved.ToDictionary(p => p.Key, p => (IReadOnlyDictionary<string, string>)p.Value);
+            }
+            catch (JsonException) { /* kapotte opslag: gewoon met een lege Codex verder */ }
         }
+        StateHasChanged();
     }
 
     /// <summary>Start na een klik, zodat de browser audio toelaat.</summary>
@@ -129,6 +147,7 @@ public partial class RunPage
         _snap = _run.Snapshot();
         ShowToasts(events);
         await RememberActAsync(events);
+        await RememberCodexAsync(events);
 
         // Een nieuw gevecht: de stage begint met een schone lei
         if (_snap.Phase == RunPhase.Combat && before.Phase != RunPhase.Combat)
@@ -179,6 +198,7 @@ public partial class RunPage
         try
         {
             _lastEnemy = _run.CombatSnapshot()?.Combatants.FirstOrDefault(c => c.IsEnemy)?.Key;
+            if (_run.CombatSnapshot()?.Turn == 1) _newPages.Clear();
             long start = Stopwatch.GetTimestamp();
             var events = _run.Handle(command);
             double engineMs = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
@@ -192,6 +212,7 @@ public partial class RunPage
             _snap = _run.Snapshot();
             // Pas na het gevecht: goud, relic. Tijdens het gevecht spreekt de stage.
             if (_snap.Phase != RunPhase.Combat) ShowToasts(events);
+            await RememberCodexAsync(events);
         }
         finally
         {
@@ -210,6 +231,40 @@ public partial class RunPage
             await JS.InvokeVoidAsync("deckOverflow.save", ReachedActKey, _reachedAct.ToString(CultureInfo.InvariantCulture));
         }
     }
+
+    /// <summary>Nieuwe Codex-pagina's bewaren. Een pagina houdt de getallen van het eerste moment waarop ze openging.</summary>
+    private async Task RememberCodexAsync(IEnumerable<GameEvent> events)
+    {
+        bool changed = false;
+        foreach (var unlocked in events.OfType<CodexUnlocked>())
+        {
+            if (_codex.ContainsKey(unlocked.Key)) continue;
+            _codex[unlocked.Key] = unlocked.Values;
+            _newPages.Add(unlocked.Key);
+            changed = true;
+        }
+        if (changed) await JS.InvokeVoidAsync("deckOverflow.save", CodexKey, JsonSerializer.Serialize(_codex));
+    }
+
+    private void OpenCodex(string? focus)
+    {
+        _codexFocus = focus;
+        _showCodex = true;
+    }
+
+    /// <summary>Een melding per nieuwe pagina; een klik opent de Codex op die pagina.</summary>
+    private RenderFragment NewPages() => builder =>
+    {
+        int seq = 0;
+        foreach (string key in _newPages)
+        {
+            builder.OpenElement(seq++, "button");
+            builder.AddAttribute(seq++, "class", "codex-new");
+            builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create(this, () => OpenCodex(key)));
+            builder.AddContent(seq++, S.T("ui.codex.new", ("name", S.T($"codex.{key}.name"))));
+            builder.CloseElement();
+        }
+    };
 
     // ---------- Meldingen ----------
 

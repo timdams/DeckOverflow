@@ -1,5 +1,6 @@
 using System.Globalization;
 using DeckOverflow.Engine.Cards;
+using DeckOverflow.Engine.Codex;
 using DeckOverflow.Engine.Commands;
 using DeckOverflow.Engine.Events;
 using DeckOverflow.Engine.Random;
@@ -35,6 +36,8 @@ public sealed class Combat
     private int _cardsPlayed;
     /// <summary>Kaarten deze beurt: een variabele voor bewuste intents.</summary>
     private int _cardsThisTurn;
+    /// <summary>Per Codex-pagina het eerste moment in dit gevecht waarop die regel iets deed.</summary>
+    private readonly Dictionary<string, CodexMoment> _moments = [];
 
     private Combat(CombatSetup setup, ulong seed)
     {
@@ -47,6 +50,9 @@ public sealed class Combat
         Energy = setup.MaxEnergy;
         _deck.Draw(setup.HandSize);
     }
+
+    /// <summary>Wat dit gevecht voor de Codex opleverde. De run beslist welke pagina's mogen opengaan.</summary>
+    public IReadOnlyCollection<CodexMoment> Moments => _moments.Values;
 
     public int Turn { get; private set; }
     public int Energy { get; private set; }
@@ -179,6 +185,7 @@ public sealed class Combat
             string expression = Evaluate(ModifiedAmount(card)!.Value.Amount, ModifiedAmount(card)!.Value.Kind, describeOnly: true).Expression;
             _modifiers.Clear();
             Emit(new ExceptionThrown(crash.GetType().Name, expression));
+            Moment(CodexCatalog.Exceptions, ("exception", crash.GetType().Name), ("expression", expression));
             HandleEndTurn();
             return;
         }
@@ -220,6 +227,11 @@ public sealed class Combat
             IntentContext context = Context();
             double value = attack.ValueIn(context);
             Emit(new AttackLaunched(EnemyId, PlayerId, attack.FilledIn(context), value));
+            if (attack.IsLive)
+            {
+                Moment(CodexCatalog.Variables, ("expression", attack.Expression), ("filled", attack.FilledIn(context)), ("value", value));
+                if (attack.Expression.Contains(" / ")) Moment(CodexCatalog.IntegerDivision, ("expression", attack.FilledIn(context)), ("value", value));
+            }
             DealDamage(_player, value, fromPlayer: false);
             if (CheckOutcome()) return;
         }
@@ -359,6 +371,12 @@ public sealed class Combat
         if (_modifiers.Count == 0) return (amount, 1);
 
         var (value, hitFactor, expression) = Evaluate(amount, kind);
+        if (_modifiers.Any(m => m.Op == ModifierOp.Divide && m.Operand.Kind == ValueKind.Int) && value.Kind == ValueKind.Int)
+            Moment(CodexCatalog.IntegerDivision, ("expression", expression), ("value", value.Number));
+        if (_modifiers.Any(m => m.Operand.IsText))
+            Moment(CodexCatalog.StringConcat, ("expression", expression), ("value", value.Number));
+        if (_modifiers.Any(m => m.Op == ModifierOp.Parse))
+            Moment(CodexCatalog.Parse, ("text", expression), ("value", value.Number));
         _modifiers.Clear();
         Emit(new ModifiersApplied(card.Id, amount, value.Number, expression));
         return (value.Number, hitFactor);
@@ -410,7 +428,11 @@ public sealed class Combat
         if (target.IsEnemy && _setup.Enemy.RoundsIncoming && target.Kind == ValueKind.Double)
         {
             double rounded = Math.Round(remaining);
-            if (rounded != remaining) Emit(new ValueRounded(target.Id, remaining, rounded, ValueSubject.Damage));
+            if (rounded != remaining)
+            {
+                Emit(new ValueRounded(target.Id, remaining, rounded, ValueSubject.Damage));
+                Moment(CodexCatalog.Rounding, ("enemy", target.Key), ("before", remaining), ("after", rounded));
+            }
             remaining = rounded;
         }
 
@@ -432,6 +454,7 @@ public sealed class Combat
             if (lost > 0)
             {
                 Emit(new ValueTruncated(target.Id, remaining, truncated, lost, ValueSubject.Damage));
+                Moment(CodexCatalog.IntTruncation, ("target", target.Key), ("before", remaining), ("after", truncated));
                 if (fromPlayer && target.IsEnemy) _relics.ForEach(r => r.OnDamageTruncated(lost));
             }
             damage = truncated;
@@ -480,6 +503,7 @@ public sealed class Combat
                 if (overflowed)
                 {
                     Emit(new ValueOverflowed(target.Id, (int)before, amount, result, byte.MaxValue));
+                    Moment(CodexCatalog.Overflow, ("target", target.Key), ("before", (int)before), ("added", amount), ("after", (int)result));
                 }
                 else
                 {
@@ -515,6 +539,7 @@ public sealed class Combat
         if (CastRules.IsWhole(to)) target.Block = IntRules.Truncate(target.Block).Result;
 
         Emit(new TypeChanged(target.Id, from, to, hpBefore, target.Hp, target.MaxHp, target.Block, hp.Wrapped));
+        Moment(CodexCatalog.Casting, ("target", target.Key), ("from", Kind(from)), ("to", Kind(to)), ("before", hpBefore), ("after", target.Hp));
 
         if (target.IsDead) Emit(new CombatantDied(target.Id));
     }
@@ -526,6 +551,7 @@ public sealed class Combat
         string added = TypedValue.OfCard(amount, amount % 1 == 0 ? ValueKind.Int : ValueKind.Double).Plus(TypedValue.String("")).Text;
         target.Text = before + added;
         Emit(new TextAppended(target.Id, before, added, target.Text));
+        Moment(CodexCatalog.StringConcat, ("expression", $"\"{before}\" + {added}"), ("value", $"\"{target.Text}\""));
     }
 
     /// <summary>
@@ -543,11 +569,13 @@ public sealed class Combat
         catch (Exception e) when (e is FormatException or OverflowException)
         {
             Emit(new ExceptionThrown(e.GetType().Name, $"int.Parse(\"{text}\")"));
+            Moment(CodexCatalog.Exceptions, ("exception", e.GetType().Name), ("expression", $"int.Parse(\"{text}\")"));
             return false;
         }
 
         BecomeNumber(target, value, ValueKind.Int);
         Emit(new TextParsed(target.Id, "int.Parse", text, value, ValueKind.Int));
+        Moment(CodexCatalog.Parse, ("text", $"int.Parse(\"{text}\")"), ("value", value));
         return true;
     }
 
@@ -577,11 +605,13 @@ public sealed class Combat
                 double parsed = CastRules.ConvertText(text, to);
                 BecomeNumber(target, parsed, to);
                 Emit(new TextParsed(target.Id, $"Convert.To{(to == ValueKind.Byte ? "Byte" : to.ToString())}", text, parsed, to));
+                Moment(CodexCatalog.Convert, ("expression", $"Convert.ToByte(\"{text}\")"), ("value", parsed));
                 if (target.IsDead) Emit(new CombatantDied(target.Id));
             }
             catch (Exception e) when (e is FormatException or OverflowException)
             {
                 Emit(new ConversionCrashed(target.Id, to, 0));
+                Moment(CodexCatalog.Exceptions, ("exception", e.GetType().Name), ("expression", $"Convert.ToByte(\"{text}\")"));
                 if (target.IsEnemy) _enemyCrashed = true;
             }
             return;
@@ -590,11 +620,13 @@ public sealed class Combat
         if (CastRules.ConvertChecked(hpBefore, to) is not { } hp)
         {
             Emit(new ConversionCrashed(target.Id, to, hpBefore));
+            Moment(CodexCatalog.Exceptions, ("exception", "OverflowException"), ("expression", $"Convert.ToByte({Num(hpBefore)})"));
             if (target.IsEnemy) _enemyCrashed = true;
             return;
         }
 
         if (hp != hpBefore) Emit(new ValueRounded(target.Id, hpBefore, hp, ValueSubject.Hp));
+        Moment(CodexCatalog.Convert, ("expression", $"Convert.ToByte({Num(hpBefore)})"), ("value", hp));
         target.Kind = to;
         target.Hp = hp;
         if (CastRules.IsWhole(to)) target.Block = Math.Round(target.Block);
@@ -639,6 +671,20 @@ public sealed class Combat
     };
 
     private void Emit(GameEvent e) => _events.Add(e with { Seq = ++_seq });
+
+    /// <summary>Onthoudt het eerste moment per Codex-pagina in dit gevecht, met de getallen erbij.</summary>
+    private void Moment(string key, params (string Name, object Value)[] values)
+    {
+        if (_moments.ContainsKey(key)) return;
+        _moments[key] = new CodexMoment(key, values.ToDictionary(v => v.Name, v => v.Value switch
+        {
+            double d => Num(d),
+            int i => i.ToString(CultureInfo.InvariantCulture),
+            _ => v.Value.ToString() ?? ""
+        }));
+    }
+
+    private static string Kind(ValueKind kind) => kind.ToString().ToLowerInvariant();
 
     private static string Num(double value) => value.ToString(CultureInfo.InvariantCulture);
 
