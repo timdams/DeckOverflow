@@ -120,6 +120,17 @@ public sealed class Run
 
     public static Run Start(ulong seed, RunSetup? setup = null) => new(seed, setup ?? new RunSetup());
 
+    /// <summary>
+    /// Een opgenomen run opnieuw afspelen. De motor is deterministisch, dus dezelfde seed, setup
+    /// en commands geven exact dezelfde run. Zo controleren we een score zonder de speler te vertrouwen.
+    /// </summary>
+    public static Run Replay(ulong seed, IEnumerable<ICommand> commands, RunSetup? setup = null)
+    {
+        var run = Start(seed, setup);
+        foreach (var command in commands) run.Handle(command);
+        return run;
+    }
+
     /// <summary>Het lopende gevecht, voor de stage. Leeg buiten een gevecht.</summary>
     public CombatSnapshot? CombatSnapshot() => Phase == RunPhase.Combat ? _combat?.Snapshot() : null;
 

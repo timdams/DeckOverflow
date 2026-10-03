@@ -1,5 +1,28 @@
+using System.Text.Json.Serialization;
+
 namespace DeckOverflow.Engine.Commands;
 
+/// <summary>
+/// Wat de speler doet. Serialiseerbaar zoals <see cref="Events.GameEvent"/>, zodat een run
+/// bestaat uit een seed en een commandolijst die je opnieuw kan afspelen (scores controleren).
+/// Een nieuw command komt ook hier in de lijst.
+/// </summary>
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
+[JsonDerivedType(typeof(PlayCard), nameof(PlayCard))]
+[JsonDerivedType(typeof(EndTurn), nameof(EndTurn))]
+[JsonDerivedType(typeof(DebugWin), nameof(DebugWin))]
+[JsonDerivedType(typeof(ChooseNode), nameof(ChooseNode))]
+[JsonDerivedType(typeof(TakeRewardCard), nameof(TakeRewardCard))]
+[JsonDerivedType(typeof(SkipReward), nameof(SkipReward))]
+[JsonDerivedType(typeof(ChooseRelic), nameof(ChooseRelic))]
+[JsonDerivedType(typeof(RestHeal), nameof(RestHeal))]
+[JsonDerivedType(typeof(RestUpgrade), nameof(RestUpgrade))]
+[JsonDerivedType(typeof(ChooseEventOption), nameof(ChooseEventOption))]
+[JsonDerivedType(typeof(BuyCard), nameof(BuyCard))]
+[JsonDerivedType(typeof(BuyRelic), nameof(BuyRelic))]
+[JsonDerivedType(typeof(BuyRemoval), nameof(BuyRemoval))]
+[JsonDerivedType(typeof(OpenChest), nameof(OpenChest))]
+[JsonDerivedType(typeof(Leave), nameof(Leave))]
 public interface ICommand;
 
 // Gevecht

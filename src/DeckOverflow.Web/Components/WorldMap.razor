@@ -15,7 +15,7 @@
     <div class="world-floor">
         @foreach (var d in Departments.All)
         {
-            bool open = Departments.IsOpen(d, CardHallCleared);
+            bool open = Departments.IsOpen(d, Unlocks);
             double progress = Progress(d);
             bool loose = open && Parts(d).Any() && progress < 0.5;
             <button class="department @(open ? "open" : "boxed") @(d.Key == _selected?.Key ? "selected" : "")"
@@ -42,7 +42,7 @@
 
     @if (_selected is { } sel)
     {
-        bool open = Departments.IsOpen(sel, CardHallCleared);
+        bool open = Departments.IsOpen(sel, Unlocks);
         <aside class="dept-panel">
             <h2>@S.T($"ui.world.{sel.Key}.name")</h2>
             <p>@(open ? S.T($"ui.world.{sel.Key}.text") : S.T("ui.world.locked"))</p>
@@ -89,7 +89,7 @@
 </div>
 
 @code {
-    [Parameter] public bool CardHallCleared { get; set; }
+    [Parameter, EditorRequired] public IReadOnlyDictionary<string, Unlock> Unlocks { get; set; } = default!;
     [Parameter, EditorRequired] public IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> Pages { get; set; } = default!;
     [Parameter] public int ReachedAct { get; set; } = 1;
     [Parameter] public int PanelCount { get; set; }

@@ -12,9 +12,9 @@
 
     @if (_run is null || _snap is null)
     {
-        @if (_revealed)
+        @if (Revealed)
         {
-            <WorldMap CardHallCleared="_cardHallCleared" Pages="_codex" ReachedAct="_reachedAct" PanelCount="_xpanels.Count"
+            <WorldMap Unlocks="_progress.Unlocks" Pages="_progress.Codex" ReachedAct="_progress.ReachedAct" PanelCount="_progress.XPanels.Count"
                       Starting="_starting" OnStart="StartAsync" OnCodex="() => OpenCodex(null)" OnXRegister="() => _showXRegister = true" />
         }
         else
@@ -28,22 +28,22 @@
                 <div class="title-actions">
                     <button class="play-big" disabled="@(_starting || !S.Loaded)" @onclick="() => StartAsync(1)">@(_starting || !S.Loaded ? "..." : S.T("ui.play"))</button>
                     @* Startpunten: elke act die je ooit bereikte *@
-                    @for (int act = 2; act <= _reachedAct; act++)
+                    @for (int act = 2; act <= _progress.ReachedAct; act++)
                     {
                         int start = act;
                         <button class="title-button" disabled="@(_starting || !S.Loaded)" @onclick="() => StartAsync(start)">@S.T("ui.start-at", ("act", start))</button>
                     }
                 </div>
-                @if (_codex.Count > 0 || _xpanels.Count > 0)
+                @if (_progress.Codex.Count > 0 || _progress.XPanels.Count > 0)
                 {
                     <div class="title-links">
-                        @if (_codex.Count > 0)
+                        @if (_progress.Codex.Count > 0)
                         {
-                            <button class="title-button" @onclick="() => OpenCodex(null)">@S.T("ui.codex") · @_codex.Count</button>
+                            <button class="title-button" @onclick="() => OpenCodex(null)">@S.T("ui.codex") · @_progress.Codex.Count</button>
                         }
-                        @if (_xpanels.Count > 0)
+                        @if (_progress.XPanels.Count > 0)
                         {
-                            <button class="title-button" @onclick="() => _showXRegister = true">@S.T("ui.xregister") · @_xpanels.Count</button>
+                            <button class="title-button" @onclick="() => _showXRegister = true">@S.T("ui.xregister") · @_progress.XPanels.Count</button>
                         }
                     </div>
                 }
@@ -70,11 +70,11 @@
         }
         @if (_showXRegister)
         {
-            <XRegisterBook Earned="_xpanels" OnClose="() => _showXRegister = false" />
+            <XRegisterBook Earned="_progress.XPanels" OnClose="() => _showXRegister = false" />
         }
         @if (_showCodex)
         {
-            <CodexBook Pages="_codex" Read="_codexRead" OnRead="TurnCodexPageAsync" Focus="_codexFocus" OnClose="() => _showCodex = false" />
+            <CodexBook Pages="_progress.Codex" Read="_progress.CodexRead" OnRead="TurnCodexPageAsync" Focus="_codexFocus" OnClose="() => _showCodex = false" />
         }
     }
     else
@@ -117,7 +117,7 @@
                                     <span>@S.T("ui.act", ("act", s.Act), ("name", S.T($"act.{s.ActKey}")))</span>
                                 </div>
                                 <MapBoard Map="s.Map" OnChoose="ChooseNodeAsync" />
-                                @if (!_revealed)
+                                @if (!Revealed)
                                 {
                                     @* Teases: een paginanummer zoals in een handleiding, en een gestippelde deur met een 5 *@
                                     <span class="page-number">@S.T("ui.tease.page", ("chapter", s.Act + 1))</span>
@@ -306,7 +306,7 @@
                                 {
                                     <p>@S.T("ui.end.lost.text", ("floor", end.Floor), ("rows", s.Map.Rows), ("enemy", end.EnemyKey ?? ""), ("enemyHp", Num(end.EnemyHp)), ("enemyMax", Num(end.EnemyMaxHp)))</p>
                                     <div class="near-miss"><div style="width:@(Percent(end.EnemyHp, end.EnemyMaxHp))%"></div></div>
-                                    @if (!_revealed && s.Seed % 2 == 0)
+                                    @if (!Revealed && s.Seed % 2 == 0)
                                     {
                                         <p class="tease">@S.T("ui.tease.rattle")</p>
                                     }
@@ -316,7 +316,7 @@
                                 <div class="buttons">
                                     <button @onclick="() => NewRunAsync(NewSeed())">@S.T("ui.new-run")</button>
                                     <button class="secondary" @onclick="() => NewRunAsync(s.Seed)">@S.T("ui.same-seed")</button>
-                                    @if (_revealed)
+                                    @if (Revealed)
                                     {
                                         <button class="secondary" @onclick="BackToFloor">@S.T("ui.world.back")</button>
                                     }
@@ -350,12 +350,12 @@
 
         @if (_showXRegister)
         {
-            <XRegisterBook Earned="_xpanels" OnClose="() => _showXRegister = false" />
+            <XRegisterBook Earned="_progress.XPanels" OnClose="() => _showXRegister = false" />
         }
 
         @if (_showCodex)
         {
-            <CodexBook Pages="_codex" Read="_codexRead" OnRead="TurnCodexPageAsync" Focus="_codexFocus" OnClose="() => _showCodex = false" />
+            <CodexBook Pages="_progress.Codex" Read="_progress.CodexRead" OnRead="TurnCodexPageAsync" Focus="_codexFocus" OnClose="() => _showCodex = false" />
         }
 
         @if (_picker is { } picker)

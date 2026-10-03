@@ -1,3 +1,5 @@
+using DeckOverflow.Web.Progress;
+
 namespace DeckOverflow.Web.World;
 
 /// <summary>
@@ -28,13 +30,9 @@ public static class Departments
     ];
 
     /// <summary>
-    /// Een afdeling staat open als de vorige uitgespeeld is: de Card Hall altijd, de Controlekamer zodra de
-    /// laatste baas van de Card Hall viel. Wie de onthulling via het vangnet kreeg, ziet de Controlekamer nog dicht.
+    /// De Card Hall staat altijd open; een andere afdeling zodra ze ontgrendeld is. De Controlekamer gaat
+    /// open als de laatste baas van de Card Hall valt. Wie de onthulling via het vangnet kreeg, ziet ze nog dicht.
     /// </summary>
-    public static bool IsOpen(Department d, bool cardHallCleared) => d.Key switch
-    {
-        CardHall => true,
-        ControlRoom => cardHallCleared,
-        _ => false
-    };
+    public static bool IsOpen(Department d, IReadOnlyDictionary<string, Unlock> unlocks) =>
+        d.Key == CardHall || unlocks.ContainsKey(d.Key);
 }

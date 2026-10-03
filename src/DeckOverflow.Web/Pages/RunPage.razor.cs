@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.Globalization;
-using System.Text.Json;
 using DeckOverflow.Engine.Cards;
 using DeckOverflow.Engine.Combat;
 using DeckOverflow.Engine.Commands;
@@ -9,6 +8,8 @@ using DeckOverflow.Engine.Maps;
 using DeckOverflow.Engine.Runs;
 using DeckOverflow.Engine.Text;
 using Microsoft.AspNetCore.Components;
+using DeckOverflow.Web.Progress;
+using DeckOverflow.Web.World;
 using Microsoft.JSInterop;
 
 namespace DeckOverflow.Web.Pages;
@@ -31,26 +32,7 @@ public partial class RunPage
     public string? WorldQuery { get; set; }
 
     [Inject] private HttpClient Http { get; set; } = default!;
-
-    /// <summary>Waar de startpunten in de browser staan: de hoogste act die je ooit bereikte.</summary>
-    private const string ReachedActKey = "deckoverflow.reached-act";
-
-    /// <summary>Open Codex-pagina's, over runs heen: per pagina de getallen van het eerste moment.</summary>
-    private const string CodexKey = "deckoverflow.codex";
-
-    /// <summary>Hoe ver elke Codex-pagina gelezen is, over runs heen.</summary>
-    private const string CodexReadKey = "deckoverflow.codex-read";
-
-    /// <summary>Verdiende ✗-panelen, over runs heen.</summary>
-    private const string XPanelsKey = "deckoverflow.xpanels";
-
-    /// <summary>De intro is al eens getoond.</summary>
-    private const string IntroKey = "deckoverflow.intro-seen";
-
-    /// <summary>De onthulling gebeurde: de plattegrond vervangt het titelscherm.</summary>
-    private const string RevealedKey = "deckoverflow.revealed";
-    private const string CardHallClearedKey = "deckoverflow.card-hall-cleared";
-    private const string RunsKey = "deckoverflow.runs";
+    [Inject] private IProgressStore Store { get; set; } = default!;
 
     /// <summary>Het vangnet: na zoveel gestarte runs barst de muur vanzelf.</summary>
     private const int CrackAfterRuns = 5;
@@ -64,27 +46,24 @@ public partial class RunPage
     private bool _busy;
     private bool _showDeck;
     private int _startAct = 1;
-    private int _reachedAct = 1;
 
-    private Dictionary<string, IReadOnlyDictionary<string, string>> _codex = [];
+    /// <summary>Alles wat over runs heen blijft: Codex, panelen, ontgrendelde afdelingen, de onthulling.</summary>
+    private PlayerProgress _progress = new();
     /// <summary>Pagina's die na het laatste gevecht opengingen, voor de melding op het volgende scherm.</summary>
     private readonly List<string> _newPages = [];
     private bool _showCodex;
     private string? _codexFocus;
-    private Dictionary<string, int> _codexRead = [];
-    private readonly HashSet<string> _xpanels = [];
     private bool _showXRegister;
-    private bool _introSeen;
     private bool _showIntro;
     /// <summary>Een act die net begon: de actkaart staat open tot je verdergaat.</summary>
     private int? _actCard;
-    private bool _revealed;
-    private bool _cardHallCleared;
-    private int _runsStarted;
     private bool _showReveal;
     private string _revealReason = "won";
 
-    private bool CrackVisible => !_revealed && _runsStarted >= CrackAfterRuns;
+    /// <summary>De onthulling gebeurde: de plattegrond vervangt het titelscherm.</summary>
+    private bool Revealed => WorldQuery is not null || _progress.Revealed;
+
+    private bool CrackVisible => !Revealed && _progress.RunsStarted >= CrackAfterRuns;
 
     /// <summary>Een verdiend paneel dat net opsprong.</summary>
     private sealed record PanelPopup(int Id, string Key);
@@ -116,26 +95,8 @@ public partial class RunPage
         // Meetpunt "laadtijd tot speelbaar": de Speel-knop staat op het scherm
         _loadMs = await JS.InvokeAsync<double>("deckOverflow.now");
 
-        string? reached = await JS.InvokeAsync<string?>("deckOverflow.load", ReachedActKey);
-        if (int.TryParse(reached, out int act) && act > 1) _reachedAct = Math.Min(act, Acts.All[^1].Number);
-
-        string? codex = await JS.InvokeAsync<string?>("deckOverflow.load", CodexKey);
-        if (!string.IsNullOrEmpty(codex))
-        {
-            try
-            {
-                var saved = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(codex) ?? [];
-                _codex = saved.ToDictionary(p => p.Key, p => (IReadOnlyDictionary<string, string>)p.Value);
-            }
-            catch (JsonException) { /* kapotte opslag: gewoon met een lege Codex verder */ }
-        }
-
-        _introSeen = await JS.InvokeAsync<string?>("deckOverflow.load", IntroKey) is not null;
-        _revealed = WorldQuery is not null || await JS.InvokeAsync<string?>("deckOverflow.load", RevealedKey) is not null;
-        _cardHallCleared = await JS.InvokeAsync<string?>("deckOverflow.load", CardHallClearedKey) is not null;
-        _runsStarted = int.TryParse(await JS.InvokeAsync<string?>("deckOverflow.load", RunsKey), out int runs) ? runs : 0;
-        _codexRead = await LoadJsonAsync<Dictionary<string, int>>(CodexReadKey) ?? [];
-        foreach (string panel in await LoadJsonAsync<List<string>>(XPanelsKey) ?? []) _xpanels.Add(panel);
+        _progress = await Store.LoadAsync();
+        _progress.ReachedAct = Math.Clamp(_progress.ReachedAct, 1, Acts.All[^1].Number);
         StateHasChanged();
     }
 
@@ -144,7 +105,7 @@ public partial class RunPage
     {
         _startAct = startAct;
         // De allereerste keer: eerst de intro, dan pas de run
-        if (!_introSeen && FightQuery is null)
+        if (!_progress.IntroSeen && FightQuery is null)
         {
             _showIntro = true;
             return;
@@ -160,9 +121,9 @@ public partial class RunPage
 
     private async Task FinishIntroAsync()
     {
-        _introSeen = true;
+        _progress.IntroSeen = true;
         _showIntro = false;
-        await JS.InvokeVoidAsync("deckOverflow.save", IntroKey, "1");
+        await Store.SaveAsync(_progress);
         await StartAsync(_startAct);
     }
 
@@ -175,8 +136,8 @@ public partial class RunPage
         _snap = _run.Snapshot();
         if (FightQuery is null)
         {
-            _runsStarted++;
-            await JS.InvokeVoidAsync("deckOverflow.save", RunsKey, _runsStarted.ToString(CultureInfo.InvariantCulture));
+            _progress.RunsStarted++;
+            await Store.SaveAsync(_progress);
         }
         // Elke run begint met de kaart van zijn act, behalve op de testroute ?fight=
         _actCard = FightQuery is null ? _run.Act.Number : null;
@@ -306,12 +267,11 @@ public partial class RunPage
     private async Task RememberRunEndAsync(IEnumerable<GameEvent> events)
     {
         if (!events.OfType<RunEnded>().Any(e => e.Won)) return;
-        if (!_cardHallCleared)
+        if (_progress.TryUnlock(Departments.ControlRoom, UnlockHow.Boss, DateTimeOffset.UtcNow))
         {
-            _cardHallCleared = true;
-            await JS.InvokeVoidAsync("deckOverflow.save", CardHallClearedKey, "1");
+            await Store.SaveAsync(_progress);
         }
-        if (!_revealed) await RevealAsync("won");
+        if (!_progress.Revealed) await RevealAsync("won");
     }
 
     private void Reveal(string reason) => _ = RevealAsync(reason);
@@ -319,9 +279,9 @@ public partial class RunPage
     private async Task RevealAsync(string reason)
     {
         _revealReason = reason;
-        _revealed = true;
+        _progress.RevealedBy = reason;
         _showReveal = true;
-        await JS.InvokeVoidAsync("deckOverflow.save", RevealedKey, reason);
+        await Store.SaveAsync(_progress);
         StateHasChanged();
     }
 
@@ -340,9 +300,9 @@ public partial class RunPage
         foreach (var started in events.OfType<ActStarted>())
         {
             _actCard = started.Act;
-            if (started.Act <= _reachedAct) continue;
-            _reachedAct = started.Act;
-            await JS.InvokeVoidAsync("deckOverflow.save", ReachedActKey, _reachedAct.ToString(CultureInfo.InvariantCulture));
+            if (started.Act <= _progress.ReachedAct) continue;
+            _progress.ReachedAct = started.Act;
+            await Store.SaveAsync(_progress);
         }
     }
 
@@ -352,20 +312,19 @@ public partial class RunPage
         bool changed = false;
         foreach (var unlocked in events.OfType<CodexUnlocked>())
         {
-            if (_codex.ContainsKey(unlocked.Key)) continue;
-            _codex[unlocked.Key] = unlocked.Values;
+            if (!_progress.Codex.TryAdd(unlocked.Key, unlocked.Values)) continue;
             _newPages.Add(unlocked.Key);
             changed = true;
         }
-        if (changed) await JS.InvokeVoidAsync("deckOverflow.save", CodexKey, JsonSerializer.Serialize(_codex));
+        if (changed) await Store.SaveAsync(_progress);
     }
 
     /// <summary>Een Codex-blad omgeslagen. Wie een pagina tot het einde leest, overtreedt de laatste regel.</summary>
     private async Task TurnCodexPageAsync((string Key, int Layer) turn)
     {
-        if (turn.Layer <= _codexRead.GetValueOrDefault(turn.Key, 1)) return;
-        _codexRead[turn.Key] = turn.Layer;
-        await JS.InvokeVoidAsync("deckOverflow.save", CodexReadKey, JsonSerializer.Serialize(_codexRead));
+        if (turn.Layer <= _progress.CodexRead.GetValueOrDefault(turn.Key, 1)) return;
+        _progress.CodexRead[turn.Key] = turn.Layer;
+        await Store.SaveAsync(_progress);
         if (turn.Layer >= 4) await EarnXPanelAsync(Engine.Achievements.XRegister.ReadTheManual);
     }
 
@@ -377,11 +336,11 @@ public partial class RunPage
 
     private async Task EarnXPanelAsync(string key)
     {
-        if (!_xpanels.Add(key)) return;
+        if (!_progress.XPanels.Add(key)) return;
         var popup = new PanelPopup(++_toastId, key);
         _panelPopups.Add(popup);
         _ = RemovePopupLaterAsync(popup);
-        await JS.InvokeVoidAsync("deckOverflow.save", XPanelsKey, JsonSerializer.Serialize(_xpanels));
+        await Store.SaveAsync(_progress);
     }
 
     private async Task RemovePopupLaterAsync(PanelPopup popup)
@@ -389,14 +348,6 @@ public partial class RunPage
         await Task.Delay(PanelPopupMs);
         _panelPopups.Remove(popup);
         await InvokeAsync(StateHasChanged);
-    }
-
-    private async Task<T?> LoadJsonAsync<T>(string key)
-    {
-        string? json = await JS.InvokeAsync<string?>("deckOverflow.load", key);
-        if (string.IsNullOrEmpty(json)) return default;
-        try { return JsonSerializer.Deserialize<T>(json); }
-        catch (JsonException) { return default; }
     }
 
     private void OpenCodex(string? focus)
