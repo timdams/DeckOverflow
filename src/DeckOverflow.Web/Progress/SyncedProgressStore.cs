@@ -1,6 +1,7 @@
 using System.Text.Json;
 using DeckOverflow.Engine.Codex;
 using DeckOverflow.Web.Backend;
+using DeckOverflow.Web.World;
 
 namespace DeckOverflow.Web.Progress;
 
@@ -38,6 +39,21 @@ public sealed class SyncedProgressStore(LocalProgressStore local, SupabaseClient
         _progress = progress;
         await local.SaveAsync(progress);
         _ = SyncAsync();
+    }
+
+    public Task RefreshAsync()
+    {
+        _pulled = false;
+        _synced.Clear();
+        return SyncAsync();
+    }
+
+    public async Task ForgetAsync()
+    {
+        await local.ForgetAsync();
+        _progress = null;
+        _pulled = false;
+        _synced.Clear();
     }
 
     /// <summary>Eén synchronisatie tegelijk; wie tijdens een lopende bewaart, krijgt er meteen nog een.</summary>
@@ -109,6 +125,19 @@ public sealed class SyncedProgressStore(LocalProgressStore local, SupabaseClient
             _synced.Add(UnlockKey(row.Department));
             if (ParseHow(row.How) is { } how) changed |= progress.TryUnlock(row.Department, how, row.UnlockedAt);
         }
+
+        // Wat de docent van een van je klassen vrijgaf, gaat open. Alleen klassen waar je lid van
+        // bent: een docent ontgrendelt niets voor zichzelf (de database zou dat ook weigeren).
+        var memberships = await supabase.SelectAsync<MembershipRow>("class_members", $"select=classes(released_departments)&user_id=eq.{userId}");
+        foreach (string department in memberships.SelectMany(m => m.Classes?.ReleasedDepartments ?? []))
+        {
+            if (department == Departments.CardHall || !Departments.All.Any(d => d.Key == department)) continue;
+            changed |= progress.TryUnlock(department, UnlockHow.Teacher, DateTimeOffset.UtcNow);
+        }
+
+        // Een fabriek met een open afdeling heeft de onthulling al achter de rug, ook al gebeurde
+        // die op een ander toestel
+        if (changed && !progress.Revealed && progress.Unlocks.Count > 0) progress.RevealedBy = "synced";
         return changed;
     }
 
@@ -168,6 +197,9 @@ public sealed class SyncedProgressStore(LocalProgressStore local, SupabaseClient
         public string? UserId { get; init; }
         public DateTimeOffset? UpdatedAt { get; init; }
     }
+
+    private sealed record MembershipRow(ClassRow? Classes);
+    private sealed record ClassRow(IReadOnlyList<string>? ReleasedDepartments);
 
     private sealed record UnlockRow(string Department, string How, DateTimeOffset UnlockedAt)
     {

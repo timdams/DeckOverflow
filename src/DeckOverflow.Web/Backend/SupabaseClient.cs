@@ -6,6 +6,13 @@ using Microsoft.JSInterop;
 
 namespace DeckOverflow.Web.Backend;
 
+/// <summary>Een fout van Supabase, met de code die Supabase meegeeft (bv. <c>invalid_credentials</c>).</summary>
+public sealed class SupabaseException(HttpStatusCode status, string? errorCode, string message)
+    : HttpRequestException(message, null, status)
+{
+    public string? ErrorCode { get; } = errorCode;
+}
+
 /// <summary>
 /// Dunne client op de REST- en Auth-API van Supabase, met <see cref="HttpClient"/> en zonder
 /// library. De sessie staat in <c>localStorage</c>. Elke fout komt als exception terug; wie
@@ -28,21 +35,81 @@ public sealed class SupabaseClient(HttpClient http, IJSRuntime js, string publis
 
     public string? UserId => _session?.User.Id;
 
+    /// <summary>Een gast: aangemeld zonder adres en wachtwoord. Ook waar zonder sessie.</summary>
+    public bool IsGuest => _session is null || _session.User.IsAnonymous;
+
+    /// <summary>Het auth-adres: een echt e-mailadres of <c>naam@users.deckoverflow.invalid</c>.</summary>
+    public string? Email => _session?.User.Email;
+
     /// <summary>
     /// Zorgt voor een geldige sessie: de bewaarde, vernieuwd als ze bijna verloopt, of anders
     /// een nieuw gastaccount. Nooit een scherm ervoor.
     /// </summary>
     public async Task EnsureSessionAsync()
     {
-        if (!_sessionLoaded)
-        {
-            _session = await LoadSessionAsync();
-            _sessionLoaded = true;
-        }
-
+        await LoadOnceAsync();
         if (_session is not null && _session.ExpiresAt - RefreshMarginSeconds > DateTimeOffset.UtcNow.ToUnixTimeSeconds()) return;
         if (_session is not null && await RefreshAsync()) return;
         await SignInAnonymouslyAsync();
+    }
+
+    /// <summary>
+    /// Inloggen met adres en wachtwoord. Het gastaccount van dit toestel is daarna overbodig: de
+    /// lokale voortgang gaat mee naar je fabriek. We ruimen het op, zo goed als het lukt.
+    /// </summary>
+    public async Task SignInWithPasswordAsync(string email, string password)
+    {
+        await LoadOnceAsync();
+        string? leftoverGuest = _session is { User.IsAnonymous: true } ? _session.AccessToken : null;
+
+        using var response = await http.SendAsync(Request(HttpMethod.Post, "auth/v1/token?grant_type=password",
+            new { email, password }, withSession: false));
+        await ThrowIfFailedAsync(response);
+        await StoreSessionAsync(await response.Content.ReadFromJsonAsync<Session>(Json));
+
+        if (leftoverGuest is null) return;
+        try
+        {
+            var request = Request(HttpMethod.Post, "rest/v1/rpc/delete_my_account", new { }, withSession: false);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", leftoverGuest);
+            using var _ = await http.SendAsync(request);
+        }
+        catch (HttpRequestException) { /* een achtergebleven gast schaadt niemand */ }
+    }
+
+    /// <summary>
+    /// Een gast wordt een account: adres en wachtwoord op de anonieme sessie. De <c>user_id</c>
+    /// blijft, en dus alle voortgang. Daarna een nieuwe sessie, want de oude zegt nog "anoniem".
+    /// </summary>
+    public async Task ConvertGuestAsync(string email, string password)
+    {
+        await EnsureSessionAsync();
+        using var response = await http.SendAsync(Request(HttpMethod.Put, "auth/v1/user", new { email, password }));
+        await ThrowIfFailedAsync(response);
+        if (!await RefreshAsync()) throw new SupabaseException(HttpStatusCode.Unauthorized, "session_lost", "Sessie kwijt na het omzetten.");
+    }
+
+    /// <summary>Afmelden en de sessie vergeten. Lukt het afmelden bij Supabase niet, dan vergeten we ze toch.</summary>
+    public async Task SignOutAsync()
+    {
+        await LoadOnceAsync();
+        if (_session is not null)
+        {
+            try
+            {
+                using var response = await http.SendAsync(Request(HttpMethod.Post, "auth/v1/logout"));
+            }
+            catch (HttpRequestException) { /* zonder netwerk: lokaal vergeten volstaat */ }
+        }
+        await ForgetSessionAsync();
+    }
+
+    /// <summary>Vergeet de sessie op dit toestel, zonder Supabase te vragen (na het verwijderen van het account).</summary>
+    public async Task ForgetSessionAsync()
+    {
+        _session = null;
+        _sessionLoaded = true;
+        await js.InvokeVoidAsync("deckOverflow.save", SessionKey, "");
     }
 
     /// <summary>Rijen lezen, bv. <c>SelectAsync&lt;Row&gt;("progress", "select=item,state&amp;user_id=eq.…")</c>.</summary>
@@ -63,6 +130,20 @@ public sealed class SupabaseClient(HttpClient http, IJSRuntime js, string publis
         var request = Request(HttpMethod.Post, $"rest/v1/{table}", rows);
         request.Headers.Add("Prefer", $"resolution={(ignoreDuplicates ? "ignore" : "merge")}-duplicates,return=minimal");
         using var response = await http.SendAsync(request);
+        await ThrowIfFailedAsync(response);
+    }
+
+    /// <summary>Een databasefunctie aanroepen, bv. <c>join_class</c>.</summary>
+    public async Task<T?> RpcAsync<T>(string function, object args)
+    {
+        using var response = await http.SendAsync(Request(HttpMethod.Post, $"rest/v1/rpc/{function}", args));
+        await ThrowIfFailedAsync(response);
+        return await response.Content.ReadFromJsonAsync<T>(Json);
+    }
+
+    public async Task RpcAsync(string function, object args)
+    {
+        using var response = await http.SendAsync(Request(HttpMethod.Post, $"rest/v1/rpc/{function}", args));
         await ThrowIfFailedAsync(response);
     }
 
@@ -101,16 +182,34 @@ public sealed class SupabaseClient(HttpClient http, IJSRuntime js, string publis
         return request;
     }
 
+    /// <summary>Auth geeft <c>error_code</c> en <c>msg</c>, de REST-API <c>code</c> en <c>message</c>.</summary>
     private static async Task ThrowIfFailedAsync(HttpResponseMessage response)
     {
         if (response.IsSuccessStatusCode) return;
         string detail = await response.Content.ReadAsStringAsync();
-        throw new HttpRequestException($"Supabase {(int)response.StatusCode}: {detail}", null, response.StatusCode);
+        string? code = null;
+        try
+        {
+            using var doc = JsonDocument.Parse(detail);
+            var root = doc.RootElement;
+            if (root.TryGetProperty("error_code", out var e) && e.ValueKind == JsonValueKind.String) code = e.GetString();
+            else if (root.TryGetProperty("code", out var c) && c.ValueKind == JsonValueKind.String) code = c.GetString();
+        }
+        catch (JsonException) { }
+        throw new SupabaseException(response.StatusCode, code, $"Supabase {(int)response.StatusCode}: {detail}");
+    }
+
+    private async Task LoadOnceAsync()
+    {
+        if (_sessionLoaded) return;
+        _session = await LoadSessionAsync();
+        _sessionLoaded = true;
     }
 
     private async Task StoreSessionAsync(Session? session)
     {
         _session = session ?? throw new HttpRequestException("Supabase gaf geen sessie terug.");
+        _sessionLoaded = true;
         await js.InvokeVoidAsync("deckOverflow.save", SessionKey, JsonSerializer.Serialize(session, Json));
     }
 
@@ -124,5 +223,5 @@ public sealed class SupabaseClient(HttpClient http, IJSRuntime js, string publis
 
     private sealed record Session(string AccessToken, string RefreshToken, long ExpiresAt, SessionUser User);
 
-    private sealed record SessionUser(string Id, bool IsAnonymous);
+    private sealed record SessionUser(string Id, bool IsAnonymous, string? Email);
 }

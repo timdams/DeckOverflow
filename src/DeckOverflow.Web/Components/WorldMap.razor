@@ -85,6 +85,10 @@
         <button class="title-button" @onclick="OnCodex">@S.T("ui.codex") · @Pages.Count</button>
         <button class="title-button" disabled title="@S.T("ui.world.soon")">@S.T("ui.world.punch-clock")</button>
         <button class="title-button" @onclick="OnXRegister">@S.T("ui.xregister") · @PanelCount</button>
+        @if (OnAccount.HasDelegate)
+        {
+            <button class="title-button" @onclick="OnAccount">@S.T("ui.account.open")</button>
+        }
     </nav>
 </div>
 
@@ -97,6 +101,9 @@
     [Parameter] public EventCallback<int> OnStart { get; set; }
     [Parameter] public EventCallback OnCodex { get; set; }
     [Parameter] public EventCallback OnXRegister { get; set; }
+
+    /// <summary>Je fabriek bewaren of inloggen. Zonder Supabase geen knop.</summary>
+    [Parameter] public EventCallback OnAccount { get; set; }
 
     private Department? _selected = Departments.All[0];
 

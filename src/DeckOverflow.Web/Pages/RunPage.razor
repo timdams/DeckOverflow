@@ -15,7 +15,8 @@
         @if (Revealed)
         {
             <WorldMap Unlocks="_progress.Unlocks" Pages="_progress.Codex" ReachedAct="_progress.ReachedAct" PanelCount="_progress.XPanels.Count"
-                      Starting="_starting" OnStart="StartAsync" OnCodex="() => OpenCodex(null)" OnXRegister="() => _showXRegister = true" />
+                      Starting="_starting" OnStart="StartAsync" OnCodex="() => OpenCodex(null)" OnXRegister="() => _showXRegister = true"
+                      OnAccount="@(Account is null ? default : EventCallback.Factory.Create(this, () => _showAccount = true))" />
         }
         else
         {
@@ -34,7 +35,7 @@
                         <button class="title-button" disabled="@(_starting || !S.Loaded)" @onclick="() => StartAsync(start)">@S.T("ui.start-at", ("act", start))</button>
                     }
                 </div>
-                @if (_progress.Codex.Count > 0 || _progress.XPanels.Count > 0)
+                @if (_progress.Codex.Count > 0 || _progress.XPanels.Count > 0 || Account is not null)
                 {
                     <div class="title-links">
                         @if (_progress.Codex.Count > 0)
@@ -44,6 +45,11 @@
                         @if (_progress.XPanels.Count > 0)
                         {
                             <button class="title-button" @onclick="() => _showXRegister = true">@S.T("ui.xregister") · @_progress.XPanels.Count</button>
+                        }
+                        @if (Account is not null)
+                        {
+                            @* Voor wie op een tweede toestel zijn fabriek komt halen *@
+                            <button class="title-button" @onclick="() => _showAccount = true">@S.T("ui.account.open")</button>
                         }
                     </div>
                 }
@@ -374,9 +380,20 @@
                 <span class="act-kicker">@S.T("ui.reveal.kicker")</span>
                 <h2>@S.T("ui.reveal.title")</h2>
                 <p>@S.T(_revealReason == "won" ? "ui.reveal.won" : "ui.reveal.crack")</p>
-                <button class="play-big" @onclick="BackToFloor">@S.T("ui.reveal.go")</button>
+                <div class="reveal-actions">
+                    @if (Account is { IsGuest: true })
+                    {
+                        <button class="secondary" @onclick="KeepFactoryAfterReveal">@S.T("ui.account.reveal")</button>
+                    }
+                    <button class="play-big" @onclick="BackToFloor">@S.T("ui.reveal.go")</button>
+                </div>
             </div>
         </div>
+    }
+
+    @if (_showAccount && Account is { } account)
+    {
+        <AccountPanel Account="account" OnClose="() => _showAccount = false" OnSignedOut="SignedOut" />
     }
 
     @* Een verdiend ✗-paneel springt vanaf de onderkant op, in een eigen kader; een klik opent het register *@

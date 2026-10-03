@@ -113,6 +113,15 @@ Een gastaccount omzetten ("Bewaar je fabriek"): `PUT /auth/v1/user` met adres en
 - Account verwijderen met één knop.
 - Alle teksten in `en.json`.
 
+**Gedaan op 3 oktober 2026, behalve de Prikklok** (die wacht op een score in de motor, zie [todo.md](todo.md)). Eén paneel "Your factory" (`Components/AccountPanel.razor`, logica in `Backend/Account.cs`), te openen vanaf het titelscherm, de plattegrond en de onthulling.
+
+- **Bewaren** verschijnt bij de onthulling, als knop naast "Look around", en blijft daarna op de plattegrond staan. Niet na het eerste gewonnen gevecht: dan is er nog weinig te verliezen, en het zou de eerste minuten onderbreken.
+- **Inloggen** op een ander toestel: wat je daar als gast deed, gaat mee naar je fabriek, en dat gastaccount wordt opgeruimd.
+- **Afmelden** vergeet alles op dit toestel. Zo erft wie na jou op een gedeelde schoolcomputer speelt, niets.
+- **Klassen:** een code invoeren kan als gast; een klas maken alleen met een account. De eigenaar ziet de code en het aantal spelers, en geeft afdelingen vrij. Een leerling krijgt een vrijgegeven afdeling bij de volgende synchronisatie, en daarmee ook de plattegrond.
+- **Verwijderen** in twee klikken, zonder browserdialoog.
+- In de browser getest tegen het project: bewaren als `testdocent`, een klas maken en de Controlekamer vrijgeven, afmelden, als nieuwe gast aansluiten met de code in kleine letters (Controlekamer open, plattegrond zichtbaar), verwijderen, inloggen met een fout en een juist wachtwoord, en een gast die na het inloggen opgeruimd wordt.
+
 ## Stap 7: scores controleren
 
 - Consoleproject `tools/DeckOverflow.ScoreCheck`: haalt scores met `verified = pending`, speelt ze opnieuw af met de motor, zet `ok` of `rejected`.

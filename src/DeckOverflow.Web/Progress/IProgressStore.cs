@@ -16,4 +16,13 @@ public interface IProgressStore
     /// teruggaf. Tijd om opnieuw te tekenen.
     /// </summary>
     event Action? Changed;
+
+    /// <summary>Voortgang van elders opnieuw ophalen: na inloggen of aansluiten bij een klas.</summary>
+    Task RefreshAsync();
+
+    /// <summary>
+    /// Alles op dit toestel vergeten: na afmelden of het verwijderen van het account. Zo erft
+    /// wie na jou op een gedeelde schoolcomputer speelt, niets van jouw fabriek.
+    /// </summary>
+    Task ForgetAsync();
 }

@@ -8,6 +8,7 @@ using DeckOverflow.Engine.Maps;
 using DeckOverflow.Engine.Runs;
 using DeckOverflow.Engine.Text;
 using Microsoft.AspNetCore.Components;
+using DeckOverflow.Web.Backend;
 using DeckOverflow.Web.Progress;
 using DeckOverflow.Web.World;
 using Microsoft.JSInterop;
@@ -33,6 +34,11 @@ public partial class RunPage
 
     [Inject] private HttpClient Http { get; set; } = default!;
     [Inject] private IProgressStore Store { get; set; } = default!;
+    [Inject] private IServiceProvider Services { get; set; } = default!;
+
+    /// <summary>Accounts en klassen, alleen als Supabase ingesteld is.</summary>
+    private Account? Account => Services.GetService<Account>();
+    private bool _showAccount;
 
     /// <summary>Het vangnet: na zoveel gestarte runs barst de muur vanzelf.</summary>
     private const int CrackAfterRuns = 5;
@@ -285,6 +291,16 @@ public partial class RunPage
         await Store.SaveAsync(_progress);
         StateHasChanged();
     }
+
+    /// <summary>Na de onthulling meteen je fabriek bewaren.</summary>
+    private void KeepFactoryAfterReveal()
+    {
+        BackToFloor();
+        _showAccount = true;
+    }
+
+    /// <summary>Afgemeld of account verwijderd: helemaal opnieuw beginnen, als een nieuwe gast.</summary>
+    private void SignedOut() => Nav.NavigateTo(Nav.BaseUri, forceLoad: true);
 
     /// <summary>Terug naar de plattegrond: de run is voorbij of de onthulling is gezien.</summary>
     private void BackToFloor()

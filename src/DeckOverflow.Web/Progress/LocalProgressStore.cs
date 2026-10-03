@@ -32,6 +32,11 @@ public sealed class LocalProgressStore(IJSRuntime js) : IProgressStore
     public async Task SaveAsync(PlayerProgress progress) =>
         await js.InvokeVoidAsync("deckOverflow.save", Key, JsonSerializer.Serialize(progress));
 
+    public Task RefreshAsync() => Task.CompletedTask;
+
+    /// <summary>Een lege voortgang bewaren, niet de sleutel wissen: anders komen de oude sleutels terug via de migratie.</summary>
+    public Task ForgetAsync() => SaveAsync(new PlayerProgress());
+
     /// <summary>
     /// Voor 3 oktober 2026 stond elk stuk voortgang onder een eigen sleutel. Wie toen al speelde,
     /// houdt zijn Codex, panelen en onthulling. De oude sleutels blijven staan maar worden niet meer gelezen.

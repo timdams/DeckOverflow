@@ -1,0 +1,195 @@
+@using DeckOverflow.Web.Backend
+@using DeckOverflow.Web.World
+@inject Strings S
+
+@* Je fabriek: bewaren of inloggen, je klassen, en alles weer verwijderen. Geen poort: het spel
+   werkt zonder, en niets hier is nodig om te spelen. *@
+<div class="modal" @onclick="OnClose">
+    <div class="modal-body story-card account" @onclick:stopPropagation="true">
+        <h2>@S.T("ui.account.title")</h2>
+
+        @if (Account.IsGuest)
+        {
+            <div class="account-tabs">
+                <button class="@(_mode == Mode.Keep ? "" : "secondary") small" @onclick="() => Switch(Mode.Keep)">@S.T("ui.account.keep")</button>
+                <button class="@(_mode == Mode.LogIn ? "" : "secondary") small" @onclick="() => Switch(Mode.LogIn)">@S.T("ui.account.login")</button>
+            </div>
+            <p class="hint">@S.T(_mode == Mode.Keep ? "ui.account.keep.text" : "ui.account.login.text")</p>
+            <form class="account-form" @onsubmit="SubmitAsync" @onsubmit:preventDefault="true">
+                <label>
+                    @S.T("ui.account.name")
+                    <input @bind="_login" @bind:event="oninput" autocomplete="username" autocapitalize="off" spellcheck="false" />
+                </label>
+                <label>
+                    @S.T("ui.account.password")
+                    <input type="password" @bind="_password" @bind:event="oninput" autocomplete="@(_mode == Mode.Keep ? "new-password" : "current-password")" />
+                </label>
+                @if (_mode == Mode.Keep && !string.IsNullOrWhiteSpace(_login))
+                {
+                    <p class="hint">@S.T(Account.HasEmail(_login) ? "ui.account.with-email" : "ui.account.without-email")</p>
+                }
+                <button type="submit" disabled="@_busy">@S.T(_mode == Mode.Keep ? "ui.account.keep.go" : "ui.account.login.go")</button>
+            </form>
+        }
+        else
+        {
+            <p>@S.T("ui.account.signed-in", ("name", Account.Login ?? ""))</p>
+        }
+        @if (_nickname is not null)
+        {
+            <p class="hint">@S.T("ui.account.nickname", ("nickname", _nickname))</p>
+        }
+        @if (_error is { } error)
+        {
+            <p class="account-error">@S.T($"ui.account.error.{Key(error)}")</p>
+        }
+
+        <h3>@S.T("ui.account.classes")</h3>
+        @foreach (var c in _classes)
+        {
+            <div class="account-class">
+                <strong>@c.Name</strong>
+                @if (c.Owner)
+                {
+                    <span class="hint">@S.T("ui.account.class.code", ("code", c.Code ?? "")) · @S.T("ui.account.class.players", ("count", c.Players))</span>
+                    <div class="account-release">
+                        @foreach (var d in Departments.All.Where(d => d.Key != Departments.CardHall))
+                        {
+                            bool released = c.Released.Contains(d.Key);
+                            <button class="secondary small" disabled="@(released || _busy)" @onclick="() => ReleaseAsync(c, d.Key)">
+                                @(released ? S.T("ui.account.class.released", ("name", S.T($"ui.world.{d.Key}.name"))) : S.T("ui.account.class.release", ("name", S.T($"ui.world.{d.Key}.name"))))
+                            </button>
+                        }
+                    </div>
+                }
+            </div>
+        }
+        <form class="account-inline" @onsubmit="JoinAsync" @onsubmit:preventDefault="true">
+            <input @bind="_code" @bind:event="oninput" placeholder="@S.T("ui.account.join.placeholder")" maxlength="6" autocapitalize="characters" spellcheck="false" />
+            <button type="submit" class="small" disabled="@_busy">@S.T("ui.account.join")</button>
+        </form>
+        @if (!Account.IsGuest)
+        {
+            <form class="account-inline" @onsubmit="CreateAsync" @onsubmit:preventDefault="true">
+                <input @bind="_className" @bind:event="oninput" placeholder="@S.T("ui.account.create.placeholder")" maxlength="60" />
+                <button type="submit" class="small" disabled="@_busy">@S.T("ui.account.create")</button>
+            </form>
+        }
+
+        <div class="account-footer">
+            @if (!Account.IsGuest)
+            {
+                <button class="secondary small" disabled="@_busy" @onclick="LogOutAsync">@S.T("ui.account.logout")</button>
+            }
+            @if (_confirmDelete)
+            {
+                <button class="small danger" disabled="@_busy" @onclick="DeleteAsync">@S.T("ui.account.delete.confirm")</button>
+                <button class="secondary small" @onclick="() => _confirmDelete = false">@S.T("ui.account.delete.cancel")</button>
+            }
+            else
+            {
+                <button class="secondary small" @onclick="() => _confirmDelete = true">@S.T("ui.account.delete")</button>
+            }
+            <button class="small" @onclick="OnClose">@S.T("ui.account.close")</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public Account Account { get; set; } = default!;
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    /// <summary>Afgemeld of verwijderd: de pagina begint opnieuw, als een nieuwe gast.</summary>
+    [Parameter] public EventCallback OnSignedOut { get; set; }
+
+    private enum Mode { Keep, LogIn }
+
+    private Mode _mode = Mode.Keep;
+    private string _login = "";
+    private string _password = "";
+    private string _code = "";
+    private string _className = "";
+    private string? _nickname;
+    private IReadOnlyList<ClassView> _classes = [];
+    private AccountError? _error;
+    private bool _busy;
+    private bool _confirmDelete;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _nickname = await Account.NicknameAsync();
+        _classes = await Account.ClassesAsync();
+    }
+
+    private void Switch(Mode mode)
+    {
+        _mode = mode;
+        _error = null;
+    }
+
+    private Task SubmitAsync() => BusyAsync(async () =>
+    {
+        _error = Done(_mode == Mode.Keep
+            ? await Account.KeepFactoryAsync(_login, _password)
+            : await Account.LogInAsync(_login, _password));
+        if (_error is null)
+        {
+            _password = "";
+            _nickname = await Account.NicknameAsync();
+            _classes = await Account.ClassesAsync();
+        }
+    });
+
+    private Task JoinAsync() => BusyAsync(async () =>
+    {
+        _error = Done(await Account.JoinClassAsync(_code));
+        if (_error is null)
+        {
+            _code = "";
+            _classes = await Account.ClassesAsync();
+        }
+    });
+
+    private Task CreateAsync() => BusyAsync(async () =>
+    {
+        var (error, _) = await Account.CreateClassAsync(_className);
+        _error = Done(error);
+        if (_error is null)
+        {
+            _className = "";
+            _classes = await Account.ClassesAsync();
+        }
+    });
+
+    private Task ReleaseAsync(ClassView c, string department) => BusyAsync(async () =>
+    {
+        _error = Done(await Account.ReleaseAsync(c.Id, department));
+        if (_error is null) _classes = await Account.ClassesAsync();
+    });
+
+    private Task LogOutAsync() => BusyAsync(async () =>
+    {
+        await Account.LogOutAsync();
+        await OnSignedOut.InvokeAsync();
+    });
+
+    private Task DeleteAsync() => BusyAsync(async () =>
+    {
+        _error = Done(await Account.DeleteAsync());
+        if (_error is null) await OnSignedOut.InvokeAsync();
+    });
+
+    private async Task BusyAsync(Func<Task> action)
+    {
+        if (_busy) return;
+        _busy = true;
+        try { await action(); }
+        finally { _busy = false; }
+    }
+
+    private static AccountError? Done(AccountError error) => error == AccountError.None ? null : error;
+
+    /// <summary><c>WrongLogin</c> wordt <c>wrong-login</c>, zoals de sleutels in en.json.</summary>
+    private static string Key(AccountError error) =>
+        string.Concat(error.ToString().Select((c, i) => i > 0 && char.IsUpper(c) ? $"-{char.ToLowerInvariant(c)}" : char.ToLowerInvariant(c).ToString()));
+}

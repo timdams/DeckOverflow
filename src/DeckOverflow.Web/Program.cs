@@ -25,6 +25,7 @@ if (!string.IsNullOrEmpty(supabaseUrl) && !string.IsNullOrEmpty(supabaseKey))
         sp.GetRequiredService<IJSRuntime>(),
         supabaseKey));
     builder.Services.AddScoped<IProgressStore, SyncedProgressStore>();
+    builder.Services.AddScoped<Account>();
 }
 else
 {

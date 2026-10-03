@@ -944,3 +944,31 @@ a.play-big.as-link { display: inline-block; text-decoration: none; font-size: 18
 @media (max-width: 860px) {
   .world { grid-template-columns: 1fr; }
 }
+
+/* ---------------------------------------------------------------- je fabriek: account en klassen */
+
+.account { gap: 12px; width: min(560px, 92vw); }
+.account h2, .account h3 { margin: 0; }
+.account h3 { margin-top: 8px; font-size: 15px; text-transform: uppercase; letter-spacing: 0.08em; }
+.account p { font-size: 15px; }
+.account .hint { color: var(--muted); font-size: 14px; }
+.account-tabs, .account-footer, .account-release { display: flex; gap: 8px; flex-wrap: wrap; }
+.account-footer { align-self: stretch; justify-content: flex-end; margin-top: 10px; border-top: 2px solid var(--rule); padding-top: 14px; }
+.account-form { display: flex; flex-direction: column; gap: 10px; align-self: stretch; }
+.account-form label { display: flex; flex-direction: column; gap: 4px; font-weight: 700; font-size: 13px; }
+.account-form button { align-self: flex-end; }
+.account input {
+  font: inherit;
+  font-size: 16px;
+  padding: 8px 10px;
+  border: 2.5px solid var(--ink);
+  border-radius: 6px;
+  background: var(--white);
+  min-width: 0;
+}
+.account-inline { display: flex; gap: 8px; align-self: stretch; }
+.account-inline input { flex: 1; }
+.account-class { display: flex; flex-direction: column; gap: 6px; align-self: stretch; padding: 10px 0; border-bottom: 1px dashed var(--rule); }
+.account-error { color: #b3261e; font-weight: 700; }
+.account button.danger { background: #b3261e; color: var(--white); }
+.reveal-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: flex-end; align-self: stretch; padding: 0 28px; }
