@@ -51,6 +51,8 @@
     "label": "actors/label",
     "splitter": "actors/splitter",
     "effective-power": "actors/effective-power",
+    "y2k": "actors/y2k",
+    "stray": "actors/stray",
     "counter": "actors/counter",
     "type-block": "actors/type-block",
     "paper-golem": "actors/paper-golem",

@@ -88,6 +88,13 @@ SHEETS_SPEC = [
         "copy-machine", "scrap-bin", "rounding-desk",
         "intro", "reveal", "exit-door",
     ]),
+    # Y2K en de Stray, plus tekeningen voor later: elites en vijanden van latere afdelingen,
+    # de held in drie houdingen, de Prikklok en het zakje met onderdelen
+    ("extras", 5, 3, "actors", "tight", 300, 3, [
+        "y2k", "stray", "zune", "heartbleed", "mars-orbiter",
+        "loop-snake", "crate-stack", "null-ghost", "switch", "foreman",
+        "hero-cheer", "hero-down", "hero-reading", "punch-clock", "pouch",
+    ]),
 ]
 
 # Figuren die op hun vel naar rechts kijken: gespiegeld, zodat ze vanaf rechts de held aankijken.
