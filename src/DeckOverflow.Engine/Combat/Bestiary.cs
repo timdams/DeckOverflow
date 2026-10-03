@@ -18,6 +18,8 @@ public static class Bestiary
     public const string Reckoner = "reckoner";
     public const string Splitter = "splitter";
     public const string EffectivePower = "effective-power";
+    /// <summary>De millenniumbug: zijn HP is een jaartal als tekst, <c>"19" + jaar</c>.</summary>
+    public const string Y2K = "y2k";
     public const string Counter = "counter";
     /// <summary>Een tease: een robotje dat ontsnapte uit de Controlekamer, met een regel als intent.</summary>
     public const string Stray = "stray";
@@ -35,11 +37,11 @@ public static class Bestiary
     public const string Label = "label";
 
     /// <summary>Alle elites, over de acts heen. Welke elite in welke act zit, staat in <see cref="Runs.Acts"/>.</summary>
-    public static readonly IReadOnlyList<string> Elites = [Colossus, Golem, Counter, EffectivePower, Index];
+    public static readonly IReadOnlyList<string> Elites = [Colossus, Golem, Counter, EffectivePower, Y2K, Index];
 
     public static readonly IReadOnlyList<string> Bosses = [Reckoner, Typesetter, Caster];
 
-    public static readonly IReadOnlyList<string> All = [Slime, Knight, Ghost, Dripper, Jug, Colossus, Golem, Reckoner, Splitter, Counter, Stray, EffectivePower, TypeBlock, PaperGolem, Typesetter, Ingot, Rounder, Index, Caster, Label];
+    public static readonly IReadOnlyList<string> All = [Slime, Knight, Ghost, Dripper, Jug, Colossus, Golem, Reckoner, Splitter, Counter, Stray, EffectivePower, Y2K, TypeBlock, PaperGolem, Typesetter, Ingot, Rounder, Index, Caster, Label];
 
     public static bool Exists(string? key) => key is not null && All.Contains(key);
 
@@ -74,6 +76,17 @@ public static class Bestiary
             new CombatantSetup(EffectivePower, ValueKind.String, Hp: 1, MaxHp: 1, Text: "effective. Power"),
             [new("8 + 4", 8 + 4), new("30 / 2", 30 / 2), new("3 * 3", 3 * 3)],
             CrashLength: 32),
+
+        // Y2K (1999): websites schreven het jaar als "19" + (jaar - 1900). Op 1 januari 2000 stond er 19100.
+        // Zijn HP is dat jaartal als tekst, en elke beurt schrijft hij het opnieuw: wat je eraan plakte, is weg.
+        // Je krijgt hem alleen in één beurt lang genoeg om te crashen, of je telt zijn letters. Na middernacht
+        // is "19100" een teken langer, en dus makkelijker.
+        Y2K => new(
+            new CombatantSetup(Y2K, ValueKind.String, Hp: 1, MaxHp: 1, Text: "1997"),
+            [new("4 * 3", 4 * 3), new("7 + 7", 7 + 7), new("2 * 9", 2 * 9)],
+            CrashLength: 12,
+            YearPrefix: "19",
+            StartYear: 97),
 
         // The Counter (YouTube, 2014): de weergaventeller van Gangnam Style naderde int.MaxValue.
         // Hij telt elke beurt op; wie hem heelt of lang genoeg overleeft, ziet hem omklappen naar negatief.

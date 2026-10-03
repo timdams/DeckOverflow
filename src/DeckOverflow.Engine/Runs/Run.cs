@@ -74,6 +74,9 @@ public sealed class Run
     /// <summary>De vijand van het lopende of laatste gevecht, voor panelen die bij één vijand horen.</summary>
     private string? _enemyKey;
     private int _combatsWon;
+    /// <summary>Voor de score: verdiepingen in afgewerkte acts, en beurten in alle gevechten.</summary>
+    private int _floorsBefore;
+    private int _turns;
     /// <summary>Onderdelen die in deze run uit een kist kwamen.</summary>
     private readonly List<string> _trinkets = [];
 
@@ -119,6 +122,16 @@ public sealed class Run
     public IReadOnlyList<string> Relics => _relics;
     public ActMap Map => _map;
     public ActDefinition Act => _act;
+
+    /// <summary>
+    /// De score tot nu toe: de verdieping waarop je staat telt pas als je ze voorbij bent.
+    /// Na het einde van de run is dit de score voor de Prikklok.
+    /// </summary>
+    public RunScore Score => new(
+        _floorsBefore + (_node is null ? 0 : _node.Row + (Phase is RunPhase.Lost or RunPhase.Combat ? 0 : 1)),
+        Phase == RunPhase.Won,
+        Phase == RunPhase.Won ? Hp : 0,
+        _turns);
 
     public static Run Start(ulong seed, RunSetup? setup = null) => new(seed, setup ?? new RunSetup());
 
@@ -328,6 +341,7 @@ public sealed class Run
 
         var snapshot = combat.Snapshot();
         var enemy = snapshot.Combatants.Single(c => c.IsEnemy);
+        _turns += combat.Turn;
         Hp = (int)snapshot.Combatants.Single(c => !c.IsEnemy).Hp;
         if (combat.Outcome == CombatOutcome.Won)
         {
@@ -369,7 +383,7 @@ public sealed class Run
     {
         _combat = null;
         Phase = won ? RunPhase.Won : RunPhase.Lost;
-        _end = new EndView(won, _node!.Row + 1, enemy.Key, enemy.Hp, enemy.MaxHp, Gold, _deck.Count, _relics.Count, _act.Number);
+        _end = new EndView(won, _node!.Row + 1, enemy.Key, enemy.Hp, enemy.MaxHp, Gold, _deck.Count, _relics.Count, _act.Number, Score);
         Emit(new RunEnded(won));
     }
 
@@ -409,6 +423,7 @@ public sealed class Run
 
     private void StartNextAct()
     {
+        _floorsBefore += _node!.Row + 1;
         _act = Acts.Get(_act.Number + 1);
         _map = GenerateMap(Seed, _act);
         _node = null;

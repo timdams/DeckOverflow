@@ -335,6 +335,19 @@
                                         <p class="tease">@S.T("ui.tease.rattle")</p>
                                     }
                                 }
+                                @if (end.Score is { } score)
+                                {
+                                    @* De score voor de Prikklok, met de som erbij: geen geheime formule *@
+                                    <div class="score">
+                                        <strong>@S.T("ui.end.score", ("total", score.Total))</strong>
+                                        <small>@S.T("ui.end.score.floors", ("floors", score.Floors), ("points", score.FloorPoints))
+                                        @if (score.Won)
+                                        {
+                                            <text> · @S.T("ui.end.score.hp", ("hp", score.HpLeft), ("points", score.HpPoints)) · @S.T("ui.end.score.turns", ("turns", score.Turns), ("points", score.TurnPoints))</text>
+                                        }
+                                        </small>
+                                    </div>
+                                }
                                 <p class="stats">@S.T("ui.end.stats", ("deck", end.DeckSize), ("relics", end.RelicCount), ("gold", end.Gold))</p>
                                 @NewPages()
                                 <div class="buttons">

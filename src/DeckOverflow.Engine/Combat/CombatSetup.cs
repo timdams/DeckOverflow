@@ -16,6 +16,9 @@ public sealed record CombatantSetup(string Key, ValueKind Kind, double Hp, doubl
 /// <param name="CrashLength">Alleen voor een <c>string</c>: vanaf deze lengte crasht zijn tekst, en valt hij om (Effective Power).</param>
 /// <param name="ResetTextEvery">Om de zoveel beurten wordt hij opnieuw tekst, met <paramref name="ResetTemplate"/> (The Typesetter).</param>
 /// <param name="ResetTemplate">String interpolatie: <c>{0}</c> wordt de schade die hij die beurt kreeg.</param>
+/// <param name="YearPrefix">Een jaartal als tekst (Y2K): na elke beurt wordt zijn tekst <c>YearPrefix + jaar</c>, echte concatenatie.
+/// Na <c>"19" + 99</c> komt <c>"19" + 100</c>, en dat is <c>"19100"</c>.</param>
+/// <param name="StartYear">Het jaar zonder eeuw bij de start. Na beurt N is het <c>StartYear + N</c>.</param>
 public sealed record EnemySetup(
     CombatantSetup Stats,
     IReadOnlyList<Intent> Pattern,
@@ -27,7 +30,9 @@ public sealed record EnemySetup(
     int CrashLength = 0,
     bool StopsHealingOnOverflow = false,
     int ResetTextEvery = 0,
-    string? ResetTemplate = null);
+    string? ResetTemplate = null,
+    string? YearPrefix = null,
+    int StartYear = 0);
 
 /// <param name="Relics">Ids uit <see cref="Relics.RelicCatalog"/> die in dit gevecht meespelen.</param>
 public sealed record CombatSetup(

@@ -670,12 +670,14 @@ const handlers = {
     await wait(420);
   },
 
-  /** The Typesetter zet een nieuwe zin: hij is weer tekst. */
+  /** The Typesetter zet een nieuwe zin, Y2K een nieuw jaartal: hij is weer tekst. */
   async TextReset(S, e) {
     const a = S.actor(e.targetId);
     const head = a.head();
     sfx('tick', { volume: 0.7 });
-    floatText(S.layers.fx, t('stage.new-sentence'), head.x, head.y - 60, { size: 18, rise: 24, holdMs: 600 });
+    // Een jaartal toont zichzelf: "19100" zegt meer dan elk label
+    const label = /^\d+$/.test(e.text) ? `"${e.text}"` : t('stage.new-sentence');
+    floatText(S.layers.fx, label, head.x, head.y - 60, { size: 18, rise: 24, holdMs: 600 });
     a.data = { ...a.data, text: e.text };
     a.setHp(a.hp);
     await wait(420);

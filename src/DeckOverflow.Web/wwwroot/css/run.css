@@ -333,6 +333,9 @@ button.small { padding: 6px 12px; font-size: 12px; }
 /* ---------------------------------------------------------------- einde */
 
 .end .stats { color: var(--muted); }
+.end .score { display: flex; flex-direction: column; align-items: center; gap: 2px; margin: 8px 0; }
+.end .score strong { font-size: 1.6rem; color: var(--zss); letter-spacing: .02em; }
+.end .score small { color: var(--muted); }
 
 /* Bijna gewonnen: hoeveel had de vijand nog? Gearceerd, zoals een maataanduiding */
 .near-miss {

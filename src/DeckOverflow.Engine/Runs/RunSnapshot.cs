@@ -67,7 +67,7 @@ public sealed record ShopRelicView(RelicInfo Relic, int Price, bool Sold);
 public sealed record TreasureView(bool Opened, RelicInfo? Relic, int Gold, string? Trinket = null);
 
 /// <summary>Het eindscherm. Bij verlies: hoe dicht je erbij was.</summary>
-public sealed record EndView(bool Won, int Floor, string? EnemyKey, double EnemyHp, double EnemyMaxHp, int Gold, int DeckSize, int RelicCount, int Act = 1);
+public sealed record EndView(bool Won, int Floor, string? EnemyKey, double EnemyHp, double EnemyMaxHp, int Gold, int DeckSize, int RelicCount, int Act = 1, RunScore? Score = null);
 
 /// <summary>Een start in een latere act: kies <paramref name="Rounds"/> keer 1 kaart uit 3.</summary>
 public sealed record DraftView(int Round, int Rounds, IReadOnlyList<CardInfo> Cards);

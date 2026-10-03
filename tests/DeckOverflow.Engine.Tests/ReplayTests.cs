@@ -49,6 +49,56 @@ public class ReplayTests
         Assert.Equal(JsonSerializer.Serialize(run.CombatSnapshot()), JsonSerializer.Serialize(replayed.CombatSnapshot()));
     }
 
+    [Theory]
+    [InlineData(255UL, false)]
+    [InlineData(4018561319058542423UL, false)]
+    [InlineData(255UL, true)]
+    public void Opnieuw_afspelen_geeft_dezelfde_score(ulong seed, bool debugWin)
+    {
+        var (run, commands) = PlayAndRecord(seed, debugWin: debugWin);
+
+        string json = JsonSerializer.Serialize(commands);
+        var replayed = Run.Replay(seed, JsonSerializer.Deserialize<List<ICommand>>(json)!);
+
+        Assert.Equal(run.Score, replayed.Score);
+        Assert.Equal(run.Snapshot().End!.Score, replayed.Score);
+    }
+
+    [Fact]
+    public void Een_uitgespeelde_run_telt_alle_21_verdiepingen_en_de_resterende_HP()
+    {
+        var (run, _) = PlayAndRecord(255, debugWin: true);
+
+        Assert.Equal(RunPhase.Won, run.Phase);
+        var score = run.Score;
+        Assert.Equal(Acts.All.Count * 7, score.Floors);
+        Assert.Equal(run.Hp, score.HpLeft);
+        Assert.True(score.Turns > 0);
+        Assert.Equal(score.Floors * 100 + run.Hp * 10 + Math.Max(0, 150 - score.Turns) * 5, score.Total);
+    }
+
+    [Fact]
+    public void Een_verloren_run_telt_alleen_de_verdiepingen_die_je_voorbij_bent()
+    {
+        var (run, _) = PlayAndRecord(255);
+
+        Assert.Equal(RunPhase.Lost, run.Phase);
+        var end = run.Snapshot().End!;
+        Assert.Equal((end.Act - 1) * 7 + end.Floor - 1, run.Score.Floors);
+        Assert.Equal(run.Score.Floors * 100, run.Score.Total);
+    }
+
+    [Fact]
+    public void Winnen_scoort_altijd_meer_dan_verliezen()
+    {
+        // De slechtste winst (1 HP, traag) tegenover de beste nederlaag (gestorven bij de laatste baas)
+        var worstWin = new RunScore(21, Won: true, HpLeft: 1, Turns: 999);
+        var bestLoss = new RunScore(20, Won: false, HpLeft: 0, Turns: 1);
+
+        Assert.True(worstWin.Total > bestLoss.Total);
+        Assert.Equal(0, new RunScore(5, Won: false, HpLeft: 40, Turns: 10).HpPoints);
+    }
+
     [Fact]
     public void Andere_commands_geven_een_andere_run()
     {
@@ -80,14 +130,14 @@ public class ReplayTests
     /// Speelt een run met een domme maar volledige bot en neemt elk command op. Ook geweigerde
     /// commands tellen mee: een replay moet die net zo weigeren.
     /// </summary>
-    private static (Run Run, List<ICommand> Commands) PlayAndRecord(ulong seed, int maxSteps = 600)
+    private static (Run Run, List<ICommand> Commands) PlayAndRecord(ulong seed, int maxSteps = 600, bool debugWin = false)
     {
         var run = Run.Start(seed);
         var commands = new List<ICommand>();
         var rejected = new HashSet<int>();
         for (int step = 0; step < maxSteps && run.Phase is not (RunPhase.Won or RunPhase.Lost); step++)
         {
-            var command = NextCommand(run, rejected);
+            var command = debugWin && run.Phase == RunPhase.Combat ? new DebugWin() : NextCommand(run, rejected);
             commands.Add(command);
             var events = run.Handle(command);
             // Een geweigerde kaart niet eindeloos opnieuw proberen

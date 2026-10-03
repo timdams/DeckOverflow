@@ -21,6 +21,7 @@ public static class XRegister
     public const string AgainAriane = "again-ariane";
     public const string FrozenIndex = "frozen-index";
     public const string DividedToNothing = "divided-to-nothing";
+    public const string AfterMidnight = "after-midnight";
     /// <summary>De laatste baas van de Card Hall (de deckbuilder, H2 tot H4), niet van de hele fabriek.</summary>
     public const string CardHallCleared = "card-hall-cleared";
 
@@ -38,6 +39,7 @@ public static class XRegister
         new(BigNumber),
         new(BadText),
         new(AgainAriane),
+        new(AfterMidnight),
         new(FrozenIndex, Hidden: true),
         new(CasterWraps, Hidden: true),
         new(CardHallCleared),
@@ -72,6 +74,11 @@ public static class XRegister
         // Convert laten crashen op een reus
         if (events.OfType<ConversionCrashed>().Any())
             yield return AgainAriane;
+
+        // Y2K verslagen terwijl zijn jaartal al "19100" of later was: na middernacht
+        if (died && enemy == Bestiary.Y2K
+            && (events.OfType<TextAppended>().Any(t => t.Before.StartsWith("191")) || events.OfType<TextCounted>().Any(t => t.Text.StartsWith("191"))))
+            yield return AfterMidnight;
 
         // The Index groeit niet meer: het afkappen at de groei op
         if (events.OfType<ValueGrew>().Any(g => g.After == g.Before))

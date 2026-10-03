@@ -39,7 +39,7 @@ public static class Acts
         2, "print-shop", Bestiary.Typesetter,
         EasyPool: [Bestiary.TypeBlock, Bestiary.PaperGolem],
         NormalPool: [Bestiary.TypeBlock, Bestiary.PaperGolem, Bestiary.Ghost, Bestiary.Splitter, Bestiary.Stray],
-        ElitePool: [Bestiary.EffectivePower],
+        ElitePool: [Bestiary.EffectivePower, Bestiary.Y2K],
         Events: [Adventures.CopyMachine, Adventures.ScrapBin, Adventures.LeakingBarrel, Adventures.Crucible],
         EarlyEvent: null,
         NewCards: [CardCatalog.CountLetters, CardCatalog.LetterA]);

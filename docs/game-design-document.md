@@ -64,6 +64,7 @@ Gewone vijanden zijn producten van de fabriek, bazen zijn figuren van de fabriek
 | --- | --- | --- | --- |
 | Level 256 | 1 | Pac-Man (1980): het levelnummer is een `byte`. Op level 256 loopt het over en wordt de rechterhelft van het doolhof rommel. | `byte`-overflow |
 | Effective Power | 1 | iPhone (2015): één bericht met een reeks Arabische Unicode-tekens liet het toestel crashen zodra het die tekst probeerde te tonen. | tekst, Unicode |
+| Y2K | 2 | De millenniumbug (1999): websites schreven het jaar als `"19" + (jaar - 1900)`. Op 1 januari 2000 stond er 19100. | string-concatenatie |
 | Flight 501 | 2 | Ariane 5 (1996): een `double` werd omgezet naar een 16-bits geheel getal, dat liep over. De raket vernietigde zichzelf na 37 seconden. | casting |
 | The Index | 2 | Vancouver Stock Exchange (1982): de index werd na elke berekening afgekapt in plaats van afgerond en zakte in 22 maanden tot ongeveer de helft van zijn echte waarde. | afronden |
 | Zune | 4 | Zune (2008): alle spelers van één model bevroren op 31 december, de 366e dag van een schrikkeljaar, in een `while`-lus die nooit stopte. | loops |
@@ -386,12 +387,13 @@ De afdeling op de plattegrond groeit mee: hoe meer onderdelen gemonteerd, hoe me
 
 - Per afdeling een dagelijkse seed, met een klasklassement onder anonieme bijnamen. De Prikklok opent op de afdeling waar je het laatst speelde.
 - Elke spelvorm meet iets eigens: in de deckbuilder winst en resterende HP, in de Controlekamer het aantal regels, op de band het aantal machines en cycli.
+- **De score van een run** (beslist op 3 oktober 2026, `RunScore` in de motor): 100 per verdieping die je voorbij bent, over alle acts heen (een volledige run is 21 verdiepingen). Wie uitspeelt, krijgt er 10 per resterende HP bij, en 5 per beurt onder de 150 (alle gevechten samen). Verliezen geeft geen bonus, dus snel sterven loont nooit, en een gewonnen run scoort altijd meer dan een verloren run. Het eindscherm toont de som, geen geheime formule. De server rekent hem na met `Run.Replay`.
 - **Histogram in plaats van ranglijst**, zoals bij Opus Magnum: je ziet waar je oplossing valt tegenover de klas, niet dat je 27ste van 28 bent. Een top 10 van bijnamen kan ernaast, maar het histogram is de standaard.
 
 ### ✗-register: de achievements
 
 - De achievements zijn ✗-panelen uit de handleiding: dingen die de handleiding verbiedt en die jij toch deed. Elke afdeling heeft een eigen pagina.
-- **Gebouwd op 3 oktober 2026**, voor de deckbuilder: Do not overfill (een vijand helen tot hij omklapt en sterft), Do not write essays (Effective Power in één kaart laten crashen), Do not divide by everything (een bewuste intent tot 0 delen), Do not exceed 9 (500 of meer in één aanval), Do not read the wrong label (een `FormatException`), Do not convert rockets (Convert laten crashen op een reus), Do not stop at chapter 4 (de laatste baas van de Card Hall, de deckbuilder; niet van de hele fabriek). Verborgen: Do not round down forever (The Index bevriest), Do not pour 300 into a byte (de Caster klapt om), en Do not read the manual. De motor herkent de panelen aan de events; de browser bewaart ze over runs heen. Een gewoon paneel dat je nog niet hebt, toont wat verboden is, als hint; een verborgen paneel blijft een silhouet.
+- **Gebouwd op 3 oktober 2026**, voor de deckbuilder: Do not overfill (een vijand helen tot hij omklapt en sterft), Do not write essays (Effective Power in één kaart laten crashen), Do not divide by everything (een bewuste intent tot 0 delen), Do not exceed 9 (500 of meer in één aanval), Do not read the wrong label (een `FormatException`), Do not convert rockets (Convert laten crashen op een reus), Do not wait for midnight (Y2K verslaan als zijn jaartal al 19100 is), Do not stop at chapter 4 (de laatste baas van de Card Hall, de deckbuilder; niet van de hele fabriek). Verborgen: Do not round down forever (The Index bevriest), Do not pour 300 into a byte (de Caster klapt om), en Do not read the manual. De motor herkent de panelen aan de events; de browser bewaart ze over runs heen. Een gewoon paneel dat je nog niet hebt, toont wat verboden is, als hint; een verborgen paneel blijft een silhouet.
 - **Do not read the manual** is het enige paneel dat met de Codex te maken heeft: wie een pagina tot het einde leest, overtreedt de laatste regel van een game die draait om de handleiding niet volgen. Het is één verborgen paneel, geen teller per pagina, dus de Codex wordt geen vinkjeslijst.
 - Voorbeelden: een baas laten overlopen tot hij sterft, de Controlekamer winnen met één regel, de band duizend keer laten draaien zonder vast te lopen.
 - Alleen spelprestaties, nooit leerprestaties: geen "lees tien Codex-pagina's" (zie [Antipatronen](#antipatronen)). Een deel is verborgen, zodat geruchten zich op de speelplaats verspreiden.
@@ -568,7 +570,7 @@ Daarnaast blijven vijanden uit act 1 in de pool, want de regels van eerdere acts
 ### Elites
 
 - **Effective Power** verhuist van act 1 naar hier: een bericht dat crasht vanaf 32 tekens. Plakken is de bedoeling, en `"2.5"` plakt drie tekens.
-- Een tweede elite is nog open. Kandidaat: **Y2K**, jaartallen opgeslagen als twee tekens, `"99"` + 1 werd `"00"`. Tot dan heeft act 2 één elite.
+- **Y2K** (gebouwd op 3 oktober 2026): zijn HP is een jaartal als tekst, `"1997"`. Na elke beurt schrijft hij het opnieuw als `"19" + jaar`, met echte concatenatie: `"1998"`, `"1999"`, en dan `"19100"`. Wat je eraan plakte, is dan weg. Hij crasht vanaf 12 tekens, dus je moet hem in één beurt lang genoeg maken: een Strike plakt `"6"` (één teken), een Floating Strike drie keer `"2.5"` (negen tekens). De les: een `double` is lange tekst, en `"19" + 100` is geen 2000. Na middernacht is hij een teken langer en dus makkelijker; wie wacht, krijgt het ✗-paneel *Do not wait for midnight*. Count Letters werkt ook: zijn HP wordt 4 of 5, maar alleen tot zijn volgende beurt. Aanvallen 12, 14, 18. Het Codex-moment is de omslag zelf: `"19" + 100` werd `"19100"`. Tekening volgt; tot dan een silhouet.
 
 ### Baas: The Typesetter
 
@@ -675,7 +677,7 @@ Wie een pagina leest, krijgt niets extra. De beloning zit in de volgende run: je
 | Integer division | H2 | Split, of een bewuste intent met `/` |
 | Integer overflow | H2 | helen tot een `byte` omklapt |
 | Operator precedence | H2 | de Rekenmeester verslaan |
-| String concatenation | H3 | Ink, of een treffer op The Label of Effective Power |
+| String concatenation | H3 | Ink, een treffer op The Label of Effective Power, of Y2K die `"19" + 100` schrijft |
 | String length | H3 | Effective Power laten crashen |
 | Casting | H4, vanaf act 2 | omgieten, ook de baas die zichzelf omgiet |
 | Convert | H4, vanaf act 2 | Measure Twice |

@@ -268,6 +268,16 @@ public sealed class Combat
             _enemy.Text = string.Format(CultureInfo.InvariantCulture, template, Num(_damageThisTurn));
             Emit(new TextReset(EnemyId, _enemy.Text));
         }
+        if (_setup.Enemy.YearPrefix is { } prefix)
+        {
+            // Het jaar als tekst: "19" + 100 is "19100", niet 2000. Wat je eraan plakte, is weg.
+            int year = _setup.Enemy.StartYear + Turn;
+            _enemy.Kind = ValueKind.String;
+            _enemy.Text = prefix + year;
+            Emit(new TextReset(EnemyId, _enemy.Text));
+            // Voor de Codex telt het moment dat het misloopt: "19" + 100
+            if (year >= 100) Moment(CodexCatalog.StringConcat, ("expression", $"\"{prefix}\" + {year}"), ("value", $"\"{_enemy.Text}\""));
+        }
 
         // Nieuwe beurt
         Turn++;
