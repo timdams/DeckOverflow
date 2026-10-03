@@ -324,8 +324,9 @@ Drie regels houden het één spel:
 
 | Afdeling | Hoofdstuk | Spelvorm | Waarom deze vorm | Echte bug |
 | --- | --- | --- | --- | --- |
-| De Vatenvallei (act 1) | H2 basis, H3 tekst | Roguelike deckbuilder | Kaarten zijn waarden en expressies: types, afkappen, overflow, tekst die plakt; Omgieten als ervaring | Level 256, Effective Power |
-| De Gieterij (act 2) | H4 werken met data | Roguelike deckbuilder | Expliciet omzetten: cast kapt af, Convert rondt af, Parse kan crashen, Math als gereedschap | Flight 501, The Index |
+| The Card Hall, act 1: De Vatenvallei | H2 basis | Roguelike deckbuilder | Getallen: types, afkappen, overflow, deling, voorrang; Omgieten als ervaring | Level 256, The Counter |
+| The Card Hall, act 2: De Drukkerij | H3 tekst | Roguelike deckbuilder | Tekst: `string` plakt, `char` is een getal, `Length`, Unicode | Effective Power |
+| The Card Hall, act 3: De Gieterij | H4 werken met data | Roguelike deckbuilder | Expliciet omzetten: cast kapt af, Convert rondt af, Parse kan crashen, Math als gereedschap | Flight 501, The Index |
 | De Controlekamer | H5 beslissingen | Gambits: je stelt de regels van een automaat op ("als een vijand onder 10 HP staat: aanvallen") en kijkt dan hoe hij vecht | De eerste regel die klopt wint: volgorde, `else if`, logische operatoren. `switch` is een tabel van gevallen | nog te kiezen |
 | De Lopende Band | H6 loops | Automatiseringspuzzel: banden en machines die herhalen tot een voorwaarde waar is | Herhaling met een stopvoorwaarde; een band die nooit stopt, is de oneindige lus | Zune (2008): een `while`-lus die op 31 december van een schrikkeljaar nooit stopte |
 | De Gereedschapsmuur | H7 methoden | Dezelfde band, met blueprints: een machine één keer bouwen en overal stempelen, met instelknoppen | Hergebruik en parameters; een blueprint wordt ook een kaart in de deckbuilder | nog te kiezen |
@@ -391,7 +392,7 @@ Een student begint Deck Overflow en denkt dat het een gewone deckbuilder is. Pas
 
 De onthulling mag niet alleen afhangen van winnen, anders zien net de zwakkere studenten de wereld nooit. De eerste van drie voorwaarden die vervuld is, opent de muur:
 
-1. **De baas van act 2 verslaan.** Het grote moment: de muur van de Gieterij scheurt open.
+1. **De laatste baas van de Card Hall verslaan** (act 3, de Caster). Het grote moment: de muur van de Gieterij scheurt open.
 2. **Het vangnet.** Na een aantal runs of een bepaalde speeltijd, ook zonder ooit te winnen, merkt de fabriek je op: er verschijnt een barst in de muur, en je kan er zelf doorheen.
 3. **De docent.** Komt de les bij H5, dan moet iedereen de Controlekamer in. De docent opent de muur voor de hele klas tegelijk, als klasmoment, niet als spoiler.
 
@@ -421,7 +422,9 @@ De onderdelenlijst wordt vanaf run 1 in stilte bijgehouden. Bij de onthulling zo
 
 ## Act 1: De Vatenvallei
 
-Act 1 dekt hoofdstuk 2 en 3 van Zie Scherp Scherper: variabelen, datatypes, identifiers, operatoren, expressies, constanten en tekst. Het thema maakt die concepten tastbaar: in de Vatenvallei is alles een waarde in een vat, en elk vat heeft een vorm (type) en een etiket (naam).
+Beslist op 3 oktober 2026: de deckbuilder, voortaan **The Card Hall**, heeft drie acts, één per hoofdstuk. Act 1 dekt hoofdstuk 2, act 2 (De Drukkerij) hoofdstuk 3, act 3 (De Gieterij) hoofdstuk 4. De rijen met H3 in de tabel hieronder verhuizen naar act 2. De run-lengte blijft: acts van 6 rijen.
+
+Act 1 dekt hoofdstuk 2 van Zie Scherp Scherper: variabelen, datatypes, identifiers, operatoren, expressies en constanten. Het thema maakt die concepten tastbaar: in de Vatenvallei is alles een waarde in een vat, en elk vat heeft een vorm (type) en een etiket (naam).
 
 - Een `int`-vat heeft geen plaats voor een komma. Wat erin gegoten wordt, verliest zijn decimalen.
 - Een `bool`-vat heeft maar twee standen.
@@ -528,9 +531,58 @@ Het starterdeck is bewust saai, zodat elke beloning een echte keuze wordt.
 | Teller | Elke derde kaart die je speelt, kost 0 | Modulo en tellen |
 | Etiketmaker | De Naamloze toont zijn echte etiket één beurt vooraf | Identifiers |
 
-## Act 2: De Gieterij
+## Act 2: De Drukkerij
 
-Act 2 dekt hoofdstuk 4: werken met data. Act 1 liet types en tekst voelen; de Gieterij gaat over **expliciet omzetten**. Een gieterij giet gesmolten metaal in mallen, en dat is casting, letterlijk. Hier krijgt Omgieten zijn echte naam. In het Engelstalige spel heet de act The Mold Works, omdat het openingsevent van act 1 al The Foundry heet.
+Ontwerp van 3 oktober 2026, nog te bouwen. Act 2 dekt hoofdstuk 3 van Zie Scherp Scherper: tekst gebruiken in code. Het boek behandelt `char` (één teken, een Unicode-getal), `string` (een reeks `char`s), escape characters, strings samenvoegen en interpolatie, en vreemde tekens tonen. In het Engelse spel heet de act **The Print Shop**: een drukkerij vol losse letterblokjes, etiketten en berichten. Elk letterblokje is een getal, en dat is de kern van de act.
+
+| Concept | Waar het in de game zit |
+| --- | --- |
+| `char` is een getal | Type Block, de letterkaarten |
+| Een cijferteken is nog geen cijfer (`'0'` is 48) | Type Block |
+| `string` plakt | Paper Golem, Ink |
+| `Length` | Count Letters, de baas |
+| String interpolatie | De baas |
+| Unicode | Elite Effective Power |
+
+### Gewone vijanden
+
+| Vijand | Mechaniek | Wat je ontdekt |
+| --- | --- | --- |
+| Type Block | Zijn HP is één `char`: `'0'`. Op de balk staat een 0, maar hij heeft 48 HP, want `'0'` is 48. Schade trekt af van de code: na 6 schade staat er `'*'` (42). Hij sterft bij `'\0'`. | Een cijferteken is geen cijfer; een `char` is een getal |
+| Paper Golem | Een gewone `int`, maar zijn aanvallen zijn tekst die hij plakt en dan pas omzet: `"1" + 2` is 12, de beurt erna `1 + 2` is 3. De intent toont het totaal. | Tekst plakt, getallen tellen op: dat zie je aan wat er op jou afkomt |
+
+Daarnaast blijven vijanden uit act 1 in de pool, want de regels van eerdere acts blijven gelden.
+
+### Elites
+
+- **Effective Power** verhuist van act 1 naar hier: een bericht dat crasht vanaf 32 tekens. Plakken is de bedoeling, en `"2.5"` plakt drie tekens.
+- Een tweede elite is nog open. Kandidaat: **Y2K**, jaartallen opgeslagen als twee tekens, `"99"` + 1 werd `"00"`.
+
+### Baas: The Typesetter
+
+Een figuur van de fabriek die zinnen zet met losse letters. Zijn HP is een zin, bijvoorbeeld `"THE MANUAL IS ALWAYS RIGHT"`. Tekst kan je niet doodslaan: elke treffer plakt eraan vast, zoals bij elke `string`. Met de nieuwe kaart **Count Letters** wordt zijn HP de `Length` van zijn zin: 26. Wie eerst slaat en dan telt, vecht tegen een langere zin.
+
+Elke drie beurten zet hij een nieuwe zin met string interpolatie: `$"YOU HIT ME {schade} TIMES"`, met de getallen van jouw laatste beurt erin. Daarna is hij weer tekst, en moet je opnieuw tellen. De puzzel: tel op het juiste moment, en sla hard tussen twee zinnen in.
+
+### Nieuwe kaarten
+
+| Kaart | Wat ze doet | Concept |
+| --- | --- | --- |
+| Count Letters | Een tekstvijand wordt een `int` met de `Length` van zijn tekst als HP | `Length` |
+| Letter A (zeldzaam, kost 2) | `+ 'A'` op je volgende aanval: `6 + 'A'` is 71. Tegen tekst plakt een `char`: `"40" + 'A'` is `"40A"`, en dat parset niet meer | `char` is een getal |
+
+De letterkaart is bewust zeldzaam en duur: een `char` is meteen 65 of meer.
+
+### Wat er verschuift
+
+- **Act 1 wordt puur H2.** Ink en Read blijven in de pool van act 1 (tekst ervaren voor je hem benoemt), maar Effective Power verhuist naar act 2. Act 1 krijgt een tweede elite: **The Counter** (de weergaventeller van Gangnam Style, 2014, `int`-overflow).
+- **De Gieterij wordt act 3**, met dezelfde inhoud.
+- **Codex:** String concatenation en String length gaan open in act 2; een nieuwe pagina **Char is a number** voor Type Block en de letterkaart.
+- **Er komt één nieuwe actplaat** via imagen.
+
+## Act 3: De Gieterij
+
+Act 3 dekt hoofdstuk 4: werken met data. Act 1 liet types en tekst voelen; de Gieterij gaat over **expliciet omzetten**. Een gieterij giet gesmolten metaal in mallen, en dat is casting, letterlijk. Hier krijgt Omgieten zijn echte naam. In het Engelstalige spel heet de act The Mold Works, omdat het openingsevent van act 1 al The Foundry heet.
 
 | Concept | Waar het in de game zit |
 | --- | --- |
