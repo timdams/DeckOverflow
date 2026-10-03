@@ -21,7 +21,7 @@ Geldt bovenop de [CLAUDE.md op de root](../../../CLAUDE.md). Het ontwerp staat i
 ## Een vijand, kaart of relic toevoegen
 
 1. Motor: `Bestiary` of `CardCatalog` of een `Relic`-klasse, en in de juiste act (`Acts.cs`). Een kaart heeft een verbeterde versie nodig.
-2. Teksten in `en.json` (`enemy.*`, `card.*`, `effect.*`, `relic.*`, en `bug.*` voor een elite).
+2. Teksten in `en.json` (`enemy.*`, `card.*`, `effect.*`, `relic.*`, en `bug.*` voor een elite). Een tekening in `art.json`, of een regel in [art/todo.md](../../../art/todo.md).
 3. Een nieuw event: in `GameEvent.cs`, in [events.md](events.md), en in `timeline.js` en `log.js`.
 4. Tests in `tests/DeckOverflow.CardHall.Tests`.
 5. De Codex- en ✗-toets uit de root-CLAUDE.md, en de docs in deze map bijwerken.
