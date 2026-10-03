@@ -77,14 +77,16 @@ Na de migraties: de security advisors van Supabase draaien en alles oplossen.
 - Een score kan alleen voor vandaag of gisteren (UTC), voor een run die over middernacht loopt.
 - Zonder sessie (rol `anon`) kan je niets, ook het histogram niet: elke speler heeft minstens een gastsessie.
 
-## Stap 4: inloggen met een gebruikersnaam
+## Stap 4: inloggen met een gebruikersnaam of e-mail
 
-Supabase logt in met e-mail. Twee gevallen:
+Beslist op 3 oktober 2026: geen Edge Function, geen tabel `accounts`. Supabase logt in met een e-mailadres, en het spel heeft één veld "gebruikersnaam of e-mail":
 
-- **Zonder e-mail:** het auth-adres is `gebruikersnaam@users.deckoverflow.invalid`. De client bouwt dat adres zelf bij het inloggen.
-- **Met e-mail:** het auth-adres is het echte adres, zodat herstel werkt. Inloggen met de gebruikersnaam vraagt dan een opzoeking gebruikersnaam → e-mail, en die mag nooit bij de client komen. Voorstel: één Edge Function `login` (TypeScript, met de service-sleutel) die de opzoeking doet en de sessie teruggeeft. De gebruikersnamen staan in een tabel `accounts` (`user_id`, `username` uniek) zonder enige leespolicy.
+- **Met een `@`:** een echt e-mailadres. Wie dat opgeeft, logt er ook mee in, en wachtwoordherstel werkt.
+- **Zonder `@`:** een gebruikersnaam. De client maakt er `gebruikersnaam@users.deckoverflow.invalid` van, zowel bij het registreren als bij het inloggen. Kleine letters, cijfers, `-` en `_`, 3 tot 20 tekens. Een vergeten wachtwoord is dan niet te herstellen; dat zegt het registratiescherm.
 
-Een gastaccount omzetten ("Bewaar je fabriek"): `PUT /auth/v1/user` met e-mail en wachtwoord op de anonieme sessie, zodat de `user_id` en dus alle voortgang blijft. Tijdens de bouw nakijken in de docs van Supabase of dit zonder bevestiging meteen doorgaat met e-mailbevestiging uit.
+Zo hoeft een gebruikersnaam nooit naar een e-mailadres opgezocht te worden, en blijft de backend zonder TypeScript. Uniek is de naam vanzelf: Supabase aanvaardt elk auth-adres maar één keer. Andere spelers zien de gebruikersnaam nooit, alleen de bijnaam.
+
+Een gastaccount omzetten ("Bewaar je fabriek"): `PUT /auth/v1/user` met adres en wachtwoord op de anonieme sessie. Getest op het project: het gaat meteen door zonder bevestiging, de `user_id` en dus alle voortgang blijft, `is_anonymous` wordt onwaar, en daarna inloggen met adres en wachtwoord werkt. Supabase aanvaardt het domein `.invalid`.
 
 ## Stap 5: client in de shell
 
@@ -119,7 +121,7 @@ Een gastaccount omzetten ("Bewaar je fabriek"): `PUT /auth/v1/user` met e-mail e
 
 ## Stap 8: docs bijwerken
 
-- Spike Design Doc: tabellen, functies en de Edge Function `login`, en dat er toch één TypeScript-functie is.
+- Spike Design Doc: tabellen, functies, en inloggen met gebruikersnaam of e-mail zonder Edge Function.
 - GDD: de Prikklok.
 - Privacyverklaring in eenvoudige taal.
 
