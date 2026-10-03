@@ -33,7 +33,7 @@
                     }
                     @if (layer >= 4)
                     {
-                        <p class="read">@(entry.Chapter is { } chapter ? S.T("ui.codex.chapter", ("chapter", chapter)) : S.T("ui.codex.chapter-later"))</p>
+                        <a class="read" href="@(BookUrl + entry.BookPage)" target="_blank" rel="noopener">@(entry.Chapter is { } chapter ? S.T("ui.codex.chapter", ("chapter", chapter)) : S.T("ui.codex.chapter-later")) ↗</a>
                     }
 
                     @if (layer < 4)
@@ -50,6 +50,9 @@
 </div>
 
 @code {
+    /// <summary>De online versie van Zie Scherp Scherper.</summary>
+    private const string BookUrl = "https://timdams.github.io/ziescherpscherper/content/";
+
     /// <summary>Open pagina's, met de getallen van het moment waarop ze opengingen.</summary>
     [Parameter, EditorRequired] public IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> Pages { get; set; } = default!;
 

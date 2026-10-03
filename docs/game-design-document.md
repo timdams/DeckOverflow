@@ -592,9 +592,9 @@ Wie een pagina leest, krijgt niets extra. De beloning zit in de volgende run: je
 | Convert | H4, vanaf act 2 | Measure Twice |
 | Math.Round | H4, vanaf act 2 | de Rounder |
 | Parsing | H4, vanaf act 2 | Read of Read the Label |
-| Exceptions | later | een `FormatException` of `OverflowException` |
+| Exceptions | H10 | een `FormatException` of `OverflowException` |
 
-Nog open: een link naar het hoofdstuk online. De pagina noemt nu "Zie Scherp Scherper, chapter 2" zonder link, tot we de juiste URL's hebben.
+De laatste laag linkt naar de juiste pagina in de [online versie van het boek](https://timdams.github.io/ziescherpscherper/content/README.html), waar het kan met een anker (bv. `#conversie`).
 
 ## Platform en techniek
 

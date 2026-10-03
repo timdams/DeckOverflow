@@ -5,11 +5,12 @@ namespace DeckOverflow.Engine.Codex;
 /// Naam, uitleg en code staan in <c>en.json</c> onder <c>codex.&lt;key&gt;</c>.
 /// </summary>
 /// <param name="Chapter">Het hoofdstuk in Zie Scherp Scherper. Leeg: een later hoofdstuk.</param>
+/// <param name="BookPage">De pagina in de online versie van het boek, relatief tot <c>content/</c>, eventueel met anker.</param>
 /// <param name="MinAct">
 /// Vanaf welke act de pagina mag opengaan. Eerst ervaren, dan benoemen: Omgieten voel je in act 1,
 /// maar de pagina "Casting" opent pas in act 2, bij hoofdstuk 4.
 /// </param>
-public sealed record CodexEntry(string Key, int? Chapter, int MinAct = 1);
+public sealed record CodexEntry(string Key, int? Chapter, string BookPage, int MinAct = 1);
 
 public static class CodexCatalog
 {
@@ -28,17 +29,17 @@ public static class CodexCatalog
     /// <summary>In de volgorde van het boek.</summary>
     public static readonly IReadOnlyList<CodexEntry> All =
     [
-        new(Variables, 2),
-        new(IntTruncation, 2),
-        new(IntegerDivision, 2),
-        new(Overflow, 2),
-        new(OperatorPrecedence, 2),
-        new(StringConcat, 3),
-        new(Casting, 4, MinAct: 2),
-        new(Convert, 4, MinAct: 2),
-        new(Rounding, 4, MinAct: 2),
-        new(Parse, 4, MinAct: 2),
-        new(Exceptions, null),
+        new(Variables, 2, "1_csharpbasics/1b_variabelen.html"),
+        new(IntTruncation, 2, "1_csharpbasics/1_datatypes.html"),
+        new(IntegerDivision, 2, "1_csharpbasics/2_expressies.html"),
+        new(Overflow, 2, "1_csharpbasics/1_datatypes.html"),
+        new(OperatorPrecedence, 2, "1_csharpbasics/2_expressies.html"),
+        new(StringConcat, 3, "2_tekst/5_chars_strings.html"),
+        new(Casting, 4, "3_data/4_converteren_casting.html#casting", MinAct: 2),
+        new(Convert, 4, "3_data/4_converteren_casting.html#conversie", MinAct: 2),
+        new(Rounding, 4, "3_data/4d_afronden.html", MinAct: 2),
+        new(Parse, 4, "3_data/4_converteren_casting.html#parsing-en-.tostring", MinAct: 2),
+        new(Exceptions, 10, "20_exceptions/0_exceptionhandling.html"),
     ];
 
     public static CodexEntry Get(string key) => All.First(e => e.Key == key);
