@@ -10,4 +10,10 @@ public interface IProgressStore
     Task<PlayerProgress> LoadAsync();
 
     Task SaveAsync(PlayerProgress progress);
+
+    /// <summary>
+    /// Voortgang van elders (een ander toestel) is samengevoegd in het object dat <see cref="LoadAsync"/>
+    /// teruggaf. Tijd om opnieuw te tekenen.
+    /// </summary>
+    event Action? Changed;
 }

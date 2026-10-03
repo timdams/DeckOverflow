@@ -12,6 +12,9 @@ public sealed class LocalProgressStore(IJSRuntime js) : IProgressStore
 {
     private const string Key = "deckoverflow.progress";
 
+    /// <summary>Lokaal komt er nooit iets van elders binnen.</summary>
+    public event Action? Changed { add { } remove { } }
+
     public async Task<PlayerProgress> LoadAsync()
     {
         string? json = await js.InvokeAsync<string?>("deckOverflow.load", Key);

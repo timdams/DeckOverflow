@@ -96,6 +96,7 @@ public partial class RunPage
         _loadMs = await JS.InvokeAsync<double>("deckOverflow.now");
 
         _progress = await Store.LoadAsync();
+        Store.Changed += OnProgressChanged;
         _progress.ReachedAct = Math.Clamp(_progress.ReachedAct, 1, Acts.All[^1].Number);
         StateHasChanged();
     }
@@ -350,6 +351,8 @@ public partial class RunPage
         await InvokeAsync(StateHasChanged);
     }
 
+    private void OnProgressChanged() => _ = InvokeAsync(StateHasChanged);
+
     private void OpenCodex(string? focus)
     {
         _codexFocus = focus;
@@ -419,6 +422,7 @@ public partial class RunPage
 
     public async ValueTask DisposeAsync()
     {
+        Store.Changed -= OnProgressChanged;
         await Stage.DisposeAsync();
         _self?.Dispose();
     }

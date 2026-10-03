@@ -93,6 +93,15 @@ Een gastaccount omzetten ("Bewaar je fabriek"): `PUT /auth/v1/user` met e-mail e
 - `SyncedProgressStore`: schrijft altijd eerst lokaal, synchroniseert op de achtergrond, faalt stil zonder netwerk. Een haperend schoolnetwerk breekt nooit een run.
 - Bij de eerste start: anoniem aanmelden op de achtergrond, nooit een scherm ervoor.
 
+**Gedaan op 3 oktober 2026.** `Backend/SupabaseClient.cs` en `Progress/SyncedProgressStore.cs`. Zonder `Supabase`-sectie in `appsettings.json` valt de shell terug op `LocalProgressStore`.
+
+- Gesynchroniseerd: Codex-pagina's met hun getallen (`progress`), gemonteerde onderdelen, ontgrendelde afdelingen (`unlocks`). Lokaal blijven: leesstand, ✗-panelen, startpunt, aantal runs, intro en onthulling.
+- Binnenhalen gebeurt één keer per start en is een unie: niets gaat terug. Daarna stuurt elke keer bewaren alleen wat nog niet in de database staat.
+- Een sessie die Supabase niet meer kent, wordt een nieuw gastaccount en de lokale voortgang gaat mee. Zonder netwerk blijft de oude sessie staan.
+- In de browser getest tegen het project: gastaccount en bijnaam, push, binnenhalen na het wissen van de lokale voortgang, en `delete_my_account` (alles weg via cascade).
+- Captchabescherming stond standaard aan op het project en blokkeerde de gastaccounts; uitgezet in Authentication → Attack Protection.
+- Let op: ook `localhost` praat met het echte project. Een tweede project voor ontwikkeling kan later, als het gratis plan het toelaat.
+
 ## Stap 6: schermen
 
 - "Bewaar je fabriek" na het eerste gewonnen gevecht of bij de onthulling: gebruikersnaam, wachtwoord, optioneel e-mail, met de waarschuwing dat je zonder e-mail je fabriek kwijt bent als je je wachtwoord vergeet.
