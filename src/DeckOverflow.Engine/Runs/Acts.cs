@@ -28,7 +28,7 @@ public static class Acts
     public static readonly ActDefinition VatValley = new(
         1, "vat-valley", Bestiary.Reckoner,
         EasyPool: [Bestiary.Slime, Bestiary.Knight],
-        NormalPool: [Bestiary.Knight, Bestiary.Ghost, Bestiary.Dripper, Bestiary.Splitter],
+        NormalPool: [Bestiary.Knight, Bestiary.Ghost, Bestiary.Dripper, Bestiary.Splitter, Bestiary.Stray],
         ElitePool: [Bestiary.Golem, Bestiary.Counter],
         Events: [Adventures.Crucible, Adventures.LeakingBarrel, Adventures.CopyMachine, Adventures.ScrapBin],
         EarlyEvent: Bestiary.Jug,
@@ -38,7 +38,7 @@ public static class Acts
     public static readonly ActDefinition PrintShop = new(
         2, "print-shop", Bestiary.Typesetter,
         EasyPool: [Bestiary.TypeBlock, Bestiary.PaperGolem],
-        NormalPool: [Bestiary.TypeBlock, Bestiary.PaperGolem, Bestiary.Ghost, Bestiary.Splitter],
+        NormalPool: [Bestiary.TypeBlock, Bestiary.PaperGolem, Bestiary.Ghost, Bestiary.Splitter, Bestiary.Stray],
         ElitePool: [Bestiary.EffectivePower],
         Events: [Adventures.CopyMachine, Adventures.ScrapBin, Adventures.LeakingBarrel, Adventures.Crucible],
         EarlyEvent: null,

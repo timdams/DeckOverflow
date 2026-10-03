@@ -54,7 +54,8 @@
     "counter": "actors/counter",
     "type-block": "actors/type-block",
     "paper-golem": "actors/paper-golem",
-    "typesetter": "actors/typesetter"
+    "typesetter": "actors/typesetter",
+    "stray": "actors/colossus"
   },
   "nodes": {
     "fight": "items/whack",

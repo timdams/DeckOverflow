@@ -60,6 +60,18 @@
                 </ul>
             }
 
+            @if (FoundFor(sel).Any())
+            {
+                @* De onderdelen uit je zakje vallen hier op hun plaats *@
+                <h3>@S.T("ui.world.found")</h3>
+                <ul class="parts">
+                    @foreach (var odd in FoundFor(sel))
+                    {
+                        <li class="unpacked">@S.T($"trinket.{odd.Key}")</li>
+                    }
+                </ul>
+            }
+
             <div class="dept-actions">
                 @if (sel.Key == Departments.CardHall)
                 {
@@ -97,6 +109,9 @@
     [Parameter, EditorRequired] public IReadOnlyDictionary<string, Unlock> Unlocks { get; set; } = default!;
     [Parameter, EditorRequired] public IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> Pages { get; set; } = default!;
     [Parameter] public int ReachedAct { get; set; } = 1;
+
+    /// <summary>Onderdelen die nergens voor dienden, uit kisten in de Card Hall.</summary>
+    [Parameter] public IReadOnlySet<string> Trinkets { get; set; } = new HashSet<string>();
     [Parameter] public int PanelCount { get; set; }
     [Parameter] public bool Starting { get; set; }
     [Parameter] public EventCallback<int> OnStart { get; set; }
@@ -111,6 +126,9 @@
     /// <summary>De onderdelen van een afdeling: de Codex-pagina's van haar hoofdstukken.</summary>
     private static IEnumerable<CodexEntry> Parts(Department d) =>
         CodexCatalog.All.Where(e => e.Chapter is { } c && d.Chapters.Contains(c));
+
+    private IEnumerable<DeckOverflow.Engine.Runs.Trinket> FoundFor(Department d) =>
+        DeckOverflow.Engine.Runs.Trinkets.All.Where(t => t.Step == d.Step && Trinkets.Contains(t.Key));
 
     private double Progress(Department d)
     {

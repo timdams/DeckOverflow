@@ -74,6 +74,8 @@ public sealed class Run
     /// <summary>De vijand van het lopende of laatste gevecht, voor panelen die bij één vijand horen.</summary>
     private string? _enemyKey;
     private int _combatsWon;
+    /// <summary>Onderdelen die in deze run uit een kist kwamen.</summary>
+    private readonly List<string> _trinkets = [];
 
     private Run(ulong seed, RunSetup setup)
     {
@@ -192,12 +194,13 @@ public sealed class Run
             Phase == RunPhase.Rest ? RestView() : null,
             Phase == RunPhase.Event ? EventView() : null,
             Phase == RunPhase.Shop ? ShopView() : null,
-            Phase == RunPhase.Treasure && _treasure is { } t ? new TreasureView(t.Opened, t.Opened && t.Relic is { } r ? RelicInfo.From(r) : null, t.Opened ? t.Gold : 0) : null,
+            Phase == RunPhase.Treasure && _treasure is { } t ? new TreasureView(t.Opened, t.Opened && t.Relic is { } r ? RelicInfo.From(r) : null, t.Opened ? t.Gold : 0, t.Opened ? t.Trinket : null) : null,
             _end,
             _act.Number,
             _act.Key,
             Phase == RunPhase.Draft ? new DraftView(_draftRound, DraftRounds, [.. _rewardCards.Select(CardInfo.From)]) : null,
-            Phase == RunPhase.RelicChoice ? new RelicChoiceView(_relicReason!, [.. _relicChoice.Select(RelicInfo.From)]) : null);
+            Phase == RunPhase.RelicChoice ? new RelicChoiceView(_relicReason!, [.. _relicChoice.Select(RelicInfo.From)]) : null,
+            [.. _trinkets]);
     }
 
     /// <summary>Tijdens een gevecht is de HP van de speler in het gevecht de waarheid.</summary>
@@ -247,7 +250,7 @@ public sealed class Run
                 Phase = RunPhase.Shop;
                 break;
             case NodeKind.Treasure:
-                _treasure = new TreasureState(RandomUnownedRelic(), Roll(TreasureGold));
+                _treasure = new TreasureState(RandomUnownedRelic(), Roll(TreasureGold), RollTrinket());
                 Phase = RunPhase.Treasure;
                 break;
         }
@@ -764,11 +767,20 @@ public sealed class Run
 
     // ---------- Schat ----------
 
-    private sealed class TreasureState(string? relic, int gold)
+    private sealed class TreasureState(string? relic, int gold, string? trinket)
     {
         public string? Relic { get; } = relic;
         public int Gold { get; } = gold;
+        public string? Trinket { get; } = trinket;
         public bool Opened { get; set; }
+    }
+
+    /// <summary>Soms ligt er in een kist ook een onderdeel dat nergens voor dient, één van elk per run.</summary>
+    private string? RollTrinket()
+    {
+        if (_loot.NextInt(100) >= Trinkets.ChestChance) return null;
+        var left = Trinkets.All.Where(x => !_trinkets.Contains(x.Key)).ToList();
+        return left.Count == 0 ? null : left[_loot.NextInt(left.Count)].Key;
     }
 
     private void Open()
@@ -778,6 +790,11 @@ public sealed class Run
         t.Opened = true;
         GainGold(t.Gold);
         if (t.Relic is not null) GainRelic(t.Relic);
+        if (t.Trinket is { } key)
+        {
+            _trinkets.Add(key);
+            Emit(new TrinketFound(key, Trinkets.All.First(x => x.Key == key).Step));
+        }
     }
 
     // ---------- Loot ----------

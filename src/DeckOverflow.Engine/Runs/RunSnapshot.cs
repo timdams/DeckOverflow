@@ -31,7 +31,8 @@ public sealed record RunSnapshot(
     int Act,
     string ActKey,
     DraftView? Draft,
-    RelicChoiceView? RelicChoice);
+    RelicChoiceView? RelicChoice,
+    IReadOnlyList<string> Trinkets);
 
 /// <summary>Een relic buiten het gevecht. De naam staat in <c>en.json</c> onder <c>relic.&lt;id&gt;</c>.</summary>
 public sealed record RelicInfo(string Id, TextRef Text)
@@ -62,7 +63,8 @@ public sealed record ShopCardView(CardInfo Card, int Price, bool Sold);
 public sealed record ShopRelicView(RelicInfo Relic, int Price, bool Sold);
 
 /// <param name="Relic">Leeg tot de kist open is, of als er geen relics meer over zijn.</param>
-public sealed record TreasureView(bool Opened, RelicInfo? Relic, int Gold);
+/// <param name="Trinket">Een onderdeel dat nergens voor dient (<see cref="Trinkets"/>), of leeg.</param>
+public sealed record TreasureView(bool Opened, RelicInfo? Relic, int Gold, string? Trinket = null);
 
 /// <summary>Het eindscherm. Bij verlies: hoe dicht je erbij was.</summary>
 public sealed record EndView(bool Won, int Floor, string? EnemyKey, double EnemyHp, double EnemyMaxHp, int Gold, int DeckSize, int RelicCount, int Act = 1);

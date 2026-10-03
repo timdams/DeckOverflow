@@ -60,6 +60,7 @@ public partial class RunPage
     private bool _showCodex;
     private string? _codexFocus;
     private bool _showXRegister;
+    private bool _showPouch;
     private bool _showIntro;
     /// <summary>Een act die net begon: de actkaart staat open tot je verdergaat.</summary>
     private int? _actCard;
@@ -186,6 +187,7 @@ public partial class RunPage
         ShowToasts(events);
         await RememberActAsync(events);
         await RememberCodexAsync(events);
+        await RememberTrinketsAsync(events);
         await RememberXPanelsAsync(events);
         await RememberRunEndAsync(events);
 
@@ -346,6 +348,16 @@ public partial class RunPage
     }
 
     /// <summary>Panelen uit de motor bewaren en melden.</summary>
+    /// <summary>Een onderdeel uit een kist gaat in het zakje, over runs heen.</summary>
+    private async Task RememberTrinketsAsync(IEnumerable<GameEvent> events)
+    {
+        bool changed = false;
+        foreach (var found in events.OfType<TrinketFound>()) changed |= _progress.Trinkets.Add(found.Key);
+        if (changed) await Store.SaveAsync(_progress);
+    }
+
+    private static int StepOf(string trinket) => Trinkets.All.FirstOrDefault(t => t.Key == trinket)?.Step ?? 0;
+
     private async Task RememberXPanelsAsync(IEnumerable<GameEvent> events)
     {
         foreach (var earned in events.OfType<XPanelEarned>()) await EarnXPanelAsync(earned.Key);

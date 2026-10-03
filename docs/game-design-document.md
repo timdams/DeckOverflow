@@ -349,7 +349,9 @@ De plattegrond verschijnt pas na [de onthulling](#de-onthulling). Tussen de afde
 - De Controlekamer gaat open als de laatste baas van de Card Hall valt. Wie de onthulling via het vangnet kreeg, ziet ze nog dicht.
 - De Prikklok staat er al, uitgeschakeld tot er een backend is.
 - Onthulling: de laatste baas van de Card Hall verslaan, of het vangnet na **5 gestarte runs** (een barst op het titelscherm die je zelf aanklikt). De docent volgt later met de klascode.
-- Teases die er al zijn: het paginanummer op de map (`p. 2 / 18`), een gestippelde deur met een 5, een zin op het doodscherm (*Behind the door marked 5, something rattles.*) en de dichtgeniete Codex-tabbladen. De onderdelen die nergens voor dienen en de vreemde vijand met een regel als intent wachten nog.
+- Teases die er al zijn: het paginanummer op de map (`p. 2 / 18`), een gestippelde deur met een 5, een zin op het doodscherm (*Behind the door marked 5, something rattles.*) en de dichtgeniete Codex-tabbladen.
+- **Onderdelen die nergens voor dienen:** een kist bevat in de helft van de gevallen een onderdeel (een kaart met een regel, een schakel van een lopende band, een haak voor een gereedschapsbord, een etiket voor een bak), elk met "Belongs to step N". Ze gaan in een zakje dat je in de bovenbalk opent, en blijven over runs heen. Na de onthulling staan ze bij hun afdeling op de plattegrond.
+- **De vreemde vijand:** *The Stray Automaton*, ontsnapt uit de Controlekamer, zit in de gewone gevechten van act 1 en 2. Zijn intent is een regel, `block > 0 ? 16 : 8`: wie blokt, krijgt het dubbel.
 - Voor het ontwikkelen toont `?world` de plattegrond, ook voor de onthulling.
 
 ### Eén scherm

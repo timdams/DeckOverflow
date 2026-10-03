@@ -35,6 +35,9 @@ public sealed class PlayerProgress
     /// <summary>Verdiende ✗-panelen.</summary>
     public HashSet<string> XPanels { get; init; } = [];
 
+    /// <summary>Onderdelen die nergens voor dienen, uit kisten (een tease, <see cref="Engine.Runs.Trinkets"/>).</summary>
+    public HashSet<string> Trinkets { get; init; } = [];
+
     /// <summary>De hoogste act die je ooit bereikte: de startpunten.</summary>
     public int ReachedAct { get; set; } = 1;
 

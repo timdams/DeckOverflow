@@ -14,7 +14,7 @@
     {
         @if (Revealed)
         {
-            <WorldMap Unlocks="_progress.Unlocks" Pages="_progress.Codex" ReachedAct="_progress.ReachedAct" PanelCount="_progress.XPanels.Count"
+            <WorldMap Unlocks="_progress.Unlocks" Pages="_progress.Codex" Trinkets="_progress.Trinkets" ReachedAct="_progress.ReachedAct" PanelCount="_progress.XPanels.Count"
                       Starting="_starting" OnStart="StartAsync" OnCodex="() => OpenCodex(null)" OnXRegister="() => _showXRegister = true"
                       OnAccount="@(Account is null ? default : EventCallback.Factory.Create(this, () => _showAccount = true))" />
         }
@@ -112,6 +112,10 @@
                     </span>
                     <button class="secondary small" @onclick="() => OpenCodex(null)">@S.T("ui.codex")</button>
                     <button class="secondary small" @onclick="() => _showXRegister = true">@S.T("ui.xregister")</button>
+                    @if (_progress.Trinkets.Count > 0)
+                    {
+                        <button class="secondary small" @onclick="() => _showPouch = true">@S.T("ui.pouch", ("count", _progress.Trinkets.Count))</button>
+                    }
                     <button class="secondary small" @onclick="() => _showDeck = true">@S.T("ui.deck", ("count", s.Deck.Count))</button>
                 </header>
 
@@ -296,6 +300,11 @@
                                     {
                                         <p class="loot relic-found"><ArtImage Src="@Art.Relic(found.Id)" Class="big" /><strong>@S.Relic(found.Id)</strong>: @S.T(found.Text)</p>
                                     }
+                                    @if (treasure.Trinket is { } odd)
+                                    {
+                                        @* Een onderdeel dat nergens voor dient: een tease voor wat achter de muur ligt *@
+                                        <p class="trinket-found">@S.T("ui.treasure.trinket", ("name", S.T($"trinket.{odd}")), ("step", StepOf(odd)))</p>
+                                    }
                                     <button @onclick="() => DoAsync(new Leave())">@S.T("ui.continue")</button>
                                 }
                             </section>
@@ -340,6 +349,24 @@
                             break;
                     }
                 </main>
+            </div>
+        }
+
+        @if (_showPouch)
+        {
+            @* Het zakje: onderdelen die hier nergens passen, elk met een labeltje *@
+            <div class="modal" @onclick="() => _showPouch = false">
+                <div class="modal-body story-card" @onclick:stopPropagation="true">
+                    <h2>@S.T("ui.pouch.title")</h2>
+                    <p>@S.T("ui.pouch.text")</p>
+                    <ul class="pouch">
+                        @foreach (string odd in _progress.Trinkets.OrderBy(StepOf))
+                        {
+                            <li><span class="tag-step">@StepOf(odd)</span>@S.T($"trinket.{odd}") <small>@S.T("ui.pouch.tag", ("step", StepOf(odd)))</small></li>
+                        }
+                    </ul>
+                    <button class="secondary" @onclick="() => _showPouch = false">@S.T("ui.close")</button>
+                </div>
             </div>
         }
 

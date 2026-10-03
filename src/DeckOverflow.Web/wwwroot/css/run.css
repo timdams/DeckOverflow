@@ -984,3 +984,10 @@ a.play-big.as-link { display: inline-block; text-decoration: none; font-size: 18
 /* De kamer van een afdeling: past in haar kaart; dicht is ze een vage schets achter een stippellijn */
 .department .dept-art { object-fit: contain; background: var(--paper); }
 .department .dept-art.sketch { filter: grayscale(1); opacity: 0.18; border: 2px dashed var(--rule); }
+
+/* Het zakje met onderdelen die nergens voor dienen */
+.trinket-found { font-style: italic; color: var(--ink); max-width: 460px; }
+.pouch { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.pouch li { display: flex; align-items: baseline; gap: 10px; }
+.pouch small { color: var(--muted); }
+.pouch .tag-step { display: inline-grid; place-items: center; width: 24px; height: 24px; flex: none; font-size: 12px; font-weight: 800; color: var(--white); background: var(--zss); border: 2px solid var(--ink); border-radius: 50%; }

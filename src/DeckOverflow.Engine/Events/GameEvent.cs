@@ -53,6 +53,7 @@ namespace DeckOverflow.Engine.Events;
 [JsonDerivedType(typeof(ActStarted), nameof(ActStarted))]
 [JsonDerivedType(typeof(CodexUnlocked), nameof(CodexUnlocked))]
 [JsonDerivedType(typeof(XPanelEarned), nameof(XPanelEarned))]
+[JsonDerivedType(typeof(TrinketFound), nameof(TrinketFound))]
 public abstract record GameEvent
 {
     public int Seq { get; init; }
@@ -167,7 +168,17 @@ public sealed record ActCompleted(int Act) : GameEvent;
 /// Een regel deed iets in een gevecht dat nu voorbij is: de Codex-pagina mag open.
 /// <paramref name="Values"/> zijn de getallen van dat moment, voor de tekst en de code op de pagina.
 /// </summary>
-public sealed record CodexUnlocked(string Key, IReadOnlyDictionary<string, string> Values) : GameEvent;
+public sealed record CodexUnlocked(string Key, IReadOnlyDictionary<string, string> Values) : GameEvent
+{
+    /// <summary>Gelijk als sleutel en getallen gelijk zijn, niet als het toevallig dezelfde dictionary is: replays vergelijken events.</summary>
+    public bool Equals(CodexUnlocked? other) =>
+        other is not null && Seq == other.Seq && Key == other.Key && Values.Count == other.Values.Count
+        && Values.All(v => other.Values.TryGetValue(v.Key, out string? value) && value == v.Value);
+
+    public override int GetHashCode() => HashCode.Combine(Seq, Key);
+}
+/// <summary>Een onderdeel dat nergens voor dient, met een labeltje "hoort bij stap N".</summary>
+public sealed record TrinketFound(string Key, int Step) : GameEvent;
 /// <summary>Een ✗-paneel verdiend: iets wat de handleiding verbiedt en wat jij toch deed.</summary>
 public sealed record XPanelEarned(string Key) : GameEvent;
 /// <summary>Een nieuwe act met een nieuwe map. Wordt ook een startpunt voor volgende runs.</summary>

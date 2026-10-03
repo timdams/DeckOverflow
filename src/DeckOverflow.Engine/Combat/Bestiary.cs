@@ -19,6 +19,8 @@ public static class Bestiary
     public const string Splitter = "splitter";
     public const string EffectivePower = "effective-power";
     public const string Counter = "counter";
+    /// <summary>Een tease: een robotje dat ontsnapte uit de Controlekamer, met een regel als intent.</summary>
+    public const string Stray = "stray";
 
     // Act 2: de Drukkerij
     public const string TypeBlock = "type-block";
@@ -37,7 +39,7 @@ public static class Bestiary
 
     public static readonly IReadOnlyList<string> Bosses = [Reckoner, Typesetter, Caster];
 
-    public static readonly IReadOnlyList<string> All = [Slime, Knight, Ghost, Dripper, Jug, Colossus, Golem, Reckoner, Splitter, Counter, EffectivePower, TypeBlock, PaperGolem, Typesetter, Ingot, Rounder, Index, Caster, Label];
+    public static readonly IReadOnlyList<string> All = [Slime, Knight, Ghost, Dripper, Jug, Colossus, Golem, Reckoner, Splitter, Counter, Stray, EffectivePower, TypeBlock, PaperGolem, Typesetter, Ingot, Rounder, Index, Caster, Label];
 
     public static bool Exists(string? key) => key is not null && All.Contains(key);
 
@@ -79,6 +81,12 @@ public static class Bestiary
             new CombatantSetup(Counter, ValueKind.Int, Hp: int.MaxValue - 30, MaxHp: int.MaxValue),
             [new("9 + 9", 9 + 9), new("25 / 2", 25 / 2), new("7 * 2", 7 * 2)],
             HealAfterAttack: 9),
+
+        // De Stray Automaton, ontsnapt uit de Controlekamer (H5): zijn intent is geen getal maar een regel.
+        // Wie blokt, krijgt het dubbel. Een eerste smaak van if, zonder het te benoemen.
+        Stray => new(
+            new CombatantSetup(Stray, ValueKind.Int, Hp: 26, MaxHp: 26),
+            [Intent.Live("block > 0 ? 16 : 8", c => c.Block > 0 ? 16 : 8), new("5 + 5", 5 + 5)]),
 
         // ---------- Act 2: de Drukkerij ----------
 
