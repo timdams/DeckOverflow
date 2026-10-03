@@ -44,7 +44,8 @@
     "index": "actors/the-index",
     "caster": "actors/reckoner",
     "label": "items/wrong-label",
-    "splitter": "actors/slime"
+    "splitter": "actors/slime",
+    "effective-power": "actors/ghost"
   },
   "nodes": {
     "fight": "items/whack",

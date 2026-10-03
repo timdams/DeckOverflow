@@ -12,6 +12,7 @@ public sealed record CombatantSetup(string Key, ValueKind Kind, double Hp, doubl
 /// <param name="RoundsIncoming">Zolang hij een <c>double</c> is, rondt hij elke treffer af met <c>Math.Round</c> (bankiersafronding).</param>
 /// <param name="GrowthAfterAttack">Na zijn aanval wordt zijn HP <c>HP * factor</c>, volgens de regels van zijn type. 0 is geen groei.</param>
 /// <param name="TypeCycle">Na zijn aanval giet hij zichzelf om naar het volgende type in deze lijst.</param>
+/// <param name="CrashLength">Alleen voor een <c>string</c>: vanaf deze lengte crasht zijn tekst, en valt hij om (Effective Power).</param>
 public sealed record EnemySetup(
     CombatantSetup Stats,
     IReadOnlyList<Intent> Pattern,
@@ -19,7 +20,8 @@ public sealed record EnemySetup(
     double BlockAfterAttack = 0,
     bool RoundsIncoming = false,
     double GrowthAfterAttack = 0,
-    IReadOnlyList<ValueKind>? TypeCycle = null);
+    IReadOnlyList<ValueKind>? TypeCycle = null,
+    int CrashLength = 0);
 
 /// <param name="Relics">Ids uit <see cref="Relics.RelicCatalog"/> die in dit gevecht meespelen.</param>
 public sealed record CombatSetup(

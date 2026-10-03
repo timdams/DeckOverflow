@@ -17,6 +17,7 @@ public static class Bestiary
     public const string Golem = "golem";
     public const string Reckoner = "reckoner";
     public const string Splitter = "splitter";
+    public const string EffectivePower = "effective-power";
 
     // Act 2: de Gieterij
     public const string Ingot = "ingot";
@@ -26,11 +27,11 @@ public static class Bestiary
     public const string Label = "label";
 
     /// <summary>Alle elites, over de acts heen. Welke elite in welke act zit, staat in <see cref="Runs.Acts"/>.</summary>
-    public static readonly IReadOnlyList<string> Elites = [Colossus, Golem, Index];
+    public static readonly IReadOnlyList<string> Elites = [Colossus, Golem, EffectivePower, Index];
 
     public static readonly IReadOnlyList<string> Bosses = [Reckoner, Caster];
 
-    public static readonly IReadOnlyList<string> All = [Slime, Knight, Ghost, Dripper, Jug, Colossus, Golem, Reckoner, Splitter, Ingot, Rounder, Index, Caster, Label];
+    public static readonly IReadOnlyList<string> All = [Slime, Knight, Ghost, Dripper, Jug, Colossus, Golem, Reckoner, Splitter, EffectivePower, Ingot, Rounder, Index, Caster, Label];
 
     public static bool Exists(string? key) => key is not null && All.Contains(key);
 
@@ -58,6 +59,13 @@ public static class Bestiary
         Dripper => new(
             new CombatantSetup(Dripper, ValueKind.Double, Hp: 19.5, MaxHp: 19.5),
             [new("5 * 1.5", 5 * 1.5), Intent.Live("energy * 4 + 2.5", c => c.Energy * 4 + 2.5)]),
+
+        // Effective Power (iPhone, 2015): zijn HP is een bericht. Elke treffer plakt eraan vast,
+        // en vanaf 32 tekens crasht het bericht. "2.5" plakt drie tekens, "6" maar één.
+        EffectivePower => new(
+            new CombatantSetup(EffectivePower, ValueKind.String, Hp: 1, MaxHp: 1, Text: "effective. Power"),
+            [new("8 + 4", 8 + 4), new("30 / 2", 30 / 2), new("3 * 3", 3 * 3)],
+            CrashLength: 32),
 
         // Deling van gehele getallen als verdediging: zonder blok 30, met 5 blok nog 5
         Splitter => new(

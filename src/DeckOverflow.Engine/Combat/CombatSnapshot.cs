@@ -27,6 +27,7 @@ public sealed record CardView(
     string Id, int Cost, TextRef Text, TargetMode Target, ValueKind? Kind, ValueKind? CastTo, bool Playable);
 
 /// <param name="Text">Alleen voor een <c>string</c>: de tekst die zijn HP is.</param>
+/// <param name="TextLimit">Alleen als zijn tekst kan crashen: de lengte waarop dat gebeurt.</param>
 public sealed record CombatantView(
     int Id,
     string Key,
@@ -36,7 +37,8 @@ public sealed record CombatantView(
     double Block,
     bool IsEnemy,
     IntentView? Intent,
-    string? Text = null);
+    string? Text = null,
+    int? TextLimit = null);
 
 /// <param name="Value">Leeg als het totaal verborgen blijft. Bij een bewuste intent: wat het nu zou zijn.</param>
 /// <param name="Filled">Alleen bij een bewuste intent: de expressie met jouw getallen ingevuld, bv. <c>30 / (5 + 1)</c>.</param>

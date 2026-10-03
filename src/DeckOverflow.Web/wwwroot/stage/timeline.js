@@ -640,6 +640,17 @@ const handlers = {
     await wait(420);
   },
 
+  /** Zijn tekst werd te lang om te tonen: hij crasht, zoals het bericht dat iPhones liet vastlopen. */
+  async TextCrashed(S, e) {
+    const a = S.actor(e.targetId);
+    const head = a.head();
+    sfx('glitch');
+    shake(S.shaker, juice.shakePx.large);
+    floatText(S.layers.fx, `${e.length}/${e.limit}`, head.x, head.y - 70, { size: 22, rise: 24 });
+    floatText(S.layers.fx, t('stage.text-crash'), head.x, head.y - 44, { size: 14, rise: 24, color: COLORS.muted });
+    await wait(500);
+  },
+
   /** De vijand crashte vorige beurt: geen aanval. */
   async AttackSkipped(S, e) {
     const a = S.actor(e.enemyId);

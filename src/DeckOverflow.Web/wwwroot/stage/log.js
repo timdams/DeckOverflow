@@ -103,6 +103,8 @@ function describe(S, e) {
       return [t('stage.log.appended', { target: who(e.targetId), before: e.before, added: e.added, after: e.after }), COLORS.ink];
     case 'TextParsed':
       return [t('stage.log.parsed', { target: who(e.targetId), method: e.method, text: e.text, value: num(e.value) }), COLORS.ink];
+    case 'TextCrashed':
+      return [t('stage.log.text-crashed', { target: who(e.targetId), length: e.length }), COLORS.ink];
     case 'ExceptionThrown':
       return [t('stage.log.exception', { exception: e.exception, expression: e.expression }), COLORS.ink];
     case 'AttackSkipped':

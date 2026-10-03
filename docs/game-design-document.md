@@ -442,10 +442,10 @@ Structuur: een map van 6 rijen, 1 elite per pad, 1 baas. Samen 10 tot 15 minuten
 | Operatorvoorrang | Baas De Rekenmeester, relic Haakjes | H2 |
 | `++` en `--` | Tweelingschutters | H2 |
 | Constanten (`const`) | De patch: een revisie maakt een waarde `const` | H2 |
-| Overflow | Elite Level 256 (vroeger De Byte-Golem), voorlopig de enige elite van act 1 | H2 |
+| Overflow | Elite Level 256 (vroeger De Byte-Golem) | H2 |
 | `string` en `+` | Ink-kaarten (`"1" + "2"` is `"12"`), Read zet tekst om naar een getal, Papieren Golem | H3 |
 | `char` is een getal | Letterkaarten: `'A' + 1` is 66 | H3 |
-| Unicode | Elite Effective Power | H3 |
+| Unicode, `Length` | Elite Effective Power: een bericht dat crasht vanaf 32 tekens | H3 |
 | Casting | Omgieten-kaarten (kernsysteem), event De Smeltkroes; Codex pas in Act 2 | H4 |
 | Parse | Read; Codex pas in Act 2 | H4 |
 
@@ -479,7 +479,7 @@ Vroeger De Byte-Golem. Hij is nu een speelhalkast waarvan de rechterhelft van he
 
 ### Elite: Effective Power (tekst en Unicode)
 
-Een bericht dat ontploft als je het leest. Zijn HP is een `string`: wie er schade bij telt, plakt cijfers aan zijn tekst en maakt hem langer. Wie ziet dat elk teken een getal is (`char`), kan hem teken per teken afbreken. Het is de echte bug van 2015, waarbij één reeks Unicode-tekens iPhones liet crashen.
+Een bericht dat ontploft als je het leest. Zijn HP is een `string`, `"effective. Power"`: elke treffer plakt eraan vast, net als bij The Label. Maar hier is plakken de bedoeling: vanaf 32 tekens crasht het bericht, zoals de echte bug van 2015 waarbij één reeks Unicode-tekens iPhones liet crashen zodra ze de tekst probeerden te tonen. Een Whack plakt één teken (`"6"`), Floating Bolts drie keer `"2.5"`, samen negen. Wie snapt dat `"2.5"` drie tekens is, wint snel; wie gewoon hard slaat, niet. Ink werkt hier wel, want tekst op tekst is geldige C#. De HP-balk loopt vol naar de crash: 16/32. Gebouwd op 3 oktober 2026; de Codex-pagina String length opent na de crash. Het oorspronkelijke idee (teken per teken afbreken via `char`) wacht op de letterkaarten.
 
 ### Elite: Flight 501 (casting, Act 2)
 
@@ -587,7 +587,8 @@ Wie een pagina leest, krijgt niets extra. De beloning zit in de volgende run: je
 | Integer division | H2 | Split, of een bewuste intent met `/` |
 | Integer overflow | H2 | helen tot een `byte` omklapt |
 | Operator precedence | H2 | de Rekenmeester verslaan |
-| String concatenation | H3 | Ink, of een treffer op The Label |
+| String concatenation | H3 | Ink, of een treffer op The Label of Effective Power |
+| String length | H3 | Effective Power laten crashen |
 | Casting | H4, vanaf act 2 | omgieten, ook de baas die zichzelf omgiet |
 | Convert | H4, vanaf act 2 | Measure Twice |
 | Math.Round | H4, vanaf act 2 | de Rounder |

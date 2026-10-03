@@ -29,7 +29,7 @@ public static class Acts
         1, "vat-valley", Bestiary.Reckoner,
         EasyPool: [Bestiary.Slime, Bestiary.Knight],
         NormalPool: [Bestiary.Knight, Bestiary.Ghost, Bestiary.Dripper, Bestiary.Splitter],
-        ElitePool: [Bestiary.Golem],
+        ElitePool: [Bestiary.Golem, Bestiary.EffectivePower],
         Events: Adventures.All,
         EarlyEvent: Bestiary.Jug,
         NewCards: CardCatalog.RewardPool);

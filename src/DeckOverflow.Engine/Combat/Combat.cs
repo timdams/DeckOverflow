@@ -156,7 +156,8 @@ public sealed class Combat
         {
             try
             {
-                if (Evaluate(input.Amount, input.Kind).Value.IsText)
+                // Tekst raakt geen getal, maar tekst op tekst plakt gewoon
+                if (Evaluate(input.Amount, input.Kind).Value.IsText && target.Kind != ValueKind.String)
                 {
                     Emit(new PlayRejected(play.HandIndex, "reject.text-not-number"));
                     return;
@@ -292,13 +293,23 @@ public sealed class Combat
         {
             case DamageEffect d:
             {
-                (double perHit, int hitFactor) = Modify(card, d.Amount, card.Kind);
-                for (int hit = 0; hit < d.Hits * hitFactor && !target.IsDead; hit++) DealDamage(target, perHit, fromPlayer: true);
+                (TypedValue perHit, int hitFactor) = Modify(card, d.Amount, card.Kind);
+                for (int hit = 0; hit < d.Hits * hitFactor && !target.IsDead; hit++)
+                {
+                    if (perHit.IsText) AppendText(target, perHit.Text);
+                    else DealDamage(target, perHit.Number, fromPlayer: true);
+                }
                 break;
             }
 
-            case BlockEffect b: GainBlock(target, Modify(card, b.Amount, ValueKind.Int).Value); break;
-            case HealEffect h: Heal(target, (int)Modify(card, h.Amount, ValueKind.Int).Value); break;
+            case BlockEffect b: GainBlock(target, Modify(card, b.Amount, ValueKind.Int).Value.Number); break;
+            case HealEffect h:
+            {
+                TypedValue heal = Modify(card, h.Amount, ValueKind.Int).Value;
+                if (heal.IsText) AppendText(target, heal.Text);
+                else Heal(target, (int)heal.Number);
+                break;
+            }
 
             // Een combo giet niet om naar wat hij al is, maar doet de rest wel
             case CastEffect c when target.Kind != c.To: Cast(target, c.To); break;
@@ -383,9 +394,9 @@ public sealed class Combat
     }
 
     /// <summary>Past de wachtende modifiers toe op het getal van deze kaart. Al gecontroleerd bij het spelen.</summary>
-    private (double Value, int HitFactor) Modify(CardDefinition card, double amount, ValueKind? kind)
+    private (TypedValue Value, int HitFactor) Modify(CardDefinition card, double amount, ValueKind? kind)
     {
-        if (_modifiers.Count == 0) return (amount, 1);
+        if (_modifiers.Count == 0) return (TypedValue.OfCard(amount, kind), 1);
 
         var (value, hitFactor, expression) = Evaluate(amount, kind);
         if (_modifiers.Any(m => m.Op == ModifierOp.Divide && m.Operand.Kind == ValueKind.Int) && value.Kind == ValueKind.Int)
@@ -396,7 +407,7 @@ public sealed class Combat
             Moment(CodexCatalog.Parse, ("text", expression), ("value", value.Number));
         _modifiers.Clear();
         Emit(new ModifiersApplied(card.Id, amount, value.Number, expression));
-        return (value.Number, hitFactor);
+        return (value, hitFactor);
     }
 
     // ---------- Relics ----------
@@ -562,13 +573,27 @@ public sealed class Combat
     }
 
     /// <summary>Tekst + getal is tekst: <c>"40" + 6</c> is <c>"406"</c>, en <c>"40" + 2.5</c> is <c>"402.5"</c>.</summary>
-    private void AppendText(Combatant target, double amount)
+    private void AppendText(Combatant target, double amount) =>
+        AppendText(target, TypedValue.OfCard(amount, amount % 1 == 0 ? ValueKind.Int : ValueKind.Double).Plus(TypedValue.String("")).Text);
+
+    /// <summary>Tekst + tekst plakt ook. Wordt de tekst te lang voor een vijand die kan crashen, dan valt hij om.</summary>
+    private void AppendText(Combatant target, string added)
     {
         string before = target.Text!;
-        string added = TypedValue.OfCard(amount, amount % 1 == 0 ? ValueKind.Int : ValueKind.Double).Plus(TypedValue.String("")).Text;
         target.Text = before + added;
         Emit(new TextAppended(target.Id, before, added, target.Text));
         Moment(CodexCatalog.StringConcat, ("expression", $"\"{before}\" + {added}"), ("value", $"\"{target.Text}\""));
+
+        int limit = target.IsEnemy ? _setup.Enemy.CrashLength : 0;
+        if (limit > 0 && target.Text.Length >= limit)
+        {
+            Emit(new TextCrashed(target.Id, target.Text.Length, limit));
+            Moment(CodexCatalog.StringLength, ("text", target.Text), ("length", target.Text.Length), ("limit", limit));
+            target.Kind = ValueKind.Int;
+            target.Text = null;
+            target.Hp = 0;
+            Emit(new CombatantDied(target.Id));
+        }
     }
 
     /// <summary>
@@ -717,8 +742,9 @@ public sealed class Combat
     /// <summary>De variabelen van een bewuste intent, zoals ze nu staan.</summary>
     private IntentContext Context() => new((int)_player.Block, _cardsThisTurn, Energy, (int)_player.Hp);
 
-    private static CombatantView View(Combatant c, Intent? intent, IntentContext context) => new(
+    private CombatantView View(Combatant c, Intent? intent, IntentContext context) => new(
         c.Id, c.Key, c.Kind, c.Hp, c.MaxHp, c.Block, c.IsEnemy,
         intent is null ? null : new IntentView(intent.Expression, intent.Hidden ? null : intent.ValueIn(context), intent.IsLive ? intent.FilledIn(context) : null),
-        c.Text);
+        c.Text,
+        c.Text is not null && c.IsEnemy && _setup.Enemy.CrashLength > 0 ? _setup.Enemy.CrashLength : null);
 }

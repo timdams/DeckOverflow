@@ -505,9 +505,15 @@ function createActor(c) {
       a.hp = value;
       // Een string heeft tekst als HP: geen balk die zakt, alleen de tekst tussen aanhalingstekens
       if (a.data?.text != null) {
-        hpText.text = `"${a.data.text}"`;
-        barFill.scale.x = 1;
-        barLag.scale.x = 1;
+        const txt = a.data.text;
+        const limit = a.data.textLimit;
+        // Lange tekst: het begin wegknippen, zodat het einde zichtbaar blijft waar de treffers plakken
+        const shown = txt.length > 16 ? `…${txt.slice(-15)}` : txt;
+        hpText.text = limit ? `"${shown}" ${txt.length}/${limit}` : `"${shown}"`;
+        // Kan de tekst crashen, dan loopt de balk vol naar de crash; anders staat hij vol
+        const ratio = limit ? Math.min(1, txt.length / limit) : 1;
+        barFill.scale.x = ratio;
+        barLag.scale.x = ratio;
         return;
       }
       hpText.text = `${num(value)}/${num(a.max)}`;

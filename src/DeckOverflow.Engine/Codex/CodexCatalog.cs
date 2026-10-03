@@ -20,6 +20,7 @@ public static class CodexCatalog
     public const string Overflow = "overflow";
     public const string OperatorPrecedence = "operator-precedence";
     public const string StringConcat = "string-concat";
+    public const string StringLength = "string-length";
     public const string Casting = "casting";
     public const string Convert = "convert";
     public const string Rounding = "rounding";
@@ -35,6 +36,7 @@ public static class CodexCatalog
         new(Overflow, 2, "1_csharpbasics/1_datatypes.html"),
         new(OperatorPrecedence, 2, "1_csharpbasics/2_expressies.html"),
         new(StringConcat, 3, "2_tekst/5_chars_strings.html"),
+        new(StringLength, 3, "2_tekst/5_chars_strings.html"),
         new(Casting, 4, "3_data/4_converteren_casting.html#casting", MinAct: 2),
         new(Convert, 4, "3_data/4_converteren_casting.html#conversie", MinAct: 2),
         new(Rounding, 4, "3_data/4d_afronden.html", MinAct: 2),

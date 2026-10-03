@@ -32,6 +32,7 @@ namespace DeckOverflow.Engine.Events;
 [JsonDerivedType(typeof(ExceptionThrown), nameof(ExceptionThrown))]
 [JsonDerivedType(typeof(TextAppended), nameof(TextAppended))]
 [JsonDerivedType(typeof(TextParsed), nameof(TextParsed))]
+[JsonDerivedType(typeof(TextCrashed), nameof(TextCrashed))]
 [JsonDerivedType(typeof(IntentAssigned), nameof(IntentAssigned))]
 [JsonDerivedType(typeof(ModifierQueued), nameof(ModifierQueued))]
 [JsonDerivedType(typeof(ModifiersApplied), nameof(ModifiersApplied))]
@@ -111,6 +112,9 @@ public sealed record TextAppended(int TargetId, string Before, string Added, str
 
 /// <summary>Tekst-HP werd een getal, met <paramref name="Method"/> (<c>int.Parse</c> of <c>Convert.ToByte</c>).</summary>
 public sealed record TextParsed(int TargetId, string Method, string Text, double Value, ValueKind To) : GameEvent;
+
+/// <summary>Zijn tekst werd te lang om te tonen, zoals het bericht dat iPhones liet crashen: hij valt om.</summary>
+public sealed record TextCrashed(int TargetId, int Length, int Limit) : GameEvent;
 
 /// <summary>De vijand slaat zijn aanval over, bv. na een crash.</summary>
 public sealed record AttackSkipped(int EnemyId) : GameEvent;
