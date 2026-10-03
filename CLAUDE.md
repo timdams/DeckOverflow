@@ -62,3 +62,4 @@ Uit het GDD. Een wijziging die hiertegen ingaat, eerst voorleggen.
 - Een nieuwe kaart, vijand, relic of event krijgt zijn tekst in `en.json`; `StringsTests` faalt anders. Een nieuwe relic is een klasse met haken (`Relic`), geen `if` in `Combat` of `Run`.
 - .NET 10, nullable aan, `sealed record` voor commands, events en snapshots.
 - Nieuwe regels en scenario's krijgen een xUnit-test.
+- Elke wijziging aan het spel (een vijand, kaart, relic, regel of getal) toets je af aan de Codex (`CodexCatalog`, `codex.*` in `en.json`) en de ✗-panelen (`XRegister`, `xpanel.*`): kloppen de tekst, de code en de getallen nog, en kan het moment of paneel nog gebeuren? Pas ze mee aan, en meld in je samenvatting wat je controleerde, ook als er niets hoefde te veranderen.
