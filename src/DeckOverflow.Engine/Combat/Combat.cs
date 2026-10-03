@@ -29,6 +29,9 @@ public sealed class Combat
 
     /// <summary>Overschreven aanval (Zet op 1), alleen tot de vijand aanvalt.</summary>
     private Intent? _assignedAttack;
+    /// <summary>De vijand crashte: zijn volgende aanval valt weg.</summary>
+    private bool _enemyCrashed;
+    private int _typeCycleIndex;
     private int _cardsPlayed;
 
     private Combat(CombatSetup setup, ulong seed)
@@ -112,7 +115,7 @@ public sealed class Combat
             return;
         }
 
-        if (card.Effect is CastEffect cast && target.Kind == cast.To)
+        if (card.Effect is CastEffect or ConvertEffect && target.Kind == card.CastTo)
         {
             Emit(new PlayRejected(play.HandIndex, "reject.already-type"));
             return;
@@ -141,12 +144,20 @@ public sealed class Combat
             _enemy.Block = 0;
         }
 
-        // Vijand valt aan
+        // Vijand valt aan, tenzij hij crashte
         Intent attack = CurrentIntent;
         _assignedAttack = null;
-        Emit(new AttackLaunched(EnemyId, PlayerId, attack.Expression, attack.Value));
-        DealDamage(_player, attack.Value, fromPlayer: false);
-        if (CheckOutcome()) return;
+        if (_enemyCrashed)
+        {
+            _enemyCrashed = false;
+            Emit(new AttackSkipped(EnemyId));
+        }
+        else
+        {
+            Emit(new AttackLaunched(EnemyId, PlayerId, attack.Expression, attack.Value));
+            DealDamage(_player, attack.Value, fromPlayer: false);
+            if (CheckOutcome()) return;
+        }
 
         // Helen en schild opbouwen volgen ook de regels van zijn (misschien omgegoten) type
         if (_setup.Enemy.HealAfterAttack > 0)
@@ -155,6 +166,13 @@ public sealed class Combat
             if (CheckOutcome()) return;
         }
         if (_setup.Enemy.BlockAfterAttack > 0) GainBlock(_enemy, _setup.Enemy.BlockAfterAttack);
+        if (_setup.Enemy.GrowthAfterAttack > 0) Grow(_enemy, _setup.Enemy.GrowthAfterAttack);
+        if (_setup.Enemy.TypeCycle is { Count: > 0 } cycle)
+        {
+            _typeCycleIndex = (_typeCycleIndex + 1) % cycle.Count;
+            if (cycle[_typeCycleIndex] != _enemy.Kind) Cast(_enemy, cycle[_typeCycleIndex]);
+            if (CheckOutcome()) return;
+        }
 
         // Nieuwe beurt
         Turn++;
@@ -188,6 +206,9 @@ public sealed class Combat
             // Een combo giet niet om naar wat hij al is, maar doet de rest wel
             case CastEffect c when target.Kind != c.To: Cast(target, c.To); break;
             case CastEffect: break;
+
+            case ConvertEffect c when target.Kind != c.To: Convert(target, c.To); break;
+            case ConvertEffect: break;
 
             case SetAttackEffect s: AssignAttack(s.Value); break;
             case ModifierEffect m: QueueModifier(m); break;
@@ -278,6 +299,14 @@ public sealed class Combat
     {
         bool whole = CastRules.IsWhole(target.Kind);
         double remaining = amount;
+
+        // De Rounder rondt af zolang hij een double is; als int kapt hij gewoon af
+        if (target.IsEnemy && _setup.Enemy.RoundsIncoming && target.Kind == ValueKind.Double)
+        {
+            double rounded = Math.Round(remaining);
+            if (rounded != remaining) Emit(new ValueRounded(target.Id, remaining, rounded, ValueSubject.Damage));
+            remaining = rounded;
+        }
 
         if (target.Block > 0 && remaining > 0)
         {
@@ -375,6 +404,43 @@ public sealed class Combat
 
         Emit(new TypeChanged(target.Id, from, to, hpBefore, target.Hp, target.MaxHp, target.Block, hp.Wrapped));
 
+        if (target.IsDead) Emit(new CombatantDied(target.Id));
+    }
+
+    /// <summary>
+    /// <c>Convert</c>: afronden in plaats van afkappen, en checked. Past het getal niet,
+    /// dan verandert er niets aan het doelwit, maar crasht het en slaat het zijn aanval over.
+    /// </summary>
+    private void Convert(Combatant target, ValueKind to)
+    {
+        ValueKind from = target.Kind;
+        double hpBefore = target.Hp;
+
+        if (CastRules.ConvertChecked(hpBefore, to) is not { } hp)
+        {
+            Emit(new ConversionCrashed(target.Id, to, hpBefore));
+            if (target.IsEnemy) _enemyCrashed = true;
+            return;
+        }
+
+        if (hp != hpBefore) Emit(new ValueRounded(target.Id, hpBefore, hp, ValueSubject.Hp));
+        target.Kind = to;
+        target.Hp = hp;
+        if (CastRules.IsWhole(to)) target.Block = Math.Round(target.Block);
+
+        Emit(new TypeChanged(target.Id, from, to, hpBefore, target.Hp, target.MaxHp, target.Block, Wrapped: false));
+        if (target.IsDead) Emit(new CombatantDied(target.Id));
+    }
+
+    /// <summary>Groei volgt het type: een int kapt <c>HP * factor</c> af, een byte klapt om.</summary>
+    private void Grow(Combatant target, double factor)
+    {
+        double before = target.Hp;
+        double raw = before * factor;
+        var result = CastRules.Convert(raw, target.Kind);
+        target.Hp = result.Result;
+        Emit(new ValueGrew(target.Id, before, factor, raw, target.Hp));
+        if (result.Lost > 0) Emit(new ValueTruncated(target.Id, raw, IntRules.Truncate(raw).Result, result.Lost, ValueSubject.Hp));
         if (target.IsDead) Emit(new CombatantDied(target.Id));
     }
 

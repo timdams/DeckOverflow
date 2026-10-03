@@ -93,6 +93,14 @@ function describe(S, e) {
       return [t('stage.log.overflow', { target: who(e.targetId), before: e.before, added: e.added, after: e.after }), COLORS.ink];
     case 'TypeChanged':
       return [t('stage.log.cast', { target: who(e.targetId), from: e.from.toLowerCase(), to: e.to.toLowerCase(), before: num(e.hpBefore), after: num(e.hpAfter) }), typeOf(e.to).color];
+    case 'ValueRounded':
+      return [t('stage.log.rounded', { target: who(e.targetId), before: num(e.before), after: num(e.after) }), COLORS.ink];
+    case 'ValueGrew':
+      return [t('stage.log.grew', { target: who(e.targetId), before: num(e.before), factor: num(e.factor), raw: num(e.raw), after: num(e.after) }), COLORS.ink];
+    case 'ConversionCrashed':
+      return [t('stage.log.crashed', { target: who(e.targetId), value: num(e.value) }), COLORS.ink];
+    case 'AttackSkipped':
+      return [t('stage.log.skipped', { source: who(e.enemyId) }), COLORS.muted];
     case 'CombatantDied':
       return [t(S.actor(e.targetId)?.isEnemy ? 'stage.log.enemy-died' : 'stage.log.player-died', { target: who(e.targetId) }), COLORS.ink];
     case 'TurnStarted':

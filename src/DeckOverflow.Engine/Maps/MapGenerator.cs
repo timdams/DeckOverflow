@@ -1,4 +1,3 @@
-using DeckOverflow.Engine.Combat;
 using DeckOverflow.Engine.Random;
 using DeckOverflow.Engine.Runs;
 
@@ -11,13 +10,13 @@ namespace DeckOverflow.Engine.Maps;
 /// </summary>
 public static class MapGenerator
 {
-    /// <summary>Rijen onder de baas.</summary>
-    public const int Rows = 8;
+    /// <summary>Rijen onder de baas: een act van 10 tot 15 minuten.</summary>
+    public const int Rows = 6;
     public const int Columns = 5;
     public const int Paths = 4;
-    public const int TreasureRow = 4;
+    public const int TreasureRow = 3;
     public const int RestRow = Rows - 1;
-    public const int FirstEliteRow = 3;
+    public const int FirstEliteRow = 2;
 
     public const int MinElites = 2;
 
@@ -30,17 +29,20 @@ public static class MapGenerator
     /// <summary>Soorten die je niet twee keer na elkaar wil: dan voelt het pad als herhaling.</summary>
     private static readonly HashSet<NodeKind> NoRepeat = [NodeKind.Elite, NodeKind.Shop, NodeKind.Rest];
 
-    public static ActMap Generate(SeededRng rng)
+    /// <summary>De map van act 1.</summary>
+    public static ActMap Generate(SeededRng rng) => Generate(rng, Acts.VatValley);
+
+    public static ActMap Generate(SeededRng rng, ActDefinition act)
     {
         // Elke poging gebruikt dezelfde rng verder, dus het resultaat blijft vast per seed
         for (int attempt = 0; attempt < 100; attempt++)
         {
-            if (TryGenerate(rng) is { } map) return map;
+            if (TryGenerate(rng, act) is { } map) return map;
         }
         throw new InvalidOperationException("Geen geldige map na 100 pogingen.");
     }
 
-    private static ActMap? TryGenerate(SeededRng rng)
+    private static ActMap? TryGenerate(SeededRng rng, ActDefinition act)
     {
         var edges = new HashSet<((int Row, int Col) From, (int Row, int Col) To)>();
         var cells = new HashSet<(int Row, int Col)>();
@@ -89,7 +91,7 @@ public static class MapGenerator
                 _ => RollKind(rng, cell.Row, parentIds.Select(p => kinds[p]).ToList())
             };
             kinds[id] = kind;
-            encounters[id] = PickEncounter(rng, kind, cell.Row, parentIds.Select(p => encounters[p]).ToList());
+            encounters[id] = PickEncounter(rng, act, kind, cell.Row, parentIds.Select(p => encounters[p]).ToList());
         }
 
         if (kinds.Values.Count(k => k == NodeKind.Elite) < MinElites) return null;
@@ -98,7 +100,7 @@ public static class MapGenerator
 
         var nodes = ordered
             .Select(c => new MapNode(ids[c], c.Row, c.Col, kinds[ids[c]], encounters[ids[c]]))
-            .Append(new MapNode(bossId, Rows, Columns / 2, NodeKind.Boss, Bestiary.Reckoner))
+            .Append(new MapNode(bossId, Rows, Columns / 2, NodeKind.Boss, act.Boss))
             .ToList();
 
         return new ActMap(nodes, mapEdges);
@@ -138,14 +140,14 @@ public static class MapGenerator
         return NodeKind.Fight;
     }
 
-    private static string? PickEncounter(SeededRng rng, NodeKind kind, int row, List<string?> parentEncounters)
+    private static string? PickEncounter(SeededRng rng, ActDefinition act, NodeKind kind, int row, List<string?> parentEncounters)
     {
         IReadOnlyList<string> pool = kind switch
         {
-            NodeKind.Fight => row <= 1 ? Bestiary.EasyPool : Bestiary.NormalPool,
-            NodeKind.Elite => Bestiary.ElitePool,
-            // Vroeg in de act is een onbekende knoop de kruik: het wondermoment
-            NodeKind.Event => row < FirstEliteRow ? [Bestiary.Jug] : Adventures.All,
+            NodeKind.Fight => row <= 1 ? act.EasyPool : act.NormalPool,
+            NodeKind.Elite => act.ElitePool,
+            // Vroeg in act 1 is een onbekende knoop de kruik: het wondermoment
+            NodeKind.Event => row < FirstEliteRow && act.EarlyEvent is { } early ? [early] : act.Events,
             _ => []
         };
         if (pool.Count == 0) return null;

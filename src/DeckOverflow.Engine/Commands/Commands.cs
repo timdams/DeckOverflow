@@ -9,9 +9,12 @@ public sealed record EndTurn : ICommand;
 // Map
 public sealed record ChooseNode(int NodeId) : ICommand;
 
-// Beloning na een gevecht
+// Beloning na een gevecht, en kiezen bij een start in een latere act
 public sealed record TakeRewardCard(int Index) : ICommand;
 public sealed record SkipReward : ICommand;
+
+// Een relic kiezen: na de baas van een act, of bij een start in een latere act
+public sealed record ChooseRelic(int Index) : ICommand;
 
 // Rustvuur
 public sealed record RestHeal : ICommand;

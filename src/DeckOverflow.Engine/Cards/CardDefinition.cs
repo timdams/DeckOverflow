@@ -28,6 +28,7 @@ public sealed record CardDefinition(
     public ValueKind? CastTo => Effect switch
     {
         CastEffect c => c.To,
+        ConvertEffect c => c.To,
         ComboEffect { First: CastEffect c } => c.To,
         _ => null
     };

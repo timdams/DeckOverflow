@@ -31,7 +31,7 @@ public class FirstMinutesTests
     public void Elke_starterkaart_doet_iets_in_het_eerste_gevecht(string cardId)
     {
         var card = CardCatalog.StarterDeck().First(c => c.Id == cardId);
-        foreach (string enemy in Bestiary.EasyPool)
+        foreach (string enemy in Acts.VatValley.EasyPool)
         {
             var setup = new CombatSetup(Scenarios.Player(), Bestiary.Create(enemy), [.. Enumerable.Repeat(card, 10)]);
             var combat = Combat.Start(setup, Scenarios.DefaultSeed);

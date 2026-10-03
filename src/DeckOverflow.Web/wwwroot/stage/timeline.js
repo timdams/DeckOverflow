@@ -573,6 +573,48 @@ const handlers = {
     await wait(150);
   },
 
+  /** Math.Round of Convert rondde af: het oude getal schuift naar het nieuwe, met de naam eronder. */
+  async ValueRounded(S, e) {
+    const a = S.actor(e.targetId);
+    const c = a.center();
+    const x = c.x + (a.isEnemy ? -1 : 1) * (a.sprite.w / 2 + 60);
+    sfx('tick', { volume: 0.6 });
+    floatText(S.layers.fx, `${num(e.before)} → ${num(e.after)}`, x, c.y - 40, { size: e.subject === 'Damage' ? 24 : 20, rise: 24 });
+    floatText(S.layers.fx, t('stage.rounded'), x, c.y - 12, { size: 11, rise: 24, color: COLORS.muted });
+    await wait(260);
+  },
+
+  /** Groei: HP maal de factor, en wat het type ervan overhoudt. Een afgekapt restje volgt als ValueTruncated. */
+  async ValueGrew(S, e, ctx) {
+    const a = S.actor(e.targetId);
+    const head = a.head();
+    sfx('heal', { volume: 0.5 });
+    floatText(S.layers.fx, t('stage.grew', { factor: num(e.factor) }), head.x, head.y - 70, { size: 20, rise: 24 });
+    ctx.tails.push(a.rollHp(e.before, e.after));
+    await wait(260);
+  },
+
+  /** Convert paste niet: een OverflowException. De vijand schudt en zijn intent verdwijnt. */
+  async ConversionCrashed(S, e) {
+    const a = S.actor(e.targetId);
+    const head = a.head();
+    sfx('glitch');
+    shake(S.shaker, juice.shakePx.large);
+    floatText(S.layers.fx, t('stage.crash'), head.x, head.y - 60, { size: 22, rise: 30, holdMs: 700 });
+    gsap.to(a.intentNode, { alpha: 0.25, duration: sec(200) });
+    await wait(420);
+  },
+
+  /** De vijand crashte vorige beurt: geen aanval. */
+  async AttackSkipped(S, e) {
+    const a = S.actor(e.enemyId);
+    const head = a.head();
+    sfx('click', { volume: 0.6 });
+    floatText(S.layers.fx, t('stage.crash'), head.x, head.y - 60, { size: 18, rise: 20 });
+    gsap.to(a.intentNode, { alpha: 1, duration: sec(200), delay: sec(400) });
+    await wait(400);
+  },
+
   /** Toekenning: de oude expressie maakt plaats voor het nieuwe getal. */
   async IntentAssigned(S, e) {
     const a = S.actor(e.enemyId);

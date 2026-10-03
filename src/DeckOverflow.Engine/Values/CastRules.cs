@@ -36,6 +36,28 @@ public static class CastRules
         }
     }
 
+    /// <summary>
+    /// <c>Convert.ToInt32</c> en <c>Convert.ToByte</c>: afronden naar het dichtste even getal bij .5,
+    /// en een <c>OverflowException</c> als het resultaat niet past. Leeg betekent: de conversie crasht.
+    /// </summary>
+    public static double? ConvertChecked(double value, ValueKind to)
+    {
+        try
+        {
+            return to switch
+            {
+                ValueKind.Double => value,
+                ValueKind.Int => System.Convert.ToInt32(value),
+                ValueKind.Byte => System.Convert.ToByte(value),
+                _ => throw new NotSupportedException($"Omzetten naar {to} bestaat nog niet.")
+            };
+        }
+        catch (OverflowException)
+        {
+            return null;
+        }
+    }
+
     /// <summary>Het grootste getal dat een type kan dragen, begrensd door de basiswaarde.</summary>
     public static double MaxFor(ValueKind kind, double baseMax) => kind switch
     {

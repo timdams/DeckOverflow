@@ -160,16 +160,16 @@ public class RunTests
     }
 
     [Fact]
-    public void De_baas_verslaan_wint_de_run()
+    public void De_baas_van_act_1_verslaan_opent_act_2_in_plaats_van_de_run_te_winnen()
     {
         var run = OnPath(new RunSetup(Hp: 300), (NodeKind.Boss, Bestiary.Reckoner));
         run.Handle(new ChooseNode(0));
 
         var events = run.WinCombat();
 
-        Assert.Equal(RunPhase.Won, run.Phase);
-        Assert.Contains(new RunEnded(Won: true), events.WithoutSeq());
-        Assert.True(run.Snapshot().End!.Won);
+        Assert.Equal(RunPhase.RelicChoice, run.Phase);
+        Assert.Contains(new ActCompleted(1), events.WithoutSeq());
+        Assert.DoesNotContain(events, e => e is RunEnded);
     }
 
     [Fact]

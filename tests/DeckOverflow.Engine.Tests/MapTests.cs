@@ -121,10 +121,10 @@ public class MapTests
             switch (node.Kind)
             {
                 case NodeKind.Fight:
-                    Assert.Contains(node.Encounter!, node.Row <= 1 ? Bestiary.EasyPool : Bestiary.NormalPool);
+                    Assert.Contains(node.Encounter!, node.Row <= 1 ? Acts.VatValley.EasyPool : Acts.VatValley.NormalPool);
                     break;
                 case NodeKind.Elite:
-                    Assert.Contains(node.Encounter!, Bestiary.ElitePool);
+                    Assert.Contains(node.Encounter!, Acts.VatValley.ElitePool);
                     break;
                 case NodeKind.Event when node.Row < MapGenerator.FirstEliteRow:
                     Assert.Equal(Bestiary.Jug, node.Encounter);

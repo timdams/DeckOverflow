@@ -3,7 +3,7 @@ using DeckOverflow.Engine.Values;
 namespace DeckOverflow.Engine.Cards;
 
 /// <summary>
-/// Alle kaarten van Act 1. Een verbeterde kaart heeft dezelfde id met een "+" erachter.
+/// Alle kaarten. Welke kaart in welke act bij de beloningen komt, staat in <see cref="Runs.Acts"/>. Een verbeterde kaart heeft dezelfde id met een "+" erachter.
 /// Namen staan in <c>en.json</c> onder <c>card.&lt;id&gt;</c>. De getallen zijn eerste gokken.
 /// </summary>
 public static class CardCatalog
@@ -52,7 +52,16 @@ public static class CardCatalog
     public static readonly CardDefinition ByteTrap =
         new("byte-trap", 2, TargetMode.Enemy, new ComboEffect(new CastEffect(ValueKind.Byte), new HealEffect(6)), Rarity: Rarity.Rare);
 
-    /// <summary>Wat je na een gevecht, in de winkel of in een kist kan vinden.</summary>
+    // ---------- Act 2: de Gieterij ----------
+
+    /// <summary>
+    /// <c>Convert.ToByte</c>: rondt af, en crasht als het getal niet past. Op een kleine vijand een byte
+    /// die je kan laten omklappen; op een reus een <c>OverflowException</c> die zijn aanval kost.
+    /// </summary>
+    public static readonly CardDefinition MeasureTwice =
+        new("measure-twice", 1, TargetMode.Enemy, new ConvertEffect(ValueKind.Byte), Rarity: Rarity.Uncommon);
+
+    /// <summary>Wat je in act 1 na een gevecht, in de winkel of in een kist kan vinden.</summary>
     public static readonly IReadOnlyList<CardDefinition> RewardPool =
     [
         FloatingStrike, HeavyStrike, FloatingRain, ThickShield, Mend, RemoldInt, RemoldByte,
@@ -89,6 +98,7 @@ public static class CardCatalog
         SetTo1 with { Id = "set-to-1+", Cost = 0 },
         DoubleUp with { Id = "double-up+", Cost = 0 },
         ByteTrap with { Id = "byte-trap+", Cost = 1 },
+        MeasureTwice with { Id = "measure-twice+", Cost = 0 },
     }.ToDictionary(c => c.BaseId);
 
     /// <summary>De verbeterde versie, of null als de kaart niet (meer) beter kan.</summary>
@@ -124,7 +134,7 @@ public static class CardCatalog
     /// <summary>Elke kaart die in een run kan opduiken, ook verbeterd en omgegoten. Voor tests.</summary>
     public static IEnumerable<CardDefinition> Everything()
     {
-        var all = StarterDeck().Concat(RewardPool).Distinct().ToList();
+        var all = StarterDeck().Concat(RewardPool).Append(MeasureTwice).Distinct().ToList();
         var upgraded = all.Select(Upgrade).OfType<CardDefinition>().ToList();
         var poured = all.Concat(upgraded).Where(CanPour).Select(Pour);
         return all.Concat(upgraded).Concat(poured);

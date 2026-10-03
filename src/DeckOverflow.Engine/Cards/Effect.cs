@@ -13,6 +13,12 @@ public sealed record HealEffect(int Amount) : Effect;
 /// <summary>Omgieten: verander het type van het doelwit.</summary>
 public sealed record CastEffect(ValueKind To) : Effect;
 
+/// <summary>
+/// Omzetten met <c>Convert</c>: rondt af in plaats van af te kappen, en is <i>checked</i>.
+/// Past het getal niet in het nieuwe type, dan volgt een <c>OverflowException</c> en crasht het doelwit.
+/// </summary>
+public sealed record ConvertEffect(ValueKind To) : Effect;
+
 /// <summary>Toekenning: de aanval van de vijand wordt deze beurt <paramref name="Value"/>, wat er ook stond.</summary>
 public sealed record SetAttackEffect(int Value) : Effect;
 

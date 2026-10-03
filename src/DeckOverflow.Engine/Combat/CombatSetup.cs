@@ -8,7 +8,17 @@ public sealed record CombatantSetup(string Key, ValueKind Kind, double Hp, doubl
 
 /// <param name="Pattern">Aanvallen in volgorde, één per beurt. Na de laatste begint hij opnieuw.</param>
 /// <param name="BlockAfterAttack">Blok dat de vijand na zijn aanval opbouwt. Volgt de regels van zijn type.</param>
-public sealed record EnemySetup(CombatantSetup Stats, IReadOnlyList<Intent> Pattern, int HealAfterAttack = 0, double BlockAfterAttack = 0);
+/// <param name="RoundsIncoming">Zolang hij een <c>double</c> is, rondt hij elke treffer af met <c>Math.Round</c> (bankiersafronding).</param>
+/// <param name="GrowthAfterAttack">Na zijn aanval wordt zijn HP <c>HP * factor</c>, volgens de regels van zijn type. 0 is geen groei.</param>
+/// <param name="TypeCycle">Na zijn aanval giet hij zichzelf om naar het volgende type in deze lijst.</param>
+public sealed record EnemySetup(
+    CombatantSetup Stats,
+    IReadOnlyList<Intent> Pattern,
+    int HealAfterAttack = 0,
+    double BlockAfterAttack = 0,
+    bool RoundsIncoming = false,
+    double GrowthAfterAttack = 0,
+    IReadOnlyList<ValueKind>? TypeCycle = null);
 
 /// <param name="Relics">Ids uit <see cref="Relics.RelicCatalog"/> die in dit gevecht meespelen.</param>
 public sealed record CombatSetup(

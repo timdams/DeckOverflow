@@ -7,10 +7,11 @@ using DeckOverflow.Engine.Text;
 namespace DeckOverflow.Engine.Runs;
 
 [JsonConverter(typeof(JsonStringEnumConverter<RunPhase>))]
-public enum RunPhase { Map, Combat, Reward, Rest, Event, Shop, Treasure, Won, Lost }
+public enum RunPhase { Map, Combat, Reward, Rest, Event, Shop, Treasure, Draft, RelicChoice, Won, Lost }
 
 /// <summary>Alleen-lezen beeld van de hele run voor de shell. Het gevecht zelf zit in <see cref="Combat.CombatSnapshot"/>.</summary>
-/// <param name="Floor">Hoeveel rijen je al geklommen bent, de huidige inbegrepen.</param>
+/// <param name="Floor">Hoeveel rijen je in deze act al geklommen bent, de huidige inbegrepen.</param>
+/// <param name="Act">Het nummer van de act; de naam staat in <c>en.json</c> onder <c>act.&lt;ActKey&gt;</c>.</param>
 public sealed record RunSnapshot(
     ulong Seed,
     RunPhase Phase,
@@ -26,7 +27,11 @@ public sealed record RunSnapshot(
     EventView? Event,
     ShopView? Shop,
     TreasureView? Treasure,
-    EndView? End);
+    EndView? End,
+    int Act,
+    string ActKey,
+    DraftView? Draft,
+    RelicChoiceView? RelicChoice);
 
 /// <summary>Een relic buiten het gevecht. De naam staat in <c>en.json</c> onder <c>relic.&lt;id&gt;</c>.</summary>
 public sealed record RelicInfo(string Id, TextRef Text)
@@ -60,4 +65,10 @@ public sealed record ShopRelicView(RelicInfo Relic, int Price, bool Sold);
 public sealed record TreasureView(bool Opened, RelicInfo? Relic, int Gold);
 
 /// <summary>Het eindscherm. Bij verlies: hoe dicht je erbij was.</summary>
-public sealed record EndView(bool Won, int Floor, string? EnemyKey, double EnemyHp, double EnemyMaxHp, int Gold, int DeckSize, int RelicCount);
+public sealed record EndView(bool Won, int Floor, string? EnemyKey, double EnemyHp, double EnemyMaxHp, int Gold, int DeckSize, int RelicCount, int Act = 1);
+
+/// <summary>Een start in een latere act: kies <paramref name="Rounds"/> keer 1 kaart uit 3.</summary>
+public sealed record DraftView(int Round, int Rounds, IReadOnlyList<CardInfo> Cards);
+
+/// <param name="Reason"><c>boss</c> na de baas van een act, <c>start</c> bij een start in een latere act.</param>
+public sealed record RelicChoiceView(string Reason, IReadOnlyList<RelicInfo> Relics);

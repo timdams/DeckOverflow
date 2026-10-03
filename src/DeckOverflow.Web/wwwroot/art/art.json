@@ -32,7 +32,11 @@
     "jug": "actors/jug",
     "colossus": "actors/flight-501",
     "golem": "actors/level-256",
-    "reckoner": "actors/inspector"
+    "reckoner": "actors/inspector",
+    "ingot": "actors/golem",
+    "rounder": "actors/colossus",
+    "index": "actors/the-index",
+    "caster": "actors/reckoner"
   },
   "nodes": {
     "fight": "items/whack",

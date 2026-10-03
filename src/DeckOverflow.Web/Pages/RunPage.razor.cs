@@ -27,6 +27,9 @@ public partial class RunPage
 
     [Inject] private HttpClient Http { get; set; } = default!;
 
+    /// <summary>Waar de startpunten in de browser staan: de hoogste act die je ooit bereikte.</summary>
+    private const string ReachedActKey = "deckoverflow.reached-act";
+
     private ElementReference _host;
     private DotNetObjectReference<RunPage>? _self;
     private Run? _run;
@@ -35,6 +38,8 @@ public partial class RunPage
     private bool _starting;
     private bool _busy;
     private bool _showDeck;
+    private int _startAct = 1;
+    private int _reachedAct = 1;
 
     /// <summary>De vijand van het laatste gevecht, voor het verhaal in de Codex op het beloningsscherm.</summary>
     private string? _lastEnemy;
@@ -55,14 +60,23 @@ public partial class RunPage
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (!firstRender) return;
         // Meetpunt "laadtijd tot speelbaar": de Speel-knop staat op het scherm
-        if (firstRender) _loadMs = await JS.InvokeAsync<double>("deckOverflow.now");
+        _loadMs = await JS.InvokeAsync<double>("deckOverflow.now");
+
+        string? reached = await JS.InvokeAsync<string?>("deckOverflow.load", ReachedActKey);
+        if (int.TryParse(reached, out int act) && act > 1)
+        {
+            _reachedAct = Math.Min(act, Acts.All[^1].Number);
+            StateHasChanged();
+        }
     }
 
     /// <summary>Start na een klik, zodat de browser audio toelaat.</summary>
-    private async Task StartAsync()
+    private async Task StartAsync(int startAct)
     {
         _starting = true;
+        _startAct = startAct;
         _self = DotNetObjectReference.Create(this);
         await Stage.InitAsync(_host, _self, _loadMs);
 
@@ -73,7 +87,7 @@ public partial class RunPage
 
     private async Task NewRunAsync(ulong seed)
     {
-        RunSetup setup = Bestiary.Exists(FightQuery) ? new RunSetup(Map: SingleFight(FightQuery!), Opening: false) : new RunSetup();
+        RunSetup setup = Bestiary.Exists(FightQuery) ? new RunSetup(Map: SingleFight(FightQuery!), Opening: false) : new RunSetup(StartAct: _startAct);
         _run = Run.Start(seed, setup);
         _snap = _run.Snapshot();
         _picker = null;
@@ -90,8 +104,8 @@ public partial class RunPage
 
     private static ActMap SingleFight(string enemy)
     {
-        NodeKind kind = enemy == Bestiary.Reckoner ? NodeKind.Boss
-            : Bestiary.ElitePool.Contains(enemy) ? NodeKind.Elite
+        NodeKind kind = Bestiary.Bosses.Contains(enemy) ? NodeKind.Boss
+            : Bestiary.Elites.Contains(enemy) ? NodeKind.Elite
             : NodeKind.Fight;
         return ActMap.Path((kind, enemy), (NodeKind.Rest, null));
     }
@@ -108,6 +122,7 @@ public partial class RunPage
         var events = _run.Handle(command);
         _snap = _run.Snapshot();
         ShowToasts(events);
+        await RememberActAsync(events);
 
         // Een nieuw gevecht: de stage begint met een schone lei
         if (_snap.Phase == RunPhase.Combat && before.Phase != RunPhase.Combat)
@@ -179,6 +194,17 @@ public partial class RunPage
         }
     }
 
+    /// <summary>Een nieuwe act bereikt: die wordt een startpunt voor volgende runs.</summary>
+    private async Task RememberActAsync(IEnumerable<GameEvent> events)
+    {
+        foreach (var started in events.OfType<ActStarted>())
+        {
+            if (started.Act <= _reachedAct) continue;
+            _reachedAct = started.Act;
+            await JS.InvokeVoidAsync("deckOverflow.save", ReachedActKey, _reachedAct.ToString(CultureInfo.InvariantCulture));
+        }
+    }
+
     // ---------- Meldingen ----------
 
     private void ShowToasts(IEnumerable<GameEvent> events)
@@ -193,6 +219,7 @@ public partial class RunPage
                 CardRemoved c => (S.T(TextRef.Of("ui.toast.card-removed", ("card", c.CardId))), "card"),
                 CardTransformed t => (S.T(TextRef.Of("ui.toast.card-changed", ("from", t.FromId), ("to", t.ToId))), "card"),
                 RelicGained r => (S.T(TextRef.Of("ui.toast.relic", ("relic", r.RelicId))), "relic"),
+                ActStarted a => (S.T("ui.act", ("act", a.Act), ("name", S.T($"act.{Acts.Get(a.Act).Key}"))), "act"),
                 RunRejected r => (S.T(r.Reason), "rejected"),
                 _ => null
             };

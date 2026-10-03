@@ -17,6 +17,7 @@ public static class CardText
         BlockEffect b => TextRef.Of("effect.block", ("amount", b.Amount)),
         HealEffect h => TextRef.Of("effect.heal", ("amount", h.Amount)),
         CastEffect => TextRef.Of("effect.cast"),
+        ConvertEffect => TextRef.Of("effect.convert"),
         SetAttackEffect s => TextRef.Of("effect.set-attack", ("value", s.Value)),
         ModifierEffect { Op: ModifierOp.Add } m => TextRef.Of("effect.add", ("amount", m.Amount)),
         ModifierEffect m => TextRef.Of("effect.multiply", ("amount", m.Amount)),

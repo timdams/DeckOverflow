@@ -9,19 +9,22 @@ using DeckOverflow.Engine.Text;
 
 namespace DeckOverflow.Engine.Runs;
 
-/// <param name="Map">Een vaste map, voor tests. Leeg: de seed bepaalt de map.</param>
-/// <param name="Opening">Begin bij de Gieterij met een keuze, of meteen op de map.</param>
+/// <param name="Map">Een vaste map voor de eerste act, voor tests. Leeg: de seed bepaalt de map.</param>
+/// <param name="Opening">Begin bij de Gieterij met een keuze, of meteen op de map. Alleen in act 1.</param>
+/// <param name="StartAct">Een startpunt: begin in een latere act, met een deck dat je eerst draft.</param>
 public sealed record RunSetup(
     int Hp = 50,
     int Gold = 60,
     IReadOnlyList<CardDefinition>? Deck = null,
     IReadOnlyList<string>? Relics = null,
     ActMap? Map = null,
-    bool Opening = true);
+    bool Opening = true,
+    int StartAct = 1);
 
 /// <summary>
-/// Eén run door een act: map, gevechten, beloningen. Zoals <see cref="Combat.Combat"/>:
-/// een command gaat erin, een lijst events komt eruit. Gevechtscommands gaan door naar het gevecht.
+/// Eén run over de acts: map, gevechten, beloningen, en na elke baas de volgende act. Zoals
+/// <see cref="Combat.Combat"/>: een command gaat erin, een lijst events komt eruit.
+/// Gevechtscommands gaan door naar het gevecht.
 /// </summary>
 public sealed class Run
 {
@@ -33,7 +36,13 @@ public sealed class Run
     private static readonly (int Min, int Max) TreasureGold = (20, 30);
     public const int FoundryGold = 100;
 
-    private readonly ActMap _map;
+    // Een start in een latere act: ongeveer wat je had gehad als je had doorgespeeld
+    public const int DraftRounds = 5;
+    public const int LaterActGold = 100;
+    public const int RelicChoices = 3;
+
+    private ActDefinition _act;
+    private ActMap _map;
     private readonly SeededRng _loot;
     private readonly List<CardDefinition> _deck;
     private readonly List<string> _relics;
@@ -53,11 +62,15 @@ public sealed class Run
     private bool _jugMet;
     private TreasureState? _treasure;
     private EndView? _end;
+    private int _draftRound;
+    private List<string> _relicChoice = [];
+    private string? _relicReason;
 
     private Run(ulong seed, RunSetup setup)
     {
         Seed = seed;
-        _map = setup.Map ?? MapGenerator.Generate(new SeededRng(seed));
+        _act = Acts.Get(setup.StartAct);
+        _map = setup.Map ?? GenerateMap(seed, _act);
         // Een aparte stroom voor loot, zodat de map niet verandert als er een beloning bijkomt
         _loot = new SeededRng(Mix(seed, 0x10075));
         _deck = [.. setup.Deck ?? CardCatalog.StarterDeck()];
@@ -66,13 +79,25 @@ public sealed class Run
         MaxHp = setup.Hp;
         Gold = setup.Gold;
 
-        if (setup.Opening)
+        if (_act.Number > 1)
+        {
+            // Een startpunt: eerst een deck draften uit de kaarten van de vorige acts
+            Gold = LaterActGold;
+            _draftRound = 1;
+            _rewardCards = RollCards(3, DraftOdds, Acts.CardPool(_act.Number - 1));
+            Phase = RunPhase.Draft;
+        }
+        else if (setup.Opening)
         {
             _eventKey = Adventures.Foundry;
             _foundryRelic = RandomUnownedRelic();
             Phase = RunPhase.Event;
         }
     }
+
+    /// <summary>Act 1 houdt de map van de run-seed; elke volgende act krijgt een eigen, afgeleide seed.</summary>
+    private static ActMap GenerateMap(ulong seed, ActDefinition act) =>
+        MapGenerator.Generate(new SeededRng(act.Number == 1 ? seed : Mix(seed, 0xAC7000UL + (ulong)act.Number)), act);
 
     public ulong Seed { get; }
     public RunPhase Phase { get; private set; } = RunPhase.Map;
@@ -82,6 +107,7 @@ public sealed class Run
     public IReadOnlyList<CardDefinition> Deck => _deck;
     public IReadOnlyList<string> Relics => _relics;
     public ActMap Map => _map;
+    public ActDefinition Act => _act;
 
     public static Run Start(ulong seed, RunSetup? setup = null) => new(seed, setup ?? new RunSetup());
 
@@ -99,6 +125,9 @@ public sealed class Run
             case (RunPhase.Map, ChooseNode c): Enter(c.NodeId); break;
             case (RunPhase.Reward, TakeRewardCard t): TakeReward(t.Index); break;
             case (RunPhase.Reward, SkipReward): BackToMap(); break;
+            case (RunPhase.Draft, TakeRewardCard t): Draft(t.Index); break;
+            case (RunPhase.Draft, SkipReward): Draft(-1); break;
+            case (RunPhase.RelicChoice, ChooseRelic r): PickRelic(r.Index); break;
             case (RunPhase.Rest, RestHeal): RestAndHeal(); break;
             case (RunPhase.Rest, RestUpgrade u): RestAndUpgrade(u.DeckIndex); break;
             case (RunPhase.Event, ChooseEventOption o): ChooseOption(o.Option, o.DeckIndex); break;
@@ -138,7 +167,11 @@ public sealed class Run
             Phase == RunPhase.Event ? EventView() : null,
             Phase == RunPhase.Shop ? ShopView() : null,
             Phase == RunPhase.Treasure && _treasure is { } t ? new TreasureView(t.Opened, t.Opened && t.Relic is { } r ? RelicInfo.From(r) : null, t.Opened ? t.Gold : 0) : null,
-            _end);
+            _end,
+            _act.Number,
+            _act.Key,
+            Phase == RunPhase.Draft ? new DraftView(_draftRound, DraftRounds, [.. _rewardCards.Select(CardInfo.From)]) : null,
+            Phase == RunPhase.RelicChoice ? new RelicChoiceView(_relicReason!, [.. _relicChoice.Select(RelicInfo.From)]) : null);
     }
 
     /// <summary>Tijdens een gevecht is de HP van de speler in het gevecht de waarheid.</summary>
@@ -180,7 +213,7 @@ public sealed class Run
                 break;
             case NodeKind.Event:
                 // Een tweede kruik wordt een gewoon event
-                _eventKey = Adventures.All.Contains(node.Encounter!) ? node.Encounter : Adventures.All[_loot.NextInt(Adventures.All.Count)];
+                _eventKey = _act.Events.Contains(node.Encounter!) ? node.Encounter : _act.Events[_loot.NextInt(_act.Events.Count)];
                 Phase = RunPhase.Event;
                 break;
             case NodeKind.Shop:
@@ -223,15 +256,23 @@ public sealed class Run
     // ---------- Gevecht ----------
 
     /// <summary>
-    /// De Kolos is alleen te verslaan door hem naar byte om te gieten. Zonder kaart die dat kan,
-    /// krijg je de Golem: elk gevecht moet op meer dan één manier te winnen zijn.
+    /// Flight 501 is alleen te verslaan door hem naar byte om te gieten. Zonder kaart die dat kan,
+    /// krijg je een andere elite: elk gevecht moet op meer dan één manier te winnen zijn.
     /// </summary>
     private string EnemyFor(MapNode node)
     {
         string enemy = node.Encounter ?? throw new InvalidOperationException($"Knoop {node.Id} heeft geen vijand.");
-        bool canRemold = _deck.Any(c => c.CastTo == Values.ValueKind.Byte);
-        return enemy == Bestiary.Colossus && !canRemold ? Bestiary.Golem : enemy;
+        if (enemy != Bestiary.Colossus || _deck.Any(CastsToByte)) return enemy;
+        return _act.ElitePool.FirstOrDefault(e => e != Bestiary.Colossus) ?? Bestiary.Golem;
     }
+
+    /// <summary>Een echte cast naar byte. Convert telt niet: die crasht op 506 in plaats van om te klappen.</summary>
+    private static bool CastsToByte(CardDefinition card) => card.Effect switch
+    {
+        CastEffect { To: Values.ValueKind.Byte } => true,
+        ComboEffect { First: CastEffect { To: Values.ValueKind.Byte } } => true,
+        _ => false
+    };
 
     private void StartCombat(string enemy, int nodeId)
     {
@@ -265,7 +306,8 @@ public sealed class Run
 
         if (_node!.Kind == NodeKind.Boss)
         {
-            End(won: true, enemy);
+            if (Acts.IsLast(_act)) End(won: true, enemy);
+            else CompleteAct();
             return;
         }
 
@@ -276,7 +318,7 @@ public sealed class Run
         string? relic = elite ? RandomUnownedRelic() : null;
         if (relic is not null) GainRelic(relic);
 
-        _rewardCards = RollCards(3, elite ? EliteOdds : FightOdds);
+        _rewardCards = RollCards(3, elite ? EliteOdds : FightOdds, CardPool);
         _reward = new RewardView(gold, relic is null ? null : RelicInfo.From(relic), [.. _rewardCards.Select(CardInfo.From)]);
         Phase = RunPhase.Reward;
     }
@@ -285,8 +327,81 @@ public sealed class Run
     {
         _combat = null;
         Phase = won ? RunPhase.Won : RunPhase.Lost;
-        _end = new EndView(won, _node!.Row + 1, enemy.Key, enemy.Hp, enemy.MaxHp, Gold, _deck.Count, _relics.Count);
+        _end = new EndView(won, _node!.Row + 1, enemy.Key, enemy.Hp, enemy.MaxHp, Gold, _deck.Count, _relics.Count, _act.Number);
         Emit(new RunEnded(won));
+    }
+
+    // ---------- Tussen de acts ----------
+
+    /// <summary>Na de baas: volledig helen en een relic kiezen. Daarna begint de volgende act.</summary>
+    private void CompleteAct()
+    {
+        _combat = null;
+        Emit(new ActCompleted(_act.Number));
+        ChangeHp(MaxHp - Hp);
+        OfferRelics("boss");
+    }
+
+    private void StartNextAct()
+    {
+        _act = Acts.Get(_act.Number + 1);
+        _map = GenerateMap(Seed, _act);
+        _node = null;
+        _visited.Clear();
+        BackToMap();
+        Emit(new ActStarted(_act.Number));
+    }
+
+    /// <summary>Drie relics om uit te kiezen. Zijn er geen meer over, dan gaat het meteen verder.</summary>
+    private void OfferRelics(string reason)
+    {
+        _relicReason = reason;
+        _relicChoice = [];
+        var pool = RelicCatalog.All.Where(id => !_relics.Contains(id)).ToList();
+        _loot.Shuffle(pool);
+        _relicChoice = [.. pool.Take(RelicChoices)];
+
+        if (_relicChoice.Count == 0) AfterRelicChoice();
+        else Phase = RunPhase.RelicChoice;
+    }
+
+    private void PickRelic(int index)
+    {
+        if (index < 0 || index >= _relicChoice.Count)
+        {
+            Reject("reject.relic-not-offered");
+            return;
+        }
+        GainRelic(_relicChoice[index]);
+        AfterRelicChoice();
+    }
+
+    private void AfterRelicChoice()
+    {
+        _relicChoice = [];
+        if (_relicReason == "boss") StartNextAct();
+        else BackToMap();
+    }
+
+    /// <summary>Een kaart uit de draft nemen (of -1 om over te slaan), tot alle rondes voorbij zijn.</summary>
+    private void Draft(int index)
+    {
+        if (index >= _rewardCards.Count)
+        {
+            Reject("reject.card-not-offered");
+            return;
+        }
+        if (index >= 0) AddCard(_rewardCards[index]);
+
+        if (_draftRound < DraftRounds)
+        {
+            _draftRound++;
+            _rewardCards = RollCards(3, DraftOdds, Acts.CardPool(_act.Number - 1));
+            return;
+        }
+
+        _rewardCards = [];
+        OfferRelics("start");
     }
 
     private void TakeReward(int index)
@@ -409,7 +524,7 @@ public sealed class Run
         {
             case (Adventures.Foundry, 0):
                 // Meteen naar een beloningsscherm: 1 kaart uit 3, zonder gewone kaarten
-                _rewardCards = RollCards(3, FoundryOdds);
+                _rewardCards = RollCards(3, FoundryOdds, CardPool);
                 _reward = new RewardView(0, null, [.. _rewardCards.Select(CardInfo.From)]);
                 _eventKey = null;
                 Phase = RunPhase.Reward;
@@ -464,7 +579,7 @@ public sealed class Run
         var cards = new List<(CardDefinition, int, bool)>();
         foreach ((Rarity rarity, int count) in new[] { (Rarity.Common, 2), (Rarity.Uncommon, 2), (Rarity.Rare, 1) })
         {
-            var pool = CardCatalog.RewardPool.Where(c => c.Rarity == rarity).ToList();
+            var pool = CardPool.Where(c => c.Rarity == rarity).ToList();
             _loot.Shuffle(pool);
             foreach (var card in pool.Take(count)) cards.Add((card, PriceOf(rarity), false));
         }
@@ -561,9 +676,13 @@ public sealed class Run
     private static readonly CardOdds FightOdds = new(60, 33);
     private static readonly CardOdds EliteOdds = new(40, 45);
     private static readonly CardOdds FoundryOdds = new(0, 80);
+    private static readonly CardOdds DraftOdds = new(40, 45);
+
+    /// <summary>De beloningskaarten van deze act en alle acts ervoor.</summary>
+    private IReadOnlyList<CardDefinition> CardPool => Acts.CardPool(_act.Number);
 
     /// <summary>Kaarten zonder dubbels. Een elite geeft meer kans op zeldzaam.</summary>
-    private List<CardDefinition> RollCards(int count, CardOdds odds)
+    private List<CardDefinition> RollCards(int count, CardOdds odds, IReadOnlyList<CardDefinition> source)
     {
         var picked = new List<CardDefinition>();
         for (int attempt = 0; picked.Count < count && attempt < 50; attempt++)
@@ -573,7 +692,7 @@ public sealed class Run
                 : roll < odds.Common + odds.Uncommon ? Rarity.Uncommon
                 : Rarity.Rare;
 
-            var pool = CardCatalog.RewardPool.Where(c => c.Rarity == rarity && !picked.Contains(c)).ToList();
+            var pool = source.Where(c => c.Rarity == rarity && !picked.Contains(c)).ToList();
             if (pool.Count == 0) continue;
             picked.Add(pool[_loot.NextInt(pool.Count)]);
         }

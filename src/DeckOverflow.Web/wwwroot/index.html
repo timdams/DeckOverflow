@@ -24,8 +24,14 @@
         Something went wrong. <a href="." class="reload">Reload</a> <span class="dismiss">✕</span>
     </div>
 
-    <!-- Meetpunt voor de laadtijd, gebruikt door CombatPage -->
-    <script>window.deckOverflow = { now: () => performance.now() };</script>
+    <!-- Meetpunt voor de laadtijd, en startpunten in de browser. Opslag kan leeg terugkomen of falen (privévenster): dan begin je gewoon in act 1. -->
+    <script>
+        window.deckOverflow = {
+            now: () => performance.now(),
+            load: (key) => { try { return localStorage.getItem(key); } catch { return null; } },
+            save: (key, value) => { try { localStorage.setItem(key, value); } catch { } },
+        };
+    </script>
 
     <!-- Stage-bibliotheken (vendored, geen CDN nodig) -->
     <script src="lib/pixi.min.js" defer></script>

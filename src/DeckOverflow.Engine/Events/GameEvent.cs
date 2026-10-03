@@ -25,6 +25,10 @@ namespace DeckOverflow.Engine.Events;
 [JsonDerivedType(typeof(PlayRejected), nameof(PlayRejected))]
 [JsonDerivedType(typeof(CombatEnded), nameof(CombatEnded))]
 [JsonDerivedType(typeof(TypeChanged), nameof(TypeChanged))]
+[JsonDerivedType(typeof(ValueRounded), nameof(ValueRounded))]
+[JsonDerivedType(typeof(ValueGrew), nameof(ValueGrew))]
+[JsonDerivedType(typeof(ConversionCrashed), nameof(ConversionCrashed))]
+[JsonDerivedType(typeof(AttackSkipped), nameof(AttackSkipped))]
 [JsonDerivedType(typeof(IntentAssigned), nameof(IntentAssigned))]
 [JsonDerivedType(typeof(ModifierQueued), nameof(ModifierQueued))]
 [JsonDerivedType(typeof(ModifiersApplied), nameof(ModifiersApplied))]
@@ -38,6 +42,8 @@ namespace DeckOverflow.Engine.Events;
 [JsonDerivedType(typeof(RelicGained), nameof(RelicGained))]
 [JsonDerivedType(typeof(RunRejected), nameof(RunRejected))]
 [JsonDerivedType(typeof(RunEnded), nameof(RunEnded))]
+[JsonDerivedType(typeof(ActCompleted), nameof(ActCompleted))]
+[JsonDerivedType(typeof(ActStarted), nameof(ActStarted))]
 public abstract record GameEvent
 {
     public int Seq { get; init; }
@@ -81,6 +87,18 @@ public sealed record TypeChanged(
     double BlockAfter,
     bool Wrapped) : GameEvent;
 
+/// <summary><c>Math.Round</c> of <c>Convert</c> rondde af: 2.5 wordt 2, 3.5 wordt 4.</summary>
+public sealed record ValueRounded(int TargetId, double Before, double After, ValueSubject Subject) : GameEvent;
+
+/// <summary>Groei: <paramref name="Raw"/> is <c>HP * factor</c>, <paramref name="After"/> wat het type ervan overhoudt.</summary>
+public sealed record ValueGrew(int TargetId, double Before, double Factor, double Raw, double After) : GameEvent;
+
+/// <summary><c>Convert</c> paste niet: een <c>OverflowException</c>. Het doelwit slaat zijn volgende aanval over.</summary>
+public sealed record ConversionCrashed(int TargetId, ValueKind To, double Value) : GameEvent;
+
+/// <summary>De vijand slaat zijn aanval over, bv. na een crash.</summary>
+public sealed record AttackSkipped(int EnemyId) : GameEvent;
+
 // Gevecht: verloop en relics
 
 /// <summary>Toekenning: de aanval van de vijand is overschreven, wat er ook stond.</summary>
@@ -110,3 +128,7 @@ public sealed record RelicGained(string RelicId) : GameEvent;
 /// <summary>Een keuze buiten het gevecht die niet kan. <paramref name="Reason"/> is een sleutel in <c>en.json</c>.</summary>
 public sealed record RunRejected(string Reason) : GameEvent;
 public sealed record RunEnded(bool Won) : GameEvent;
+/// <summary>De baas van deze act is verslagen; de volgende act wacht.</summary>
+public sealed record ActCompleted(int Act) : GameEvent;
+/// <summary>Een nieuwe act met een nieuwe map. Wordt ook een startpunt voor volgende runs.</summary>
+public sealed record ActStarted(int Act) : GameEvent;
