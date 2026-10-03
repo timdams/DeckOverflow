@@ -95,7 +95,7 @@ We gebruiken geen bugs met doden (zoals de Patriot-raket in 1991). "Nuclear Gand
 
 Dit is de loop van de deckbuilder, The Card Hall. De andere afdelingen krijgen elk een eigen loop, die eerst als spike moet bewijzen dat hij leuk is.
 
-Een run begint in Act 1, en je probeert zo ver mogelijk te geraken. Eén act duurt 10 tot 15 minuten. De deckbuilder heeft drie acts (H2, H3 en H4), dus een volledige run duurt 30 tot 45 minuten: één act past in een stukje les, een hele run in een lesblok. Elke act die je in een run bereikt, wordt een startpunt: een volgende run mag daar beginnen, met een deck dat je eerst draft uit de kaarten van de vorige acts. De docent kan een act ook voor de hele klas vrijgeven. Meta-progressie is kennis van de speler en startpunten, nooit extra kracht.
+Een run begint in Act 1, en je probeert zo ver mogelijk te geraken. Eén act duurt 10 tot 15 minuten. De deckbuilder heeft drie acts (H2, H3 en H4), dus een volledige run duurt 30 tot 45 minuten: één act past in een stukje les, een hele run in een lesblok. Elke act die je in een run bereikt, wordt een startpunt: een volgende run mag daar beginnen, met een deck dat je eerst draft uit de kaarten van de vorige acts. Meta-progressie is kennis van de speler en startpunten, nooit extra kracht.
 
 - **Een act** is een map van 6 rijen met een baas erboven.
 - **Na de baas** heel je volledig en kies je 1 baasrelic uit 3. Dan begint de volgende act.
@@ -210,13 +210,13 @@ We gebruiken bewust alles wat roguelikes, slotmachines en mobiele games zo kleve
 | Altijd vooruitgang | Ook verlies moet iets opleveren | Na elke run vult een balk die nieuwe kaarten, relics of een tweede personage ontgrendelt |
 | Verzamelalbum | Lege vakjes willen gevuld worden | Codex en kaartcollectie tonen silhouetten van wat je nog niet ontdekte |
 | Moeilijkheidstreden | Na winst wacht een nieuwe berg | Ascensie-niveaus die telkens één regel strenger maken |
-| Dagelijkse run | Een vaste reden om terug te komen | Zelfde seed voor iedereen, klassement per klas; docent kan een klas-seed zetten |
+| Dagelijkse run | Een vaste reden om terug te komen | Zelfde seed voor iedereen, klassement per klas |
 | Zachte streak | Ritme opbouwen | Teller voor opeenvolgende dagelijkse runs, zonder straf als je een dag mist |
 | Geheimen | Geruchten verspreiden zich op de speelplaats | Verborgen vijanden en routes, zoals een geest die alleen verschijnt op een zeldzaam pad |
 | Deelbare momenten | Opscheppen is brandstof | Seed en eindscherm van een gebroken run delen met één klik |
 | Prestaties | Kleine doelen naast het grote | Grappige achievements voor spelprestaties, zoals een elite verslaan met één kaart |
 
-**Grens.** Geen echt geld, geen loot boxes, geen FOMO-timers die studietijd verdringen, geen straf voor afwezigheid. Een docent kan een maximale speelduur per dag instellen. Verslavend is het doel, schadelijk niet.
+**Grens.** Geen echt geld, geen loot boxes, geen FOMO-timers die studietijd verdringen, geen straf voor afwezigheid. Verslavend is het doel, schadelijk niet.
 
 ## Game feel
 
@@ -327,7 +327,6 @@ Terugdraaien kan op drie manieren:
 - **Bonus voor variatie:** meer goud of snellere ontgrendelingen voor een archetype dat je weinig speelde.
 - **Dagelijkse run met modifier:** "vandaag geen modulo" of "alle vijanden zijn `checked`".
 - **Ascensie als compilerinstellingen:** elk niveau zet een vlag aan, zoals `checked` overal of strengere typecontrole. Moeilijker spelen is letterlijk strengere C#.
-- **Klas-seed:** een docent kan tijdelijk een archetype uitsluiten.
 
 Het roguelike-format remt al vanzelf: een combo vraagt specifieke kaarten en relics, en die zijn nooit gegarandeerd.
 
@@ -367,7 +366,7 @@ De plattegrond verschijnt pas na [de onthulling](#de-onthulling). Tussen de afde
 - De onderdelen van een afdeling zijn de Codex-pagina's van haar hoofdstukken. De tekening van een afdeling wordt grijs-naar-ingekt naarmate er meer onderdelen uitgepakt zijn; onder de helft krijgt ze de sticker *loose parts*.
 - De Controlekamer gaat open als de laatste baas van de Card Hall valt. Wie de onthulling via het vangnet kreeg, ziet ze nog dicht.
 - De Prikklok staat er al, uitgeschakeld tot er een backend is.
-- Onthulling: de laatste baas van de Card Hall verslaan, of het vangnet na **5 gestarte runs** (een barst op het titelscherm die je zelf aanklikt). De docent volgt later met de klascode.
+- Onthulling: de laatste baas van de Card Hall verslaan, of het vangnet na **5 gestarte runs** (een barst op het titelscherm die je zelf aanklikt).
 - Teases die er al zijn: het paginanummer op de map (`p. 2 / 18`), een gestippelde deur met een 5, een zin op het doodscherm (*Behind the door marked 5, something rattles.*) en de dichtgeniete Codex-tabbladen.
 - **Onderdelen die nergens voor dienen:** een kist bevat in de helft van de gevallen een onderdeel (een kaart met een regel, een schakel van een lopende band, een haak voor een gereedschapsbord, een etiket voor een bak), elk met "Belongs to step N". Ze gaan in een zakje dat je in de bovenbalk opent, en blijven over runs heen. Na de onthulling staan ze bij hun afdeling op de plattegrond.
 - **De vreemde vijand:** *The Stray Automaton*, ontsnapt uit de Controlekamer, zit in de gewone gevechten van act 1 en 2. Zijn intent is een regel, `block > 0 ? 16 : 8`: wie blokt, krijgt het dubbel.
@@ -382,7 +381,7 @@ De plattegrond verschijnt pas na [de onthulling](#de-onthulling). Tussen de afde
 ### Ontgrendelen
 
 - Een gesloten afdeling staat gestippeld getekend, met de onderdelen nog in de zak. Een open afdeling is uitgetekend.
-- Een afdeling gaat open als je de baas of eindpuzzel van de vorige verslaat, of als de docent ze vrijgeeft met de klascode, zodat de klas de lesplanning kan volgen.
+- **Je ontgrendelt een afdeling zelf** (beslist op 3 oktober 2026): ze gaat open als je de baas of eindpuzzel van de vorige verslaat. Geen drempel van gemonteerde onderdelen, en niemand anders kan een afdeling voor je openzetten, ook een docent niet.
 - Open blijft open. Een sterke student gaat vooruit, een zwakkere keert terug naar een eerdere afdeling. Dat terugkeren is nooit een straf: elke afdeling blijft even leuk om opnieuw te spelen.
 - De startpunten binnen de deckbuilder (een run in act 2 of 3 beginnen) blijven bestaan, binnen de Card Hall.
 
@@ -392,14 +391,13 @@ Elke montagehandleiding begint met een onderdelenlijst. Bij ons zijn de onderdel
 
 1. **In de zak.** Nog niet tegengekomen. Je ziet een silhouet.
 2. **Uitgepakt.** De regel heeft een gevecht of puzzel beslist; de Codex-pagina is open.
-3. **Gemonteerd.** Je hebt de regel bewust in je voordeel gebruikt, in meerdere runs. Bijvoorbeeld: een vijand laten overlopen in drie verschillende runs, of de elite van dat concept verslaan.
+3. **Gemonteerd.** Je hebt de regel in je voordeel gebruikt: zijn Codex-moment gebeurde in een gewonnen gevecht, in drie verschillende runs. Of je versloeg de elite van dat concept (Level 256 voor overflow, Y2K voor concatenatie). Beslist op 3 oktober 2026.
 
 De afdeling op de plattegrond groeit mee: hoe meer onderdelen gemonteerd, hoe meer van de tekening ingekt en ingekleurd. Een volledige afdeling komt tot leven: de schouw rookt, de band draait. Mastery is dus geen cijfer of percentage, maar een fabriek die af raakt.
 
 - **Zwaktes zien.** Een open afdeling met losse onderdelen krijgt een sticker "hapert". Zo ziet een student meteen waar er nog te oefenen valt: "vandaag de Lopende Band".
 - **Alleen gedrag telt.** Een onderdeel monteer je door te spelen, nooit door een Codex-pagina te lezen of een vraag te beantwoorden.
 - **Geen slijtage.** Gemonteerd blijft gemonteerd. Een fabriek die roest als je een week niet speelt, is een straf voor afwezigheid.
-- Het docentdashboard leest later dezelfde onderdelenlijst, per student en per klas.
 
 ### Prikklok: het klassement
 
@@ -422,11 +420,10 @@ Een student begint Deck Overflow en denkt dat het een gewone deckbuilder is. Pas
 
 ### Wanneer de muur opengaat
 
-De onthulling mag niet alleen afhangen van winnen, anders zien net de zwakkere studenten de wereld nooit. De eerste van drie voorwaarden die vervuld is, opent de muur:
+De onthulling mag niet alleen afhangen van winnen, anders zien net de zwakkere studenten de wereld nooit. De eerste van twee voorwaarden die vervuld is, opent de muur:
 
 1. **De laatste baas van de Card Hall verslaan** (act 3, de Caster). Het grote moment: de muur van de Gieterij scheurt open.
 2. **Het vangnet.** Na een aantal runs of een bepaalde speeltijd, ook zonder ooit te winnen, merkt de fabriek je op: er verschijnt een barst in de muur, en je kan er zelf doorheen.
-3. **De docent.** Komt de les bij H5, dan moet iedereen de Controlekamer in. De docent opent de muur voor de hele klas tegelijk, als klasmoment, niet als spoiler.
 
 ### De teaseladder
 
@@ -732,7 +729,7 @@ Een Codex-pagina heeft vier lagen, die de speler zelf openklikt:
 3. **Onder de motorkap.** Hier verschijnt voor het eerst echte C#: drie tot vijf regels die precies dat moment nabootsen.
 4. **Verder lezen.** Link naar het hoofdstuk in Zie Scherp Scherper.
 
-Wie een pagina leest, krijgt niets extra. De beloning zit in de volgende run: je weet nu iets wat je vijand niet verwacht. Docenten zien in hun dashboard welke pagina's per student ontgrendeld zijn, en dus welke regels al eens gevoeld zijn.
+Wie een pagina leest, krijgt niets extra. De beloning zit in de volgende run: je weet nu iets wat je vijand niet verwacht.
 
 **Zo werkt het nu (3 oktober 2026).** Tijdens een gevecht onthoudt de motor per regel het eerste moment waarop ze iets deed, met de getallen erbij. Als het gevecht voorbij is, gewonnen of verloren, gaan die pagina's open. De getallen vullen "wat er gebeurde" en de code, zodat de pagina jouw moment naspeelt: `byte hp = 250; hp += 6; // 0`. Een pagina heeft een minimale act: Omgieten voel je in act 1, maar "Casting" en "Parsing" openen pas in act 3, bij het hoofdstuk waar ze in het boek staan. Open pagina's bewaart de browser over runs heen; later komt dat in Supabase.
 
@@ -756,7 +753,7 @@ De laatste laag linkt naar de juiste pagina in de [online versie van het boek](h
 
 ### De Codex is het boek
 
-Beslist op 3 oktober 2026. De Codex is geordend volgens Zie Scherp Scherper, niet volgens de spelvormen: een tabblad per hoofdstuk, H2 tot H18. Elke afdeling kan pagina's vullen. Deling van gehele getallen voel je in de deckbuilder en later op de Lopende Band; `if` en `else if` komen uit de Controlekamer. Zo is de Codex het ene ding dat in elke spelvorm hetzelfde blijft, en valt hij samen met de lesplanning van een docent.
+Beslist op 3 oktober 2026. De Codex is geordend volgens Zie Scherp Scherper, niet volgens de spelvormen: een tabblad per hoofdstuk, H2 tot H18. Elke afdeling kan pagina's vullen. Deling van gehele getallen voel je in de deckbuilder en later op de Lopende Band; `if` en `else if` komen uit de Controlekamer. Zo is de Codex het ene ding dat in elke spelvorm hetzelfde blijft, en volgt hij het boek dat de student in de les gebruikt.
 
 **De Codex is ook de onderdelenlijst.** De mastery op de [fabrieksplattegrond](#mastery-de-onderdelenlijst) en de Codex zijn hetzelfde: concepten per hoofdstuk, met drie toestanden.
 
@@ -787,8 +784,7 @@ Deck Overflow wordt een website: spelen zonder installatie, op laptop en tablet.
 - **Game-engine:** Blazor WebAssembly voor de regelmotor en de shell, PixiJS voor de stage. Gekozen na zes spikes.
 - **Audio:** Web Audio, zodat we toonhoogte per trigger kunnen laten stijgen en geluiden laag op laag kunnen stapelen.
 - **Regelmotor:** één centrale motor die C#-semantiek naspeelt (types, afkappen, overflow, voorrang). De game-feel-laag luistert naar zijn events, zodat elke regel automatisch zijn eigen animatie en geluid krijgt.
-- **Spelers en accounts:** iedereen mag spelen, ook leerlingen uit het middelbaar. Je speelt meteen als gast en kan later een account met gebruikersnaam en wachtwoord maken om je fabriek te bewaren; e-mail is optioneel. In klassementen staat altijd een gegenereerde bijnaam, nooit wat de speler zelf typte. Geen analytics of tracking. De klascode, waarmee een docent een afdeling vrijgeeft, is optioneel. Details in het [Spike Design Doc](spike-design-doc.md#hosting-accounts-en-data).
-- **Docentdashboard:** pas na de MVP.
+- **Spelers en accounts:** iedereen mag spelen, ook leerlingen uit het middelbaar. Je speelt meteen als gast en kan later een account met gebruikersnaam en wachtwoord maken om je fabriek te bewaren; e-mail is optioneel. In klassementen staat altijd een gegenereerde bijnaam, nooit wat de speler zelf typte. Geen analytics of tracking. De klascode is optioneel: een docent maakt er een klas mee, zodat klasgenoten elkaar in het klassement zien. Meer doet een docent niet: geen afdelingen vrijgeven, geen dashboard, geen instellingen (beslist op 3 oktober 2026). Details in het [Spike Design Doc](spike-design-doc.md#hosting-accounts-en-data).
 - **LMS-koppeling:** met Moodle-omgevingen zoals Digitap, als latere stap.
 
 **Taal.** Het spel is Engels. Alle spelteksten staan in één bestand per taal, zodat een Nederlandse versie één extra bestand is.
@@ -825,7 +821,7 @@ De grootste onzekerheid blijft of studenten de regels in de game herkennen wanne
 
 - [ ] **Run-lengte.** Drie acts van 6 rijen: halen we 30 tot 45 minuten, of wordt het langer? Meten in de playtest.
 - [ ] **De 613-combo.** Ink, Spare Screw, Read en Whack blijven over beurten heen werken. Scrap maakt dat niet sterker, maar test of de combo te vaak valt.
-- [ ] **Scrap.** 1 energie is een gok. Te duur als het vaak nodig is, te goedkoop als het een gratis "oeps" wordt. Een relic **Undo** (Ctrl+Z: de eerste Scrap per gevecht is gratis) kan het later verzachten.
+- [ ] **Scrap.** 1 energie is een gok. Te duur als het vaak nodig is, te goedkoop als het een gratis "oeps" wordt. Als de playtest toont dat Scrap vaak nodig is, komt er een relic **Undo** (Ctrl+Z: de eerste Scrap per gevecht is gratis).
 - [ ] **Y2K.** Zonder Floating-kaart of Count Letters moet je drie beurten wachten. Is dat spannend (de klok tikt naar middernacht) of saai?
 - [ ] **Score.** De gewichten (100 per verdieping, 10 per HP, 5 per bespaarde beurt onder 150) zijn een eerste voorstel. Kijken naar de verdeling zodra de Prikklok scores verzamelt; het histogram moet spreiding tonen, geen muur bij 2100.
 - [ ] **Zeldzaamheden en pity timer** afstellen. Er is nu geen pity timer.
@@ -834,8 +830,8 @@ De grootste onzekerheid blijft of studenten de regels in de game herkennen wanne
 
 Uit het oorspronkelijke ontwerp, nog niet gebouwd. Elk punt moet eerst als gevecht leuk zijn (de ontwerptoets).
 
-- [ ] **Bool-schim** (`bool`): elke treffer draait hem om. Simpel en duidelijk; een kandidaat voor act 1.
-- [ ] **Ritmeschildpad** (`%`) met de kaart Remainder en de relic Restzak. Modulo zit in H2 maar nu nergens in het spel.
+- [ ] **Bool-schim** (`bool`), uitgewerkt hieronder.
+- [ ] **Ritmeschildpad** (`%`), uitgewerkt hieronder. Modulo zit in H2 maar nu nergens in het spel.
 - [ ] **Tweelingschutters** (`i++` tegenover `++i`) met Snelle Steek en Voorsprong. De Tally Counter (`++count`) is de eerste smaak.
 - [ ] **De Naamloze en De Etiketkamer** (identifiers): blijft het zwakste concept als mechaniek. Testen op fun, niet alleen op leerwaarde, of schrappen.
 - [ ] **De patch met `const`**: na een paar keer Wrong Label op dezelfde soort vijand maakt een revisie zijn aanval `const`. Zit in het ontwerp van act 1, nog niet in het spel.
@@ -843,35 +839,55 @@ Uit het oorspronkelijke ontwerp, nog niet gebouwd. Elk punt moet eerst als gevec
 - [ ] **Exceptions met een catch**: de beurt als call stack en de blueprints. Een eigen act, of een afdeling na H10.
 - [ ] **Een derde elite voor act 3?** Nu Flight 501 en The Index. The Counter kan ook in act 3 terugkomen; Mars Climate Orbiter (verwisselde eenheden) heeft al een tekening.
 
+### Voorstel: de Bool-schim (act 1)
+
+Een geest met gewone `int`-HP en één `bool`: `isSolid`. Hij is een gewone vijand in act 1, met een bewuste intent.
+
+- **Elke treffer draait `isSolid` om**, raak of niet. Is hij solid, dan neemt hij de schade; is hij het niet, dan gaat de treffer erdoor. De eerste treffer raakt dus, de tweede niet, de derde weer.
+- **Meervoudige kaarten worden een telspel.** Floating Bolts (3 treffers) raakt twee keer, Floating Parts (4) ook maar twee. Split (twee treffers) raakt één keer. Eén grote Hammer It In is hier sterk.
+- **Zijn intent is `isSolid ? 6 : 14`.** Wie zijn beurt eindigt terwijl hij doorzichtig is, krijgt het hard. Je wil eindigen op een oneven aantal treffers.
+- **Een nieuwe kaart Flip** (0 energie): `isSolid = !isSolid`, zonder treffer. Een gereedschap om de telling recht te zetten.
+- **Wat je ontdekt:** een `bool` kent twee standen, en `!` draait om. Het tellen is pariteit, zonder dat het spel het zo noemt. Logische operatoren (`&&`, `||`) wachten op de Controlekamer.
+- **Codex:** een pagina **Booleans** (H2), die opent als je hem verslaat.
+- **Andere manier om te winnen:** gewoon slaan en de 14 opvangen met blok.
+
+### Voorstel: de Ritmeschildpad (act 1)
+
+Een schildpad met een schild dat alleen open is in het ritme van jouw beurt. De voorwaarde staat op zijn schild, zoals een intent: `cards % 3 == 0`.
+
+- **Zijn schild is dicht, behalve bij elke derde kaart** die je deze beurt speelt. Een treffer op een dicht schild ketst af (0 schade). Je derde en zesde kaart raken.
+- **Dus speel je eerst twee goedkope kaarten** (Spare Screw, Split, Floating Point: die kosten 0) en dan je zware slag. De Counter-relic (elke derde kaart kost 0) wordt hier ineens goud waard.
+- **Zijn intent is `turn % 2 == 0 ? 16 : 4`**: om de andere beurt slaat hij hard. Je ziet het ritme in de ballon.
+- **Een nieuwe kaart Remainder** (1 energie): `% 5` op de aanval van een vijand. Een aanval van 16 wordt 1, 23 wordt 3, maar 25 wordt 0. De rest is altijd kleiner dan 5: modulo als verdediging. Werkt op elke vijand, dus ook buiten dit gevecht nuttig.
+- **Wat je ontdekt:** `%` geeft de rest, en "elke derde" is `% 3 == 0`.
+- **Codex:** een pagina **Modulo** (H2), die opent bij een treffer door zijn open schild of bij Remainder.
+- **Andere manier om te winnen:** Force Fit naar `byte` en helen, zoals bij Level 256; zijn schild houdt schade tegen, geen heling.
+
 ### Codex
 
 - [ ] **Een pagina voor `++`.** De Tally Counter heelt `++count`, maar daar opent geen pagina. Een pagina "Increment" (H2) kan opengaan bij de eerste heling.
 - [ ] **Stempels voor gemonteerd** (zie hieronder) wachten op een definitie.
 - [ ] **Waar je de regel voelde**: icoontjes per afdeling op een pagina, zodra er een tweede spelvorm meedoet.
 
-### Mastery: wanneer is een onderdeel gemonteerd?
+### Mastery: gemonteerd
 
-De drie toestanden staan in [Mastery](#mastery-de-onderdelenlijst); de derde is nog niet vastgelegd.
+Beslist: een moment in een gewonnen gevecht in drie verschillende runs, of de elite van het concept verslaan (zie [Mastery](#mastery-de-onderdelenlijst)). De motor kent de momenten al per gevecht; de shell telt runs.
 
-- **Voorstel:** een onderdeel is gemonteerd als zijn Codex-moment gebeurt in een **gewonnen** gevecht, in **drie verschillende runs**. Of als je de elite van dat concept verslaat (Level 256 voor overflow, Y2K voor concatenatie).
-- Waarom: de motor kent de momenten al per gevecht, dus de shell hoeft alleen runs te tellen. Winnen telt, omdat een regel die je bewust gebruikt, meestal helpt. Drie runs, omdat één keer toeval kan zijn.
-- Nadeel: een regel die je alleen *ondergaat* (de Dripper die afkapt), telt ook. Een strengere versie telt alleen momenten die jij veroorzaakte (jouw schade, jouw heling).
-- [ ] Beslissen, en per afdeling uitschrijven.
+- [ ] Bouwen: per Codex-pagina de runs tellen, een stempel op de pagina, en de afdeling op de plattegrond die meer ingekt raakt.
+- [ ] Nog te beslissen: telt een regel die je alleen *ondergaat* (de Dripper die afkapt) ook, of alleen momenten die jij veroorzaakte? Voorstel: voorlopig alles, en kijken of het te snel gaat.
 
 ### De wereld
 
-- [ ] **Wat ontgrendelt een afdeling?** Voorstel: de baas van de vorige, of de docent. Een drempel van gemonteerde onderdelen voelt als een poort en botst met de antipatronen.
 - [ ] **De Controlekamer** als tweede echte afdeling. Spike 8 staat los; eerst testen of spelers de regels van een automaat lezen. Een echte bug voor H5 kiezen.
 - [ ] **Gambits als intents** in de deckbuilder: de Stray is de eerste. Meer pas als spike 8 toont dat spelers ze lezen.
 - [ ] **Spelvorm voor OOP**: tower defense of eigen kaarten ontwerpen.
 - [ ] **De plattegrond** als papieren mock testen: ziet een student zonder uitleg waar er te oefenen valt?
 - [ ] **Echte bugs** kiezen voor de Controlekamer (H5) en de Gereedschapsmuur (H7).
 
-### De Prikklok en de klas
+### De Prikklok
 
-- [ ] **Dagelijkse run.** Altijd vanaf act 1, met `DailySeed.For(datum)`, één poging per dag die telt? Of de beste van de dag? Voorstel: de eerste voltooide run telt, zodat er geen reden is om eindeloos opnieuw te starten.
+- **Dagelijkse run** (beslist): altijd vanaf act 1, met `DailySeed.For(datum)`. De eerste voltooide run van de dag telt, zodat er geen reden is om eindeloos opnieuw te starten.
 - [ ] **Dagelijkse modifier**, zoals "vandaag geen Ink" of "alle vijanden `checked`".
-- [ ] **Speelduurlimiet** per dag: een standaard bepalen samen met collega's.
 - [ ] **Zachte streak** voor dagelijkse runs, zonder straf als je een dag mist.
 
 ### Sfeer en art
@@ -885,4 +901,4 @@ De drie toestanden staan in [Mastery](#mastery-de-onderdelenlijst); de derde is 
 Kort, met de datum; de uitwerking staat in de secties hierboven.
 
 - 2 oktober 2026: Blazor WebAssembly met PixiJS; de AI-art in handleidingstijl is definitief; runlengte afgestemd op een lesblok.
-- 3 oktober 2026: elke afdeling krijgt haar eigen spelvorm rond één plattegrond; de Card Hall heeft drie acts, één per hoofdstuk; startpunten met vijf keer 1 uit 3; de Codex is het boek; het vangnet voor de onthulling na 5 gestarte runs; de score van een run; Scrap voor wachtende modifiers.
+- 3 oktober 2026: elke afdeling krijgt haar eigen spelvorm rond één plattegrond; de Card Hall heeft drie acts, één per hoofdstuk; startpunten met vijf keer 1 uit 3; de Codex is het boek; het vangnet voor de onthulling na 5 gestarte runs; de score van een run; Scrap voor wachtende modifiers; een afdeling ontgrendel je zelf; een docent maakt alleen een klascode voor het klassement, niets anders; gemonteerd is drie gewonnen runs of de elite; de eerste voltooide dagelijkse run telt.
