@@ -76,7 +76,11 @@ We gebruiken geen bugs met doden (zoals de Patriot-raket in 1991). "Nuclear Gand
 
 Dit is de loop van de deckbuilder, de afdelingen Vatenvallei en Gieterij. De andere afdelingen krijgen elk een eigen loop, die eerst als spike moet bewijzen dat hij leuk is.
 
-Een run begint altijd in Act 1, en je probeert zo ver mogelijk te geraken. Eén act duurt 10 tot 15 minuten. De deckbuilder heeft voorlopig twee acts (H2-H3 en H4), dus een volledige run past ruim in een lesblok. Elke act die je in een run bereikt, wordt een startpunt: een volgende run mag daar beginnen, met een deck dat je eerst draft uit de kaarten van de vorige acts. De docent kan een act ook voor de hele klas vrijgeven. Meta-progressie is kennis van de speler en startpunten, nooit extra kracht.
+Een run begint in Act 1, en je probeert zo ver mogelijk te geraken. Eén act duurt 10 tot 15 minuten. De deckbuilder heeft voorlopig twee acts (H2-H3 en H4), dus een volledige run past ruim in een lesblok. Elke act die je in een run bereikt, wordt een startpunt: een volgende run mag daar beginnen, met een deck dat je eerst draft uit de kaarten van de vorige acts. De docent kan een act ook voor de hele klas vrijgeven. Meta-progressie is kennis van de speler en startpunten, nooit extra kracht.
+
+- **Een act** is een map van 6 rijen met een baas erboven.
+- **Na de baas** heel je volledig en kies je 1 baasrelic uit 3. Dan begint de volgende act.
+- **Een start in een latere act** begint met het starterdeck, vijf keer 1 kaart uit 3 uit de pool van de vorige acts, 1 relic uit 3, volle HP en 100 goud. Ongeveer wat je had gehad als je had doorgespeeld.
 
 1. **Map kiezen.** Een vertakte kaart met gevechten, elites, rustplekken, winkels en mysterie-events. Elk pad heeft een andere mix van risico en beloning.
 2. **Vechten.** 3 energie, 5 kaarten per beurt. Elke vijand toont zijn intent voor de volgende beurt.
@@ -110,6 +114,27 @@ Er bestaan geen gewone monsters meer. Elke vijand heeft een type, en elke aanval
 | `string` | Plakt getallen aan zijn waarde in plaats van ze op te tellen |
 | `bool` | Kent maar twee toestanden: elke treffer draait hem om |
 
+### Ook je aanval heeft een type
+
+Een aanval is geen kaal getal: het is een waarde met een type, die door je modifiers stroomt. C# rekent elke stap uit volgens de echte regels, en pas daarna landt de waarde op het type van het doelwit. Zo zit H2 en H3 in elke beurt, niet alleen in het moment van aankomst.
+
+| Je speelt | Expressie | Resultaat | Concept |
+| --- | --- | --- | --- |
+| Split (`/ 2`), daarna Whack 7 | `7 / 2` | 3 | deling van gehele getallen |
+| Floating Point, Split, Whack 7 | `7.0 / 2` | 3.5 | één `double` maakt de expressie `double` |
+| hetzelfde op een `int`-vijand | | 3 | decimalen sneuvelen bij aankomst |
+| Remainder (`% 5`), daarna Whack 7 | `7 % 5` | 2 | modulo |
+| Ink `"1"`, daarna Ink `"2"` | `"1" + "2"` | `"12"` | tekst plakt |
+| Ink `"4"`, daarna Whack 2 | `"4" + 2` | `"42"` | een getal plakt mee als tekst |
+| daarna Read | `int.Parse("42")` | 42 | tekst wordt een getal |
+| Letter `'A'`, daarna Spare Screw | `'A' + 3` | 68 | een `char` is een getal |
+
+- **Het totaal staat groot, de expressie klein.** Net als bij een intent past het totaal zich live aan terwijl je kaarten overweegt, en tijdens het spelen wordt de expressie stap voor stap uitgerekend. De speler hoeft niets zelf te rekenen.
+- **Tekst raakt geen getal.** Een tekstaanval op een getal-vijand compileert niet (`hp - "42"`), dus de kaart weigert. Eerst Read spelen.
+- **Begrijpen is de sterkste strategie.** Met getallen is 1 + 2 maar 3; als tekst wordt het 12. Wie tekst aan elkaar plakt en pas dan omzet, slaat het hardst (het archetype Schrijver). Op een `byte`-vijand loopt `"300"` dan weer over.
+- **Read is eigenlijk `int.Parse`**, dus H4. Net als Omgieten ervaar je het in act 1 onder een wereldnaam, en geeft de Codex het in act 2 zijn echte naam.
+- **Geen Scratch-probleem.** De deckbuilder is één spelvorm binnen een grotere wereld, dus hij mag dicht tegen code aan zitten. Je bouwt wel altijd één aanval met hooguit een paar modifiers, geen programma. De vraag aan de speler blijft: hoe maak ik dit getal zo groot (of zo klein) mogelijk?
+
 ### Omgieten
 
 Omgieten verandert het type van een vijand. Het veralgemeent wat de golem leuk maakte: niet één puzzelvijand, maar een gereedschap voor elk gevecht.
@@ -124,7 +149,7 @@ Dit is de C#-versie van "kwetsbaar maken en dan hard slaan", maar de speler ontd
 ### Later, als de basis staat
 
 - **Statuseffecten met C#-betekenis**, één voor één: Memory leak (HP-verlies dat elke beurt groeit met `++`) eerst, daarna Readonly, Unchecked en Null.
-- **De beurt als expressie**: de volgorde van je kaarten vormt een expressie met operatorvoorrang. Veelbelovend, maar het grootste risico op een Scratch-gevoel. Pas testen als types en omgieten bewezen zijn.
+- **Operatorvoorrang in je eigen aanval**: nu werken modifiers van links naar rechts. Later kan een kaart als Haakjes de volgorde breken, zodat `3 + 2 * 4` en `(3 + 2) * 4` een keuze worden in je eigen beurt, niet alleen in de intents van de Rekenmeester.
 
 ## Run-variatie en loot
 
@@ -298,7 +323,7 @@ Drie regels houden het één spel:
 | Afdeling | Hoofdstuk | Spelvorm | Waarom deze vorm | Echte bug |
 | --- | --- | --- | --- | --- |
 | De Vatenvallei (act 1) | H2 basis, H3 tekst | Roguelike deckbuilder | Kaarten zijn waarden en expressies: types, afkappen, overflow, tekst die plakt; Omgieten als ervaring | Level 256, Effective Power |
-| De Gieterij (act 2) | H4 werken met data | Roguelike deckbuilder | Casting met naam, Parse, afronden (`Math.Round(2.5)` is 2) | Flight 501, The Index |
+| De Gieterij (act 2) | H4 werken met data | Roguelike deckbuilder | Expliciet omzetten: cast kapt af, Convert rondt af, Parse kan crashen, Math als gereedschap | Flight 501, The Index |
 | De Controlekamer | H5 beslissingen | Gambits: je stelt de regels van een automaat op ("als een vijand onder 10 HP staat: aanvallen") en kijkt dan hoe hij vecht | De eerste regel die klopt wint: volgorde, `else if`, logische operatoren. `switch` is een tabel van gevallen | nog te kiezen |
 | De Lopende Band | H6 loops | Automatiseringspuzzel: banden en machines die herhalen tot een voorwaarde waar is | Herhaling met een stopvoorwaarde; een band die nooit stopt, is de oneindige lus | Zune (2008): een `while`-lus die op 31 december van een schrikkeljaar nooit stopte |
 | De Gereedschapsmuur | H7 methoden | Dezelfde band, met blueprints: een machine één keer bouwen en overal stempelen, met instelknoppen | Hergebruik en parameters; een blueprint wordt ook een kaart in de deckbuilder | nog te kiezen |
@@ -405,20 +430,22 @@ Structuur: een map van 6 rijen, 1 elite per pad, 1 baas. Samen 10 tot 15 minuten
 | --- | --- | --- |
 | Toekenning (`=` vs `+=`) | Zet- en Voeg-toe-kaarten | H2 |
 | `int` en afkappen | Tinnen Ridder, schild-mechaniek | H2 |
-| `double` | Vlottende kaarten, relic Vlottende Komma | H2 |
+| `double` | Vlottende kaarten, Floating Point maakt je aanval `double`, relic Vlottende Komma | H2 |
+| Type van een expressie | `int` met `double` geeft `double`: de getypeerde aanval | H2 |
 | `bool` als datatype | Bool-schim (logische operatoren pas in Act 3, H5) | H2 |
 | Identifiers | Elite De Naamloze, event De Etiketkamer | H2 |
 | Rekenkundige operatoren | Intents van alle vijanden | H2 |
-| Integer deling | Splitsbende | H2 |
-| Modulo `%` | Ritmeschildpad, relic Restzak | H2 |
+| Integer deling | Split (`7 / 2` is 3), intents als `20 / x`, Splitsbende | H2 |
+| Modulo `%` | Remainder, Ritmeschildpad, relic Restzak | H2 |
 | Operatorvoorrang | Baas De Rekenmeester, relic Haakjes | H2 |
 | `++` en `--` | Tweelingschutters | H2 |
 | Constanten (`const`) | De patch: een revisie maakt een waarde `const` | H2 |
 | Overflow | Elite Level 256 (vroeger De Byte-Golem) | H2 |
-| `string` en `+` | Papieren Golem | H3 |
-| `char` is een getal | Kaarten met letters: `'A' + 1` is 66 | H3 |
+| `string` en `+` | Ink-kaarten (`"1" + "2"` is `"12"`), Read zet tekst om naar een getal, Papieren Golem | H3 |
+| `char` is een getal | Letterkaarten: `'A' + 1` is 66 | H3 |
 | Unicode | Elite Effective Power | H3 |
 | Casting | Omgieten-kaarten (kernsysteem), event De Smeltkroes; Codex pas in Act 2 | H4 |
+| Parse | Read; Codex pas in Act 2 | H4 |
 
 ## Encounters
 
@@ -495,6 +522,45 @@ Het starterdeck is bewust saai, zodat elke beloning een echte keuze wordt.
 | Teller | Elke derde kaart die je speelt, kost 0 | Modulo en tellen |
 | Etiketmaker | De Naamloze toont zijn echte etiket één beurt vooraf | Identifiers |
 
+## Act 2: De Gieterij
+
+Act 2 dekt hoofdstuk 4: werken met data. Act 1 liet types en tekst voelen; de Gieterij gaat over **expliciet omzetten**. Een gieterij giet gesmolten metaal in mallen, en dat is casting, letterlijk. Hier krijgt Omgieten zijn echte naam.
+
+| Concept | Waar het in de game zit |
+| --- | --- |
+| Expliciete cast kapt af | Force Fit, Flight 501, Codex "Casting" na de baas |
+| Impliciete omzetting (klein naar groot) | The Ingot |
+| `Convert.ToInt32` rondt af, bankiersafronding | Measure Twice, The Rounder |
+| `int.Parse` en een ongeldige tekst | Read the Label, The Label |
+| `Math.Round`, `Math.Sqrt` | Round Off, Square Root |
+| Afkappen tegenover afronden | Elite The Index |
+
+### Gewone vijanden
+
+| Vijand | Mechaniek | Wat je ontdekt | Andere manier om te winnen |
+| --- | --- | --- | --- |
+| The Label | Zijn HP is tekst: `"40"`. Schade plakt eraan vast (`"40" + 6` is `"406"`), en zijn aanval is een tiende van zijn HP. | Tekst is geen getal: eerst parsen. Omgieten weigert, want `(int)"40"` compileert niet. | Wrong Label maakt er `"1"` van; dan nog parsen, maar van 1 HP |
+| The Rounder | `double`-HP. Aan het eind van elke beurt rondt hij zichzelf af met `Math.Round`: 10.5 wordt 10, 11.5 wordt 12. De intent toont het resultaat al. | Bankiersafronding | Met Force Fit naar `int` omgieten: dan kapt hij af en rondt hij nooit meer af |
+| The Ingot | Een `int` met een `double`-schild. Elke beurt gaat zijn schild vanzelf over naar `double`, zonder verlies. | Van klein naar groot gaat vanzelf; van groot naar klein moet je zelf doen | Een eenvoudig gevecht, een adempauze |
+
+### Elites
+
+- **Flight 501** (Ariane 5, 1996): 506 HP als `int`, te sterk om plat te slaan. Omgieten naar `byte` maakt er 250 van. Square Root is een tweede uitweg: 506 wordt 22.
+- **The Index** (Vancouver Stock Exchange, 1982): zijn HP groeit elke beurt met `(int)(HP * 1.05)`. Hij kapt af in plaats van af te ronden, dus onder 20 HP eet het afkappen de groei op: `(int)(19 * 1.05)` is `(int)19.95` is 19. Wie hem onder de 20 krijgt, ziet zijn groei stilvallen, net als de echte index die maanden zakte.
+
+### Baas: The Caster
+
+Een figuur van de fabriek die zichzelf elke beurt in een andere mal giet: van `int` naar `double` naar `byte`, en weer van voren af. De intent toont zijn volgende type. Als `int` kapt hij je decimalen af, als `double` neemt hij alles exact, als `byte` loopt hij over als je hem heelt. Het slotgevecht vat act 1 en act 2 samen. Daarna opent de Codex-pagina "Casting" met de echte naam.
+
+### Nieuwe kaarten
+
+| Kaart | Wat ze doet | Concept |
+| --- | --- | --- |
+| Read the Label | Tekst-HP wordt een getal (`int.Parse`). Op ongeldige tekst crasht ze, en je beurt eindigt. | Parse |
+| Measure Twice | Giet om naar `int` met afronding (`Convert.ToInt32`) in plaats van afkappen | Convert tegenover cast |
+| Round Off | Rondt HP of schild van een vijand af (`Math.Round`) | Bankiersafronding |
+| Square Root (zeldzaam) | HP van de vijand wordt `Math.Sqrt(HP)`: sterk tegen reuzen, nutteloos tegen kleine vijanden | `Math.Sqrt` |
+
 ## De Codex
 
 De Codex is de brug van spel naar cursus, en hij is nooit verplicht. Een pagina opent pas als een regel een gevecht echt heeft beslist, niet bij de eerste ontmoeting.
@@ -556,7 +622,7 @@ De grootste onzekerheid is of studenten de regels in de game herkennen wanneer z
 Beslist op 2 oktober 2026: Act 1 is H2 en H3, een act duurt 10 tot 15 minuten, de Codex opent na het gevecht met echte C# en een link naar het hoofdstuk, `char` hoort bij Act 1. Nog open:
 
 - [x] Art: de AI-gegenereerde art in de handleidingstijl is definitief (beslist op 2 oktober 2026). Nieuwe tekeningen komen van hetzelfde model met het manualvel als referentiebeeld, zodat de stijl gelijk blijft.
-- [ ] Startpunten: hoe groot is het gedrafte deck bij een start in een latere act, en welke relics krijg je mee?
+- [x] Startpunten: starterdeck plus vijf keer 1 uit 3, 1 relic uit 3, volle HP, 100 goud (beslist op 3 oktober 2026)
 - [ ] Echte bugs kiezen voor de Controlekamer (beslissingen) en de Gereedschapsmuur (methoden)
 - [x] Acts 7 en verder (H9 tot H21) uitwerken: vervangen door afdelingen met een eigen spelvorm (3 oktober 2026)
 - [ ] Playtest pas na Act 1: 5 studenten en 2 collega's
