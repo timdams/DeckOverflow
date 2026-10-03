@@ -1,0 +1,150 @@
+@using System.Globalization
+@using DeckOverflow.Engine.Codex
+@implements IDisposable
+@inject Strings S
+
+@* Een mini-animatie van jouw moment, in de beeldtaal van het gevecht: een teller die omklapt,
+   een schaar die decimalen afknipt, een stempel die achter tekst plakt. Gevoed door de getallen
+   die de motor bij het moment bewaarde. *@
+
+<div class="replay">
+    <div class="replay-line">
+        @foreach (var token in _shown)
+        {
+            <span class="tok @token.Css" @key="token.Id">@token.Text</span>
+        }
+    </div>
+    <button class="replay-again" @onclick="PlayAsync" title="@S.T("ui.codex.replay")">↻</button>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Key { get; set; } = "";
+    [Parameter, EditorRequired] public IReadOnlyDictionary<string, string> Values { get; set; } = default!;
+
+    /// <summary>Eén stap: tekst die verschijnt, na een pauze. <paramref name="Replace"/> vervangt de vorige stap, zoals een teller.</summary>
+    private sealed record Step(string Text, string Css, int DelayMs, bool Replace = false);
+
+    private sealed record Token(int Id, string Text, string Css);
+
+    private readonly List<Token> _shown = [];
+    private CancellationTokenSource? _cts;
+    private int _id;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender) _ = PlayAsync();
+    }
+
+    private async Task PlayAsync()
+    {
+        _cts?.Cancel();
+        _cts = new CancellationTokenSource();
+        var token = _cts.Token;
+        _shown.Clear();
+
+        try
+        {
+            foreach (var step in Steps())
+            {
+                await Task.Delay(step.DelayMs, token);
+                var shown = new Token(++_id, step.Text, step.Css);
+                if (step.Replace && _shown.Count > 0) _shown[^1] = shown;
+                else _shown.Add(shown);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (TaskCanceledException) { }
+    }
+
+    private string V(string name) => Values.TryGetValue(name, out var value) ? value : "?";
+
+    private IEnumerable<Step> Steps()
+    {
+        switch (Key)
+        {
+            case CodexCatalog.Overflow:
+            {
+                // De teller rolt op tot 255, bevriest, en klapt om
+                int before = Int("before"), added = Int("added");
+                yield return new($"{before} + {added}", "code", 250);
+                yield return new(before.ToString(CultureInfo.InvariantCulture), "num", 400);
+                int stride = Math.Max(1, (255 - before) / 8);
+                for (int n = before + stride; n < 255; n += stride)
+                    yield return new(n.ToString(CultureInfo.InvariantCulture), "num", 90, Replace: true);
+                yield return new("255", "num freeze", 120, Replace: true);
+                yield return new("↻", "wrap", 500);
+                yield return new(V("after"), "num stamp", 350);
+                break;
+            }
+
+            case CodexCatalog.IntTruncation:
+            {
+                // Een schaar knipt de decimalen af
+                string before = V("before");
+                int dot = before.IndexOf('.');
+                yield return new(dot < 0 ? before : before[..dot], "num", 250);
+                if (dot >= 0) yield return new(before[dot..], "num frac", 150);
+                yield return new("✂", "scissors", 500);
+                yield return new($"= {V("after")}", "stamp", 700);
+                break;
+            }
+
+            case CodexCatalog.IntegerDivision:
+            case CodexCatalog.StringConcat:
+            case CodexCatalog.Convert:
+                yield return new(V("expression"), "code", 250);
+                yield return new("=", "muted", 600);
+                yield return new(V("value"), "stamp", 350);
+                break;
+
+            case CodexCatalog.Parse:
+                yield return new(V("text"), "code", 250);
+                yield return new("=", "muted", 600);
+                yield return new(V("value"), "stamp", 350);
+                break;
+
+            case CodexCatalog.Variables:
+                yield return new(V("expression"), "code", 250);
+                yield return new("→", "muted", 600);
+                yield return new(V("filled"), "code", 300);
+                yield return new($"= {V("value")}", "stamp", 600);
+                break;
+
+            case CodexCatalog.OperatorPrecedence:
+                // Eerst de vermenigvuldiging, dan de optelling
+                yield return new("3 + 2 * 4", "code", 250);
+                yield return new("3 + 8", "code", 900, Replace: true);
+                yield return new("11", "stamp", 900, Replace: true);
+                break;
+
+            case CodexCatalog.StringLength:
+                yield return new($"\"{Shorten(V("text"))}\"", "code", 250);
+                yield return new($"{V("length")}/{V("limit")}", "num", 600);
+                yield return new("crash", "glitch", 500);
+                break;
+
+            case CodexCatalog.Casting:
+                yield return new($"{V("from")} {V("before")}", "code", 250);
+                yield return new($"({V("to")})", "muted", 600);
+                yield return new($"{V("to")} {V("after")}", "stamp", 600);
+                break;
+
+            case CodexCatalog.Rounding:
+                yield return new(V("before"), "num", 250);
+                yield return new("Math.Round", "muted", 500);
+                yield return new(V("after"), "stamp", 500);
+                break;
+
+            case CodexCatalog.Exceptions:
+                yield return new(V("expression"), "code", 250);
+                yield return new(V("exception"), "glitch", 800);
+                break;
+        }
+    }
+
+    private int Int(string name) => int.TryParse(V(name), NumberStyles.Integer, CultureInfo.InvariantCulture, out int n) ? n : 0;
+
+    private static string Shorten(string text) => text.Length > 20 ? "…" + text[^19..] : text;
+
+    public void Dispose() => _cts?.Cancel();
+}

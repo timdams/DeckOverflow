@@ -34,6 +34,12 @@ public partial class RunPage
     /// <summary>Open Codex-pagina's, over runs heen: per pagina de getallen van het eerste moment.</summary>
     private const string CodexKey = "deckoverflow.codex";
 
+    /// <summary>Hoe ver elke Codex-pagina gelezen is, over runs heen.</summary>
+    private const string CodexReadKey = "deckoverflow.codex-read";
+
+    /// <summary>Verdiende ✗-panelen, over runs heen.</summary>
+    private const string XPanelsKey = "deckoverflow.xpanels";
+
     private ElementReference _host;
     private DotNetObjectReference<RunPage>? _self;
     private Run? _run;
@@ -50,6 +56,9 @@ public partial class RunPage
     private readonly List<string> _newPages = [];
     private bool _showCodex;
     private string? _codexFocus;
+    private Dictionary<string, int> _codexRead = [];
+    private readonly HashSet<string> _xpanels = [];
+    private bool _showXRegister;
 
     /// <summary>De vijand van het laatste gevecht, voor het verhaal in de Codex op het beloningsscherm.</summary>
     private string? _lastEnemy;
@@ -87,6 +96,9 @@ public partial class RunPage
             }
             catch (JsonException) { /* kapotte opslag: gewoon met een lege Codex verder */ }
         }
+
+        _codexRead = await LoadJsonAsync<Dictionary<string, int>>(CodexReadKey) ?? [];
+        foreach (string panel in await LoadJsonAsync<List<string>>(XPanelsKey) ?? []) _xpanels.Add(panel);
         StateHasChanged();
     }
 
@@ -148,6 +160,7 @@ public partial class RunPage
         ShowToasts(events);
         await RememberActAsync(events);
         await RememberCodexAsync(events);
+        await RememberXPanelsAsync(events);
 
         // Een nieuw gevecht: de stage begint met een schone lei
         if (_snap.Phase == RunPhase.Combat && before.Phase != RunPhase.Combat)
@@ -217,6 +230,7 @@ public partial class RunPage
             // Pas na het gevecht: goud, relic. Tijdens het gevecht spreekt de stage.
             if (_snap.Phase != RunPhase.Combat) ShowToasts(events);
             await RememberCodexAsync(events);
+            await RememberXPanelsAsync(events);
         }
         finally
         {
@@ -248,6 +262,36 @@ public partial class RunPage
             changed = true;
         }
         if (changed) await JS.InvokeVoidAsync("deckOverflow.save", CodexKey, JsonSerializer.Serialize(_codex));
+    }
+
+    /// <summary>Een Codex-blad omgeslagen. Wie een pagina tot het einde leest, overtreedt de laatste regel.</summary>
+    private async Task TurnCodexPageAsync((string Key, int Layer) turn)
+    {
+        if (turn.Layer <= _codexRead.GetValueOrDefault(turn.Key, 1)) return;
+        _codexRead[turn.Key] = turn.Layer;
+        await JS.InvokeVoidAsync("deckOverflow.save", CodexReadKey, JsonSerializer.Serialize(_codexRead));
+        if (turn.Layer >= 4) await EarnXPanelAsync(Engine.Achievements.XRegister.ReadTheManual);
+    }
+
+    /// <summary>Panelen uit de motor bewaren en melden.</summary>
+    private async Task RememberXPanelsAsync(IEnumerable<GameEvent> events)
+    {
+        foreach (var earned in events.OfType<XPanelEarned>()) await EarnXPanelAsync(earned.Key);
+    }
+
+    private async Task EarnXPanelAsync(string key)
+    {
+        if (!_xpanels.Add(key)) return;
+        AddToast(S.T("ui.toast.xpanel", ("name", S.T($"xpanel.{key}.name"))), "xpanel");
+        await JS.InvokeVoidAsync("deckOverflow.save", XPanelsKey, JsonSerializer.Serialize(_xpanels));
+    }
+
+    private async Task<T?> LoadJsonAsync<T>(string key)
+    {
+        string? json = await JS.InvokeAsync<string?>("deckOverflow.load", key);
+        if (string.IsNullOrEmpty(json)) return default;
+        try { return JsonSerializer.Deserialize<T>(json); }
+        catch (JsonException) { return default; }
     }
 
     private void OpenCodex(string? focus)

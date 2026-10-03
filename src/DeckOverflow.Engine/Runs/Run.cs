@@ -1,3 +1,4 @@
+using DeckOverflow.Engine.Achievements;
 using DeckOverflow.Engine.Cards;
 using DeckOverflow.Engine.Codex;
 using DeckOverflow.Engine.Combat;
@@ -68,6 +69,10 @@ public sealed class Run
     private string? _relicReason;
     /// <summary>Codex-pagina's die in deze run al opengingen; de shell onthoudt ze over runs heen.</summary>
     private readonly HashSet<string> _codex = [];
+    /// <summary>✗-panelen die in deze run al verdiend werden; de shell onthoudt ze over runs heen.</summary>
+    private readonly HashSet<string> _xpanels = [];
+    /// <summary>De vijand van het lopende of laatste gevecht, voor panelen die bij één vijand horen.</summary>
+    private string? _enemyKey;
 
     private Run(ulong seed, RunSetup setup)
     {
@@ -140,6 +145,12 @@ public sealed class Run
             case (RunPhase.Treasure, OpenChest): Open(); break;
             case (RunPhase.Shop or RunPhase.Treasure or RunPhase.Rest or RunPhase.Event, Leave): LeaveNode(); break;
             default: Reject("reject.not-now"); break;
+        }
+
+        // ✗-panelen: wat deze events verdienen, één keer per run
+        foreach (string panel in XRegister.Earned(_events, _enemyKey).ToList())
+        {
+            if (_xpanels.Add(panel)) Emit(new XPanelEarned(panel));
         }
 
         return _events;
@@ -289,6 +300,7 @@ public sealed class Run
             Relics: [.. _relics]);
 
         _combat = Combat.Combat.Start(setup, Mix(Seed, (ulong)nodeId + 1));
+        _enemyKey = enemy;
         Phase = RunPhase.Combat;
     }
 

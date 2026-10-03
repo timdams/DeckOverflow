@@ -145,7 +145,7 @@ Het eventcontract is de enige afspraak tussen C# en JavaScript. Elk event heeft 
 | `TextCrashed` | targetId, length, limit | De tekst werd te lang: "32/32", een glitch, en de vijand valt om (Effective Power) |
 | `ExceptionThrown` | exception, expression | Je getypeerde aanval crashte, bv. `int.Parse(2.5 + "1")`: de naam van de exception, en je beurt eindigt |
 
-Run-events, die de stage negeert en de shell als melding toont, kwamen erbij met de acts: `ActCompleted` (act) na de baas van een act, en `ActStarted` (act) bij een nieuwe act, die ook een startpunt wordt. Na elk gevecht volgt `CodexUnlocked` (key, values) per regel die erin iets deed: de shell bewaart de pagina met de getallen van dat moment.
+Run-events, die de stage negeert en de shell als melding toont, kwamen erbij met de acts: `ActCompleted` (act) na de baas van een act, en `ActStarted` (act) bij een nieuwe act, die ook een startpunt wordt. Na elk gevecht volgt `CodexUnlocked` (key, values) per regel die erin iets deed: de shell bewaart de pagina met de getallen van dat moment. `XPanelEarned` (key) volgt zodra een command een ✗-paneel verdient, één keer per run; de shell bewaart het over runs heen en toont een melding.
 
 `IntentView` kreeg een veld `filled`: bij een bewuste intent de expressie met jouw getallen ingevuld (`30 / (5 + 1)`), en `value` is dan wat de aanval nu zou zijn. `AttackLaunched.expression` is bij een bewuste intent de ingevulde vorm.
 

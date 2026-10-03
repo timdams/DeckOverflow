@@ -378,6 +378,8 @@ De afdeling op de plattegrond groeit mee: hoe meer onderdelen gemonteerd, hoe me
 ### ✗-register: de achievements
 
 - De achievements zijn ✗-panelen uit de handleiding: dingen die de handleiding verbiedt en die jij toch deed. Elke afdeling heeft een eigen pagina.
+- **Gebouwd op 3 oktober 2026**, voor de deckbuilder: Do not overfill (een vijand helen tot hij omklapt en sterft), Do not write essays (Effective Power in één kaart laten crashen), Do not divide by everything (een bewuste intent tot 0 delen), Do not exceed 9 (500 of meer in één aanval), Do not read the wrong label (een `FormatException`), Do not convert rockets (Convert laten crashen op een reus), Do not leave the factory (de laatste baas). Verborgen: Do not round down forever (The Index bevriest), Do not pour 300 into a byte (de Caster klapt om), en Do not read the manual. De motor herkent de panelen aan de events; de browser bewaart ze over runs heen. Een gewoon paneel dat je nog niet hebt, toont wat verboden is, als hint; een verborgen paneel blijft een silhouet.
+- **Do not read the manual** is het enige paneel dat met de Codex te maken heeft: wie een pagina tot het einde leest, overtreedt de laatste regel van een game die draait om de handleiding niet volgen. Het is één verborgen paneel, geen teller per pagina, dus de Codex wordt geen vinkjeslijst.
 - Voorbeelden: een baas laten overlopen tot hij sterft, de Controlekamer winnen met één regel, de band duizend keer laten draaien zonder vast te lopen.
 - Alleen spelprestaties, nooit leerprestaties: geen "lees tien Codex-pagina's" (zie [Antipatronen](#antipatronen)). Een deel is verborgen, zodat geruchten zich op de speelplaats verspreiden.
 
@@ -618,6 +620,10 @@ Na de onthulling toont een pagina ook waar je de regel voelde, met kleine icoont
 - De teller telt alleen open tabbladen: "3 van 10 pagina's", nooit "3 van 87". Een album van 87 lege vakjes motiveert verzamelaars, maar ontmoedigt net de zwakkere studenten.
 - Bij de onthulling springen de nietjes eruit, en de tabbladen van de afdelingen die openkomen, vouwen open.
 - De Codex vertelt nooit dat er andere spelvormen komen. Hij mag laten zien dát het boek dikker is, niet hoe het verder gaat.
+
+**Zien dat er meer staat.** Een open pagina is een stapeltje van vier bladen. Zolang je ze niet allemaal omsloeg, zie je de randen van de bladen eronder, een ezelsoor en een teller (`1/4`), en de knop om verder te lezen is de meest opvallende op de pagina. Een tabblad met een half gelezen pagina krijgt een stip. Het spel onthoudt per pagina hoe ver je las. Dit is een herinnering, geen beloning: lezen levert niets op.
+
+**Een mini-animatie van jouw moment.** Het eerste blad toont in de beeldtaal van het gevecht wat er gebeurde, met jouw getallen: een teller die van 250 oprolt tot 255 en omklapt naar 0, een schaar die `.5` van `2.5` knipt, `30 / (5 + 1)` dat uitrekent tot 5. Met ↻ speel je hem opnieuw af; wie minder beweging wil (systeeminstelling), ziet meteen het eindbeeld.
 
 ## Platform en techniek
 

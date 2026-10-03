@@ -1,0 +1,41 @@
+@using DeckOverflow.Engine.Achievements
+@inject Strings S
+
+@* Het ✗-register: de panelen uit de handleiding die zeggen wat niet mag, en die jij toch deed.
+   Een verdiend paneel is doorkruist en uitgelegd. Een gewoon paneel dat je nog niet hebt, toont
+   wat verboden is: een hint. Een verborgen paneel blijft een silhouet tot je het vindt. *@
+
+<div class="modal" @onclick="OnClose">
+    <div class="modal-body xregister" @onclick:stopPropagation="true">
+        <h2>@S.T("ui.xregister")</h2>
+        <p class="hint">@S.T("ui.xregister.intro") · @S.T("ui.xregister.count", ("earned", XRegister.All.Count(p => Earned.Contains(p.Key))), ("total", XRegister.All.Count))</p>
+
+        <div class="xpanels">
+            @foreach (var panel in XRegister.All)
+            {
+                bool earned = Earned.Contains(panel.Key);
+                if (!earned && panel.Hidden)
+                {
+                    <div class="xpanel hidden" title="@S.T("ui.xregister.hidden-hint")">
+                        <span class="cross">✗</span>
+                        <strong>@S.T("ui.xregister.hidden")</strong>
+                    </div>
+                    continue;
+                }
+
+                <div class="xpanel @(earned ? "earned" : "open")">
+                    <span class="cross">✗</span>
+                    <strong>@S.T($"xpanel.{panel.Key}.name")</strong>
+                    <p>@(earned ? S.T($"xpanel.{panel.Key}.text") : S.T("ui.xregister.unknown"))</p>
+                </div>
+            }
+        </div>
+
+        <button class="secondary" @onclick="OnClose">@S.T("ui.close")</button>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlySet<string> Earned { get; set; } = default!;
+    [Parameter] public EventCallback OnClose { get; set; }
+}

@@ -27,10 +27,18 @@
             {
                 <button class="secondary small" @onclick="() => OpenCodex(null)">@S.T("ui.codex") (@_codex.Count)</button>
             }
+            @if (_xpanels.Count > 0)
+            {
+                <button class="secondary small" @onclick="() => _showXRegister = true">@S.T("ui.xregister") (@_xpanels.Count)</button>
+            }
         </div>
+        @if (_showXRegister)
+        {
+            <XRegisterBook Earned="_xpanels" OnClose="() => _showXRegister = false" />
+        }
         @if (_showCodex)
         {
-            <CodexBook Pages="_codex" Focus="_codexFocus" OnClose="() => _showCodex = false" />
+            <CodexBook Pages="_codex" Read="_codexRead" OnRead="TurnCodexPageAsync" Focus="_codexFocus" OnClose="() => _showCodex = false" />
         }
     }
     else
@@ -60,6 +68,7 @@
                         }
                     </span>
                     <button class="secondary small" @onclick="() => OpenCodex(null)">@S.T("ui.codex")</button>
+                    <button class="secondary small" @onclick="() => _showXRegister = true">@S.T("ui.xregister")</button>
                     <button class="secondary small" @onclick="() => _showDeck = true">@S.T("ui.deck", ("count", s.Deck.Count))</button>
                 </header>
 
@@ -269,9 +278,14 @@
             <DeckPicker Title="@S.T("ui.your-deck")" Deck="s.Deck" OnCancel="() => _showDeck = false" />
         }
 
+        @if (_showXRegister)
+        {
+            <XRegisterBook Earned="_xpanels" OnClose="() => _showXRegister = false" />
+        }
+
         @if (_showCodex)
         {
-            <CodexBook Pages="_codex" Focus="_codexFocus" OnClose="() => _showCodex = false" />
+            <CodexBook Pages="_codex" Read="_codexRead" OnRead="TurnCodexPageAsync" Focus="_codexFocus" OnClose="() => _showCodex = false" />
         }
 
         @if (_picker is { } picker)
@@ -279,12 +293,13 @@
             <DeckPicker Title="@picker.Title" Hint="@picker.Hint" Deck="s.Deck" Eligible="picker.Eligible" HideIneligible="true"
                         ShowUpgrade="picker.ShowUpgrade" OnPick="PickedAsync" OnCancel="() => _picker = null" />
         }
-
-        <div class="toasts">
-            @foreach (var toast in _toasts)
-            {
-                <div class="toast @toast.Class" @key="toast.Id">@toast.Text</div>
-            }
-        </div>
     }
+
+    @* Meldingen staan buiten de schermen, zodat ze ook op het titelscherm verschijnen *@
+    <div class="toasts">
+        @foreach (var toast in _toasts)
+        {
+            <div class="toast @toast.Class" @key="toast.Id">@toast.Text</div>
+        }
+    </div>
 </div>

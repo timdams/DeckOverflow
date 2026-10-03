@@ -49,6 +49,7 @@ namespace DeckOverflow.Engine.Events;
 [JsonDerivedType(typeof(ActCompleted), nameof(ActCompleted))]
 [JsonDerivedType(typeof(ActStarted), nameof(ActStarted))]
 [JsonDerivedType(typeof(CodexUnlocked), nameof(CodexUnlocked))]
+[JsonDerivedType(typeof(XPanelEarned), nameof(XPanelEarned))]
 public abstract record GameEvent
 {
     public int Seq { get; init; }
@@ -155,5 +156,7 @@ public sealed record ActCompleted(int Act) : GameEvent;
 /// <paramref name="Values"/> zijn de getallen van dat moment, voor de tekst en de code op de pagina.
 /// </summary>
 public sealed record CodexUnlocked(string Key, IReadOnlyDictionary<string, string> Values) : GameEvent;
+/// <summary>Een ✗-paneel verdiend: iets wat de handleiding verbiedt en wat jij toch deed.</summary>
+public sealed record XPanelEarned(string Key) : GameEvent;
 /// <summary>Een nieuwe act met een nieuwe map. Wordt ook een startpunt voor volgende runs.</summary>
 public sealed record ActStarted(int Act) : GameEvent;

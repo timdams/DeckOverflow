@@ -59,6 +59,16 @@ public partial class StringsTests
     }
 
     [Fact]
+    public void Elk_x_paneel_heeft_een_naam_en_een_uitleg()
+    {
+        foreach (var panel in Engine.Achievements.XRegister.All)
+        {
+            AssertKey($"xpanel.{panel.Key}.name");
+            AssertKey($"xpanel.{panel.Key}.text");
+        }
+    }
+
+    [Fact]
     public void Elke_codexpagina_heeft_een_naam_een_verhaal_en_code()
     {
         foreach (var entry in Engine.Codex.CodexCatalog.All)
