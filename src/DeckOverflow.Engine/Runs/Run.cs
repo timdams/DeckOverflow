@@ -228,7 +228,7 @@ public sealed class Run
                 break;
             case NodeKind.Event:
                 // Een tweede kruik wordt een gewoon event
-                _eventKey = _act.Events.Contains(node.Encounter!) ? node.Encounter : _act.Events[_loot.NextInt(_act.Events.Count)];
+                _eventKey = Adventures.All.Contains(node.Encounter!) ? node.Encounter : _act.Events[_loot.NextInt(_act.Events.Count)];
                 Phase = RunPhase.Event;
                 break;
             case NodeKind.Shop:
