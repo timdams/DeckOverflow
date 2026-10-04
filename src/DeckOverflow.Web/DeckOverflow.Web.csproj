@@ -20,6 +20,8 @@
     <!-- Events en snapshots gaan via reflectie naar JSON: niets uit de motor wegtrimmen -->
     <TrimmerRootAssembly Include="DeckOverflow.Core" />
     <TrimmerRootAssembly Include="DeckOverflow.CardHall" />
+    <TrimmerRootAssembly Include="DeckOverflow.ControlRoom" />
+    <TrimmerRootAssembly Include="DeckOverflow.ConveyorBelt" />
   </ItemGroup>
 
 </Project>

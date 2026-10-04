@@ -1,4 +1,6 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Json;
+using System.Text.Json;
 using DeckOverflow.ControlRoom.Gambits;
 using DeckOverflow.ControlRoom.Levels;
 using DeckOverflow.Core.Codex;
@@ -77,6 +79,8 @@ public partial class ControlRoomPage : IAsyncDisposable
     private string LockedText => Departments.IsEarned(Departments.Get(Departments.ControlRoom), _progress.Unlocks)
         ? S.T("ui.world.earned") : S.T("ui.world.control-room.needs");
 
+    // Het histogram leest SortedDictionary's via reflectie; zonder dit trimt een Release-build hun constructor weg.
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(SortedDictionary<int, int>))]
     protected override async Task OnInitializedAsync()
     {
         if (!S.Loaded) await S.LoadAsync(Http);
@@ -84,7 +88,7 @@ public partial class ControlRoomPage : IAsyncDisposable
         S.Changed += OnLanguageChanged;
         _progress = await Store.LoadAsync();
         try { _histograms = await Http.GetFromJsonAsync<Dictionary<string, Histogram>>("control-room/solutions.json") ?? []; }
-        catch (HttpRequestException) { /* zonder histogram speel je gewoon verder */ }
+        catch (Exception e) when (e is HttpRequestException or JsonException or NotSupportedException) { /* zonder histogram speel je gewoon verder */ }
 
         _openAll = await Superuser.IsActiveAsync();
         int found = LevelQuery is null || !_openAll ? -1 : LevelCatalog.IndexOf(LevelQuery);

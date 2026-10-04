@@ -17,3 +17,11 @@ jobs:
       - run: dotnet test tests/DeckOverflow.ControlRoom.Tests
       - run: dotnet test tests/DeckOverflow.ConveyorBelt.Tests
       - run: dotnet build src/DeckOverflow.Web
+      # Een Release-build trimt: elke motor die de shell naar JSON omzet, moet als TrimmerRootAssembly in de csproj
+      # staan, anders vallen de parameternamen van records weg en crasht het spel online (4 oktober 2026).
+      - name: Every engine is a trimmer root
+        run: |
+          for ref in $(sed -n 's/.*ProjectReference Include=".*[\\/]\([^\\/]*\)\.csproj".*/\1/p' src/DeckOverflow.Web/DeckOverflow.Web.csproj); do
+            grep -q "TrimmerRootAssembly Include=\"$ref\"" src/DeckOverflow.Web/DeckOverflow.Web.csproj \
+              || { echo "::error::$ref mist een TrimmerRootAssembly in DeckOverflow.Web.csproj"; exit 1; }
+          done
