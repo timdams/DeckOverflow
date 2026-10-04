@@ -137,6 +137,6 @@ public class BoolAndModuloTests
         Assert.Contains(Bestiary.RhythmTurtle, Acts.VatValley.NormalPool);
         Assert.Contains(CardCatalog.Flip, CardCatalog.RewardPool);
         Assert.Contains(CardCatalog.Remainder, CardCatalog.RewardPool);
-        Assert.Equal(1, CodexCatalog.Get(CodexCatalog.Modulo).MinAct);
+        Assert.Equal(1, Acts.ActOfChapter(CodexCatalog.Get(CodexCatalog.Modulo).Chapter));
     }
 }

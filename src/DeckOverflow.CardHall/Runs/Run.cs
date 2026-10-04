@@ -427,7 +427,7 @@ public sealed class Run
 
         foreach (var moment in moments)
         {
-            if (CodexCatalog.Get(moment.Key).MinAct > _act.Number || !_codex.Add(moment.Key)) continue;
+            if (Acts.ActOfChapter(CodexCatalog.Get(moment.Key).Chapter) > _act.Number || !_codex.Add(moment.Key)) continue;
             Emit(new CodexUnlocked(moment.Key, moment.Values));
         }
     }

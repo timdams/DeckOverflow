@@ -36,6 +36,7 @@ dotnet test tests/DeckOverflow.Core.Tests        # wat CI draait: de gedeelde re
 dotnet test tests/DeckOverflow.CardHall.Tests    # en de deckbuilder
 dotnet test tests/DeckOverflow.ControlRoom.Tests # en de Controlekamer (/control-room)
 dotnet test tests/DeckOverflow.ConveyorBelt.Tests # en de Lopende Band (/conveyor-belt)
+dotnet test tests/DeckOverflow.Web.Tests        # en de shell: afdelingen openen, superuser, wereldteksten
 dotnet run --project src/DeckOverflow.Web        # /?seed=255, of /?fight=golem; lokaal ben je superuser
 python tools/cut_sheets.py                       # tekeningen opnieuw uitsnijden
 python tools/copy_sfx.py                         # geluiden opnieuw kopiëren (pip install soundfile lameenc)
@@ -46,14 +47,14 @@ python tools/copy_sfx.py                         # geluiden opnieuw kopiëren (p
 Bewezen in spike 1 en de basis voor het spel. De motor beslist, de stage speelt af. Houd die grens scherp.
 
 - **Motor** kent alle spelregels, één project per afdeling (nu `DeckOverflow.CardHall`, `DeckOverflow.ControlRoom` en `DeckOverflow.ConveyorBelt`) bovenop **`DeckOverflow.Core`** (seeded RNG, getypeerde waarden en C#-regels, teksten, de Codex-catalogus en het contract van het ✗-register). Een afdeling verwijst alleen naar Core, nooit naar een andere afdeling. Pure C#, geen dependencies, geen `DateTime`, `Task.Delay` of `System.Random`. In de Card Hall verandert status alleen via `Combat.Handle(ICommand)` of, voor een hele run, `Run.Handle(ICommand)`; beide geven een lijst `GameEvent`s terug. In de Controlekamer speelt `Duel.Step()` één zet en geeft `DuelEvent`s terug. Op de Lopende Band rekent `Simulator.Run` een bord vooraf uit tot een lijst `Frame`s per testgeval.
-- **Shell** (`DeckOverflow.Web`, Blazor WebAssembly) orkestreert en bevat geen regels. De wereld staat in `World/` (plattegrond, Codex, ✗-register, accountpaneel), `Backend/` en `Progress/`; een afdeling in `Features/<Afdeling>/`. Alleen de bruggen in `Interop/` praten met een stage (`StageBridge` voor de Card Hall, `ControlRoomStage` voor de Controlekamer, `ConveyorBeltStage` voor de Lopende Band).
-- **Stage** (per afdeling, nu `wwwroot/card-hall/stage/`, `wwwroot/control-room/stage/` en `wwwroot/conveyor-belt/stage/`, PixiJS + GSAP + Howler) zet events om in animatie en geluid. Geen spelregels, en ze leest nooit zelf de spelstatus. Na elke `play` volgt een `sync` met de snapshot als waarheid.
+- **Shell** (`DeckOverflow.Web`, Blazor WebAssembly) orkestreert en bevat geen regels. De wereld staat in `World/` (`FactoryPage` op `/`: titelscherm, plattegrond, onthulling, Codex, ✗-register, accountpaneel), `Backend/` en `Progress/`; een afdeling in `Features/<Afdeling>/` (de run van de Kaartenhal is `CardHallRun`, die haar wereldzaken aan `FactoryPage` meldt). Alleen de bruggen in `Interop/` praten met een stage (`StageBridge` voor de Card Hall, `ControlRoomStage` voor de Controlekamer, `ConveyorBeltStage` voor de Lopende Band).
+- **Stage** (per afdeling, nu `wwwroot/card-hall/stage/`, `wwwroot/control-room/stage/` en `wwwroot/conveyor-belt/stage/`, PixiJS + GSAP + Howler) zet events om in animatie en geluid. Wat ze delen, staat apart: de beeldtaal, tekeningen en teksten in `wwwroot/shared/` (`juice.js`, `art.js`, `strings.js`), het geluid in `wwwroot/audio/`. Een stage importeert nooit uit de map van een andere afdeling. Geen spelregels, en ze leest nooit zelf de spelstatus. Na elke `play` volgt een `sync` met de snapshot als waarheid.
 - **Typeregels zijn echt .NET-gedrag**, geen nabootsing: `ByteRules` gebruikt `unchecked((byte)…)`, `IntRules` een gewone cast. Een nieuw type krijgt een eigen `XxxRules`-klasse.
 - **Elke regel die iets bijzonders doet, meldt het met een eigen event.** Dat is de haak voor juice en de Codex.
 - **Events zijn klein en plat**: ids en getallen, polymorf geserialiseerd met `[JsonDerivedType]`. Een nieuw event komt ook in de `events.md` van zijn afdeling en in de handlers van de stage. De stage negeert onbekende types.
 - **Determinisme:** een eigen RNG met seed (PCG32), vastgepind met een test op de eerste getallen. Faalt die, dan veranderen alle bestaande seeds; pas de verwachte waarden niet zomaar aan.
 - **Geen CDN:** libraries en fonts staan in `wwwroot/lib` en `wwwroot/fonts`, zodat het spel ook op een schoolnetwerk of GitHub Pages draait.
-- Juice-getallen staan in `juice.js`. Stel de feel daar af, niet in de handlers.
+- Juice-getallen staan in `wwwroot/shared/juice.js`. Stel de feel daar af, niet in de handlers.
 
 ## Ontwerpregels die code raken, in elke afdeling
 

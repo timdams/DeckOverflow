@@ -36,7 +36,7 @@ public interface IXPanelSource
 }
 ```
 
-Hoe een afdeling een paneel herkent, blijft in haar eigen motor (bij de Card Hall `XRegister.Earned(events, enemy)`, uitgevoerd door `Run`, die `XPanelEarned` emitteert); het contract vraagt alleen de lijst. De wereld verzamelt alle bronnen in `World/XPanels.cs` (`Sources`, `All`), met daarin ook haar eigen paneel Do not read the manual. Een nieuwe afdeling voegt daar haar bron toe. Het register toont nog één lijst; een pagina per afdeling komt met de tweede afdeling (zie [todo.md](todo.md)).
+Hoe een afdeling een paneel herkent, blijft in haar eigen motor (bij de Card Hall `XRegister.Earned(events, enemy)`, uitgevoerd door `Run`, die `XPanelEarned` emitteert); het contract vraagt alleen de lijst. De wereld verzamelt alle bronnen in `World/XPanels.cs` (`Sources`, `All`), met daarin ook haar eigen paneel Do not read the manual. Een nieuwe afdeling voegt daar haar bron toe. Het register toont een pagina per afdeling, in de volgorde van de plattegrond, en de wereld als laatste. Een afdeling die nog op binnenkort staat, toont alleen haar naam en "binnenkort": ze verklapt haar panelen pas als ze opengaat (of als je er al een hebt). `tests/DeckOverflow.Web.Tests` kijkt na dat elk paneel tekst heeft in beide talen, dat sleutels uniek zijn over de fabriek, en dat elke bron bij een afdeling of de wereld hoort.
 
 ## Gebouwd: de panelen van de Card Hall
 

@@ -6,8 +6,8 @@ Geldt bovenop de [CLAUDE.md op de root](../../../CLAUDE.md). Het ontwerp staat i
 
 - **Motor:** `src/DeckOverflow.CardHall` (verwijst alleen naar `DeckOverflow.Core`): `Combat/` (gevecht, `Bestiary`, intents), `Cards/`, `Relics/`, `Maps/`, `Runs/` (run, acts, score), `Events/`, `Commands/`, `Achievements/XRegister.cs` (haar ✗-panelen en hoe ze die herkent).
 - **Gedeeld, in Core:** `Values/` (getypeerde waarden, `IntRules`, `ByteRules`, `CastRules`), `Random/`, `Text/`, `Codex/` (de catalogus van alle pagina's), `Achievements/` (`XPanel`, `IXPanelSource`). Wijzig je daar iets, dan raakt het elke afdeling.
-- **Shell:** `Features/CardHall/` (kaarten, map, deckkeuze). `Pages/RunPage.razor(.cs)` speelt de run, maar toont ook titelscherm en plattegrond: die splitsing staat in [de todo van de wereld](../../wereld/todo.md#code-modulair-maken).
-- **Stage:** `wwwroot/card-hall/stage/` (PixiJS): `timeline.js` speelt events af, `log.js` schrijft het log, `juice.js` heeft de getallen voor de feel.
+- **Shell:** `Features/CardHall/`: `CardHallRun.razor(.cs)` speelt de run (stage, gevecht en elk scherm ertussen) en meldt wat de wereld aanbelangt (✗-panelen, meldingen, de laatste baas, terug naar de plattegrond) aan `World/FactoryPage`; verder kaarten, map en deckkeuze.
+- **Stage:** `wwwroot/card-hall/stage/` (PixiJS): `timeline.js` speelt events af, `log.js` schrijft het log. De getallen voor de feel (ook `juice.intent`, `juice.hpBar`, `juice.fan`) staan in het gedeelde `wwwroot/shared/juice.js`.
 - **Tests:** `tests/DeckOverflow.CardHall.Tests`.
 
 ## Ontwerpregels die alleen hier gelden
@@ -16,7 +16,7 @@ Geldt bovenop de [CLAUDE.md op de root](../../../CLAUDE.md). Het ontwerp staat i
 - **In het spel heet casting "Omgieten"** (Force Fit); het woord "cast" verschijnt pas in de Codex, vanaf act 3.
 - **Rekenen is gereedschap, nooit de taak.** Intents tonen standaard het totaal; alleen de Reckoner verbergt het.
 - **De getypeerde aanval volgt echte C#:** tekst raakt geen getal (de kaart weigert), een crash (in beeld nooit "exception", zie [README](README.md#exceptions-en-de-call-stack)) beëindigt je beurt. Modifiers wachten over je beurt heen; Scrap veegt ze weg.
-- **Een Codex-pagina heeft een minimale act** (`MinAct`): je voelt de regel vroeger dan je hem benoemd ziet.
+- **Een Codex-pagina gaat pas open in de act van haar hoofdstuk** (`Acts.ActOfChapter`: act 1 is H2): je voelt de regel vroeger dan je hem benoemd ziet.
 
 ## Een vijand, kaart of relic toevoegen
 

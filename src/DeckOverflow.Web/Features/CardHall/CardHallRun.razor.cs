@@ -6,59 +6,53 @@ using DeckOverflow.CardHall.Events;
 using DeckOverflow.CardHall.Maps;
 using DeckOverflow.CardHall.Runs;
 using DeckOverflow.Core.Text;
-using Microsoft.AspNetCore.Components;
 using DeckOverflow.Web.Art;
-using DeckOverflow.Web.Backend;
 using DeckOverflow.Web.Progress;
-using DeckOverflow.Web.World;
+using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-namespace DeckOverflow.Web.Pages;
+namespace DeckOverflow.Web.Features.CardHall;
 
 /// <summary>
-/// Dunne shell rond een hele run: vertaalt klikken naar commands, geeft gevechtsevents
-/// door aan de stage en toont de andere schermen uit de snapshot. Geen spelregels hier.
+/// Dunne shell rond een hele run van de Kaartenhal: vertaalt klikken naar commands, geeft gevechtsevents
+/// door aan de stage en toont de andere schermen uit de snapshot. Geen spelregels hier. Wat de wereld
+/// aanbelangt (een ✗-paneel, een melding, de laatste baas, terug naar de plattegrond) meldt ze aan <see cref="World.FactoryPage"/>.
 /// </summary>
-public partial class RunPage
+public partial class CardHallRun
 {
-    // De testroutes ?seed=, ?fight= en ?unbox= werken alleen voor de superuser, die ook altijd de plattegrond ziet.
-
-    [SupplyParameterFromQuery(Name = "seed")]
-    public string? SeedQuery { get; set; }
-
-    /// <summary>Om één vijand snel te proberen: een run van één knoop.</summary>
-    [SupplyParameterFromQuery(Name = "fight")]
-    public string? FightQuery { get; set; }
-
-    /// <summary>Om het moment "uit de doos" van een afdeling te bekijken, zonder ze te verdienen.</summary>
-    [SupplyParameterFromQuery(Name = "unbox")]
-    public string? UnboxQuery { get; set; }
-
-    [Inject] private HttpClient Http { get; set; } = default!;
     [Inject] private IProgressStore Store { get; set; } = default!;
-    [Inject] private IServiceProvider Services { get; set; } = default!;
-    [Inject] private Superuser Superuser { get; set; } = default!;
+    [Inject] private NavigationManager Nav { get; set; } = default!;
 
-    /// <summary>De maker: W wint, alles staat open, de testroutes werken. Zie <see cref="Backend.Superuser"/>.</summary>
-    private bool _superuser;
+    /// <summary>De voortgang van de wereld; de run vult Codex, zakje, startpunten en het aantal runs aan.</summary>
+    [Parameter, EditorRequired] public PlayerProgress Progress { get; set; } = default!;
 
-    private string? Fight => _superuser ? FightQuery : null;
+    /// <summary>De maker: W wint, en de testroutes <c>?seed=</c> en <c>?fight=</c> werken.</summary>
+    [Parameter] public bool Superuser { get; set; }
 
-    /// <summary>Accounts en klassen, alleen als Supabase ingesteld is.</summary>
-    private Account? Account => Services.GetService<Account>();
-    private bool _showAccount;
+    /// <summary>De fabriek is onthuld: geen teases meer, en een knop terug naar de plattegrond.</summary>
+    [Parameter] public bool Revealed { get; set; }
 
-    /// <summary>Het vangnet: na zoveel gestarte runs barst de muur vanzelf.</summary>
-    private const int CrackAfterRuns = 5;
+    [Parameter] public string? SeedQuery { get; set; }
+    [Parameter] public string? FightQuery { get; set; }
+
+    /// <summary>De run verscheen of verdween (gestart, gepauzeerd, voorbij): de wereld tekent opnieuw.</summary>
+    [Parameter] public EventCallback OnChanged { get; set; }
+    [Parameter] public EventCallback<string> OnXPanel { get; set; }
+    [Parameter] public EventCallback<(string Text, string Class)> OnToast { get; set; }
+    [Parameter] public EventCallback<string?> OnOpenCodex { get; set; }
+    [Parameter] public EventCallback OnOpenXRegister { get; set; }
+
+    /// <summary>De laatste baas van de Kaartenhal viel.</summary>
+    [Parameter] public EventCallback OnRunWon { get; set; }
 
     private ElementReference _host;
-    private DotNetObjectReference<RunPage>? _self;
+    private DotNetObjectReference<CardHallRun>? _self;
     private Run? _run;
     private RunSnapshot? _snap;
-    private bool _starting;
     private bool _busy;
     private bool _showDeck;
     private bool _showRelics;
+    private bool _showPouch;
     private int _startAct = 1;
 
     /// <summary>Terug in het hoofdmenu terwijl de run wacht: ze blijft in het geheugen, tot je herlaadt.</summary>
@@ -66,54 +60,33 @@ public partial class RunPage
     private bool _showOptions;
     private bool _soundOn = true;
 
-    /// <summary>Alles wat over runs heen blijft: Codex, panelen, ontgrendelde afdelingen, de onthulling.</summary>
-    private PlayerProgress _progress = new();
     /// <summary>Pagina's die na het laatste gevecht opengingen, voor de melding op het volgende scherm.</summary>
     private readonly List<string> _newPages = [];
-    private bool _showCodex;
-    private string? _codexFocus;
-    private bool _showXRegister;
-    /// <summary>Het venster "Over dit spel" op het hoofdscherm.</summary>
-    private bool _showAbout;
-    private bool _showPouch;
-    private bool _showIntro;
+
     /// <summary>Een act die net begon: de actkaart staat open tot je verdergaat.</summary>
     private int? _actCard;
-    private bool _showReveal;
-    private string _revealReason = "won";
-
-    /// <summary>De onthulling gebeurde: de plattegrond vervangt het titelscherm.</summary>
-    private bool Revealed => _superuser || _progress.Revealed;
-
-    /// <summary>Tot welke act je een run mag starten: zo ver je kwam, of elke act voor de superuser.</summary>
-    private int ReachedAct => _superuser ? Acts.All[^1].Number : _progress.ReachedAct;
-
-    private bool CrackVisible => !Revealed && _progress.RunsStarted >= CrackAfterRuns;
-
-    /// <summary>Een verdiend paneel dat net opsprong.</summary>
-    private sealed record PanelPopup(int Id, string Key);
-    private readonly List<PanelPopup> _panelPopups = [];
-
-    /// <summary>Zo lang blijft een paneel staan voor het weer wegzakt; gelijk aan de animatie in run.css.</summary>
-    private const int PanelPopupMs = 4600;
 
     /// <summary>De vijand van het laatste gevecht, voor het verhaal in de Codex op het beloningsscherm.</summary>
     private string? _lastEnemy;
     private Picker? _picker;
-    private readonly List<Toast> _toasts = [];
-    private int _toastId;
 
     /// <summary>Een kaart uit je deck kiezen, en welk command daar dan uit volgt.</summary>
     private sealed record Picker(string Title, string? Hint, IReadOnlyList<int>? Eligible, bool ShowUpgrade, Func<int, ICommand> Command);
 
-    private sealed record Toast(int Id, string Text, string Class);
+    private string? Fight => Superuser ? FightQuery : null;
 
-    protected override async Task OnInitializedAsync()
-    {
-        if (!S.Loaded) await S.LoadAsync(Http);
-        if (!Art.Loaded) await Art.LoadAsync(Http);
-        S.Changed += OnLanguageChanged;
-    }
+    /// <summary>Er loopt een run en ze staat in beeld; anders toont FactoryPage het titelscherm of de plattegrond.</summary>
+    public bool Showing => _run is not null && _snap is not null && !_paused;
+
+    /// <summary>Er wordt een run gestart (de stage laadt nog).</summary>
+    public bool Starting { get; private set; }
+
+    /// <summary>De wachtende run, als korte regel voor de knop om verder te spelen.</summary>
+    public string? PausedSummary => _paused && _snap is { } s
+        ? S.T("ui.continue-run.where", ("act", s.Act), ("floor", s.Floor), ("rows", s.Map.Rows))
+        : null;
+
+    protected override void OnInitialized() => S.Changed += OnLanguageChanged;
 
     /// <summary>Een andere taal: de stage laadt haar teksten opnieuw, de schermen tekenen opnieuw.</summary>
     private void OnLanguageChanged() => _ = InvokeAsync(async () =>
@@ -122,42 +95,23 @@ public partial class RunPage
         StateHasChanged();
     });
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (!firstRender) return;
-        _superuser = await Superuser.IsActiveAsync();
-        _progress = await Store.LoadAsync();
-        Store.Changed += OnProgressChanged;
-        _progress.ReachedAct = Math.Clamp(_progress.ReachedAct, 1, Acts.All[^1].Number);
-        StateHasChanged();
-    }
-
     /// <summary>Start na een klik, zodat de browser audio toelaat.</summary>
-    private async Task StartAsync(int startAct)
+    public async Task StartAsync(int startAct)
     {
         _startAct = startAct;
-        // De allereerste keer: eerst de intro, dan pas de run
-        if (!_progress.IntroSeen && Fight is null)
-        {
-            _showIntro = true;
-            return;
-        }
-        _starting = true;
+        Starting = true;
+        await OnChanged.InvokeAsync();
         _self ??= DotNetObjectReference.Create(this);
-        await Stage.InitAsync(_host, _self, debug: _superuser);
+        await Stage.InitAsync(_host, _self, debug: Superuser);
 
-        ulong seed = _superuser && ulong.TryParse(SeedQuery, out ulong s) ? s : NewSeed();
+        ulong seed = Superuser && ulong.TryParse(SeedQuery, out ulong s) ? s : NewSeed();
         await NewRunAsync(seed);
-        _starting = false;
+        Starting = false;
+        await OnChanged.InvokeAsync();
     }
 
-    private async Task FinishIntroAsync()
-    {
-        _progress.IntroSeen = true;
-        _showIntro = false;
-        await Store.SaveAsync(_progress);
-        await StartAsync(_startAct);
-    }
+    /// <summary>Is dit de testroute <c>?fight=</c>? Dan geen intro.</summary>
+    public bool IsTestFight => Fight is not null;
 
     private async Task NewRunAsync(ulong seed)
     {
@@ -170,21 +124,21 @@ public partial class RunPage
         _showOptions = false;
         if (Fight is null)
         {
-            _progress.RunsStarted++;
-            await Store.SaveAsync(_progress);
+            Progress.RunsStarted++;
+            await Store.SaveAsync(Progress);
         }
         // Elke run begint met de kaart van zijn act, behalve op de testroute ?fight=
         _actCard = Fight is null ? _run.Act.Number : null;
         _picker = null;
         _showDeck = false;
         _lastEnemy = null;
-        _toasts.Clear();
 
         var query = new Dictionary<string, object?> { ["seed"] = seed.ToString(CultureInfo.InvariantCulture) };
         if (Fight is not null) query["fight"] = Fight;
         Nav.NavigateTo(Nav.GetUriWithQueryParameters(query), replace: true);
 
         await Stage.ResetAsync();
+        await OnChanged.InvokeAsync();
     }
 
     /// <summary>Voor <c>?fight=</c>: het starterdeck plus de kaarten die de puzzelvijanden nodig hebben.</summary>
@@ -209,30 +163,40 @@ public partial class RunPage
     }
 
     /// <summary>Naar het hoofdmenu (titelscherm of plattegrond); de run wacht.</summary>
-    private void ToMainMenu()
+    private Task ToMainMenuAsync()
     {
         _showOptions = false;
-        _showDeck = _showRelics = _showPouch = _showCodex = _showXRegister = false;
+        _showDeck = _showRelics = _showPouch = false;
         _picker = null;
         _paused = true;
+        return OnChanged.InvokeAsync();
     }
 
-    private void ContinueRun() => _paused = false;
-
-    /// <summary>De wachtende run, als korte regel voor de knop om verder te spelen.</summary>
-    private string? PausedRun => _paused && _snap is { } s
-        ? S.T("ui.continue-run.where", ("act", s.Act), ("floor", s.Floor), ("rows", s.Map.Rows))
-        : null;
+    /// <summary>De wachtende run weer in beeld.</summary>
+    public Task ContinueAsync()
+    {
+        _paused = false;
+        return OnChanged.InvokeAsync();
+    }
 
     /// <summary>Dezelfde run van voren af aan: zelfde seed, zelfde startact.</summary>
     private Task RestartAsync() => _snap is { } s ? NewRunAsync(s.Seed) : Task.CompletedTask;
 
     /// <summary>De run opgeven: ze telt nergens mee en je staat weer in het hoofdmenu.</summary>
-    private void Abandon()
+    private Task AbandonAsync()
     {
         _showOptions = false;
         _paused = false;
-        BackToFloor();
+        return LeaveAsync();
+    }
+
+    /// <summary>De run is voorbij of opgegeven: terug naar het titelscherm of de plattegrond.</summary>
+    public Task LeaveAsync()
+    {
+        _run = null;
+        _snap = null;
+        _actCard = null;
+        return OnChanged.InvokeAsync();
     }
 
     private async Task ToggleSoundAsync()
@@ -252,7 +216,7 @@ public partial class RunPage
         var before = _snap!;
         var events = _run.Handle(command);
         _snap = _run.Snapshot();
-        ShowToasts(events);
+        await ShowToastsAsync(events);
         await RememberActAsync(events);
         await RememberCodexAsync(events);
         await RememberTrinketsAsync(events);
@@ -303,7 +267,7 @@ public partial class RunPage
 
     /// <summary>Sneltoets W wint het lopende gevecht meteen, alleen voor de superuser.</summary>
     [JSInvokable]
-    public Task OnDebugWin() => _superuser ? RunCombatAsync(new DebugWin()) : Task.CompletedTask;
+    public Task OnDebugWin() => Superuser ? RunCombatAsync(new DebugWin()) : Task.CompletedTask;
 
     private async Task RunCombatAsync(ICommand command)
     {
@@ -325,7 +289,7 @@ public partial class RunPage
 
             _snap = _run.Snapshot();
             // Pas na het gevecht: goud, relic. Tijdens het gevecht spreekt de stage.
-            if (_snap.Phase != RunPhase.Combat) ShowToasts(events);
+            if (_snap.Phase != RunPhase.Combat) await ShowToastsAsync(events);
             await RememberCodexAsync(events);
             await RememberXPanelsAsync(events);
             await RememberRunEndAsync(events);
@@ -337,50 +301,10 @@ public partial class RunPage
         }
     }
 
-    /// <summary>
-    /// De laatste baas van de Card Hall viel: je verdient de sleutel van de Controlekamer, en wie de fabriek
-    /// nog niet zag, krijgt de onthulling. Staat de Controlekamer nog op binnenkort, dan is de sleutel een tease.
-    /// </summary>
+    /// <summary>De run is gewonnen: de wereld beslist wat dat ontgrendelt en onthult.</summary>
     private async Task RememberRunEndAsync(IEnumerable<GameEvent> events)
     {
-        if (!events.OfType<RunEnded>().Any(e => e.Won)) return;
-        if (_progress.TryUnlock(Departments.ControlRoom, UnlockHow.Boss, DateTimeOffset.UtcNow))
-        {
-            await Store.SaveAsync(_progress);
-            bool open = Departments.IsOpen(Departments.Get(Departments.ControlRoom), _progress.Unlocks);
-            AddToast(S.T(open ? "ui.toast.unlocked" : "ui.toast.key", ("name", S.T("ui.world.control-room.name"))), "relic");
-        }
-        if (!_progress.Revealed) await RevealAsync("won");
-    }
-
-    private void Reveal(string reason) => _ = RevealAsync(reason);
-
-    private async Task RevealAsync(string reason)
-    {
-        _revealReason = reason;
-        _progress.RevealedBy = reason;
-        _showReveal = true;
-        await Store.SaveAsync(_progress);
-        StateHasChanged();
-    }
-
-    /// <summary>Na de onthulling meteen je fabriek bewaren.</summary>
-    private void KeepFactoryAfterReveal()
-    {
-        BackToFloor();
-        _showAccount = true;
-    }
-
-    /// <summary>Afgemeld of account verwijderd: helemaal opnieuw beginnen, als een nieuwe gast.</summary>
-    private void SignedOut() => Nav.NavigateTo(Nav.BaseUri, forceLoad: true);
-
-    /// <summary>Terug naar de plattegrond: de run is voorbij of de onthulling is gezien.</summary>
-    private void BackToFloor()
-    {
-        _showReveal = false;
-        _run = null;
-        _snap = null;
-        _actCard = null;
+        if (events.OfType<RunEnded>().Any(e => e.Won)) await OnRunWon.InvokeAsync();
     }
 
     /// <summary>Een nieuwe act bereikt: die wordt een startpunt voor volgende runs.</summary>
@@ -389,9 +313,9 @@ public partial class RunPage
         foreach (var started in events.OfType<ActStarted>())
         {
             _actCard = started.Act;
-            if (started.Act <= _progress.ReachedAct) continue;
-            _progress.ReachedAct = started.Act;
-            await Store.SaveAsync(_progress);
+            if (started.Act <= Progress.ReachedAct) continue;
+            Progress.ReachedAct = started.Act;
+            await Store.SaveAsync(Progress);
         }
     }
 
@@ -401,71 +325,27 @@ public partial class RunPage
         bool changed = false;
         foreach (var unlocked in events.OfType<CodexUnlocked>())
         {
-            if (!_progress.Codex.TryAdd(unlocked.Key, unlocked.Values)) continue;
+            if (!Progress.Codex.TryAdd(unlocked.Key, unlocked.Values)) continue;
             _newPages.Add(unlocked.Key);
             changed = true;
         }
-        if (changed) await Store.SaveAsync(_progress);
+        if (changed) await Store.SaveAsync(Progress);
     }
 
-    /// <summary>Een Codex-blad omgeslagen. Wie een pagina tot het einde leest, overtreedt de laatste regel.</summary>
-    private async Task TurnCodexPageAsync((string Key, int Layer) turn)
-    {
-        if (turn.Layer <= _progress.CodexRead.GetValueOrDefault(turn.Key, 1)) return;
-        _progress.CodexRead[turn.Key] = turn.Layer;
-        await Store.SaveAsync(_progress);
-        if (turn.Layer >= 4) await EarnXPanelAsync(World.XPanels.ReadTheManual);
-    }
-
-    /// <summary>Panelen uit de motor bewaren en melden.</summary>
     /// <summary>Een onderdeel uit een kist gaat in het zakje, over runs heen.</summary>
     private async Task RememberTrinketsAsync(IEnumerable<GameEvent> events)
     {
         bool changed = false;
-        foreach (var found in events.OfType<TrinketFound>()) changed |= _progress.Trinkets.Add(found.Key);
-        if (changed) await Store.SaveAsync(_progress);
+        foreach (var found in events.OfType<TrinketFound>()) changed |= Progress.Trinkets.Add(found.Key);
+        if (changed) await Store.SaveAsync(Progress);
     }
 
     private static int StepOf(string trinket) => Trinkets.All.FirstOrDefault(t => t.Key == trinket)?.Step ?? 0;
 
+    /// <summary>Panelen uit de motor: de wereld bewaart en meldt ze.</summary>
     private async Task RememberXPanelsAsync(IEnumerable<GameEvent> events)
     {
-        foreach (var earned in events.OfType<XPanelEarned>()) await EarnXPanelAsync(earned.Key);
-    }
-
-    private async Task EarnXPanelAsync(string key)
-    {
-        if (!_progress.XPanels.Add(key)) return;
-        var popup = new PanelPopup(++_toastId, key);
-        _panelPopups.Add(popup);
-        _ = RemovePopupLaterAsync(popup);
-        await Store.SaveAsync(_progress);
-    }
-
-    private async Task RemovePopupLaterAsync(PanelPopup popup)
-    {
-        await Task.Delay(PanelPopupMs);
-        _panelPopups.Remove(popup);
-        await InvokeAsync(StateHasChanged);
-    }
-
-    /// <summary>Ook na inloggen: misschien ben je nu de superuser.</summary>
-    private void OnProgressChanged() => _ = InvokeAsync(async () =>
-    {
-        _superuser = await Superuser.IsActiveAsync();
-        StateHasChanged();
-    });
-
-    private void OpenCodex(string? focus)
-    {
-        _codexFocus = focus;
-        _showCodex = true;
-    }
-
-    /// <summary>Een afdeling klapte op de plattegrond uit haar doos: dat moment is gebeurd en komt niet terug.</summary>
-    private async Task UnboxedAsync(string department)
-    {
-        if (_progress.Unboxed.Add(department)) await Store.SaveAsync(_progress);
+        foreach (var earned in events.OfType<XPanelEarned>()) await OnXPanel.InvokeAsync(earned.Key);
     }
 
     /// <summary>Een melding per nieuwe pagina; een klik opent de Codex op die pagina.</summary>
@@ -476,7 +356,7 @@ public partial class RunPage
         {
             builder.OpenElement(seq++, "button");
             builder.AddAttribute(seq++, "class", "codex-new");
-            builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create(this, () => OpenCodex(key)));
+            builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create(this, () => OnOpenCodex.InvokeAsync(key)));
             builder.AddContent(seq++, S.T("ui.codex.new", ("name", S.T($"codex.{key}.name"))));
             builder.CloseElement();
         }
@@ -484,7 +364,7 @@ public partial class RunPage
 
     // ---------- Meldingen ----------
 
-    private void ShowToasts(IEnumerable<GameEvent> events)
+    private async Task ShowToastsAsync(IEnumerable<GameEvent> events)
     {
         foreach (var e in events)
         {
@@ -501,22 +381,8 @@ public partial class RunPage
                 RunRejected r => (S.T(r.Reason), "rejected"),
                 _ => null
             };
-            if (toast is { } t2) AddToast(t2.Text, t2.Class);
+            if (toast is { } t2) await OnToast.InvokeAsync(t2);
         }
-    }
-
-    private void AddToast(string text, string cssClass)
-    {
-        var toast = new Toast(++_toastId, text, cssClass);
-        _toasts.Add(toast);
-        _ = RemoveLaterAsync(toast);
-    }
-
-    private async Task RemoveLaterAsync(Toast toast)
-    {
-        await Task.Delay(2600);
-        _toasts.Remove(toast);
-        await InvokeAsync(StateHasChanged);
     }
 
     // ---------- Hulp ----------
@@ -532,7 +398,6 @@ public partial class RunPage
 
     public async ValueTask DisposeAsync()
     {
-        Store.Changed -= OnProgressChanged;
         S.Changed -= OnLanguageChanged;
         await Stage.DisposeAsync();
         _self?.Dispose();

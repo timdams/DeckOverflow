@@ -1,0 +1,125 @@
+@page "/"
+@implements IDisposable
+@inject NavigationManager Nav
+@inject Strings S
+@inject ArtStyle Art
+
+@* De wereld: titelscherm of plattegrond, de onthulling, en de vensters die elke afdeling deelt (Codex, ✗-register,
+   account). De run van de Kaartenhal is een eigen component; ze staat buiten de taalwissel, zodat een andere taal
+   de run niet weggooit. *@
+
+<div class="run">
+    <CardHallRun @ref="_cardHall" Progress="_progress" Superuser="_superuser" Revealed="Revealed"
+                 SeedQuery="@SeedQuery" FightQuery="@FightQuery"
+                 OnChanged="StateHasChanged" OnXPanel="EarnXPanelAsync" OnToast="t => AddToast(t.Text, t.Class)"
+                 OnOpenCodex="OpenCodex" OnOpenXRegister="() => _showXRegister = true" OnRunWon="RunWonAsync" />
+
+    @* Alles hieronder tekent opnieuw bij een andere taal: de @key bouwt de schermen opnieuw op *@
+    <div class="lang-scope" @key="S.Language">
+
+    @if (!RunShowing)
+    {
+        @if (Revealed)
+        {
+            <WorldMap Paused="@PausedRun" OnContinue="ContinueRunAsync" Unlocks="_progress.Unlocks" Pages="_progress.Codex" Trinkets="_progress.Trinkets" ReachedAct="ReachedAct" Superuser="_superuser" PanelCount="_progress.XPanels.Count"
+                      Unboxed="_progress.Unboxed" OnUnboxed="UnboxedAsync" Unbox="@(_superuser ? UnboxQuery : null)"
+                      Starting="Starting" OnStart="StartAsync" OnCodex="() => OpenCodex(null)" OnXRegister="() => _showXRegister = true"
+                      OnAccount="@(Account is null ? default : EventCallback.Factory.Create(this, () => _showAccount = true))" />
+        }
+        else
+        {
+            <TitleScreen Paused="@PausedRun" Starting="Starting" ReachedAct="ReachedAct" CodexCount="_progress.Codex.Count" PanelCount="_progress.XPanels.Count"
+                         Crack="CrackVisible" OnContinue="ContinueRunAsync" OnStart="StartAsync" OnCodex="() => OpenCodex(null)" OnXRegister="() => _showXRegister = true"
+                         OnAccount="@(Account is null ? default : EventCallback.Factory.Create(this, () => _showAccount = true))"
+                         OnAbout="() => _showAbout = true" OnCrack="@(() => RevealAsync("crack"))" />
+        }
+        <LanguageToggle Class="corner" />
+        @if (_showIntro)
+        {
+            @* Eén keer, voor de eerste run: het thema in drie zinnen, geen regels *@
+            <div class="modal">
+                <div class="modal-body story-card">
+                    <ArtImage Src="@Art.Scene("intro")" Class="story-art" />
+                    <h2>@S.T("ui.intro.title")</h2>
+                    <p>@S.T("ui.intro.1")</p>
+                    <p>@S.T("ui.intro.2")</p>
+                    <p>@S.T("ui.intro.3")</p>
+                    <button class="play-big" @onclick="FinishIntroAsync">@S.T("ui.intro.start")</button>
+                </div>
+            </div>
+        }
+        @if (_showAbout)
+        {
+            <AboutPanel OnClose="() => _showAbout = false" />
+        }
+    }
+
+    @if (_showXRegister)
+    {
+        <XRegisterBook Earned="_progress.XPanels" OnClose="() => _showXRegister = false" />
+    }
+
+    @if (_showCodex)
+    {
+        <CodexBook Pages="_progress.Codex" Read="_progress.CodexRead" OnRead="TurnCodexPageAsync" Focus="_codexFocus" OnClose="() => _showCodex = false" />
+    }
+
+    @if (_showReveal)
+    {
+        @* De onthulling: de muur van de Gieterij scheurt open, en achter de Card Hall gaat de fabriek verder *@
+        <div class="modal">
+            <div class="modal-body act-card reveal-card">
+                <ArtImage Src="@Art.Scene("reveal")" Class="reveal-art" />
+                <span class="act-kicker">@S.T("ui.reveal.kicker")</span>
+                <h2>@S.T("ui.reveal.title")</h2>
+                <p>@S.T(_revealReason == "won" ? "ui.reveal.won" : "ui.reveal.crack")</p>
+                <div class="reveal-actions">
+                    @if (Account is { IsGuest: true })
+                    {
+                        <button class="secondary" @onclick="KeepFactoryAfterRevealAsync">@S.T("ui.account.reveal")</button>
+                    }
+                    <button class="play-big" @onclick="BackToFloorAsync">@S.T("ui.reveal.go")</button>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (_showAccount && Account is { } account)
+    {
+        <AccountPanel Account="account" OnClose="() => _showAccount = false" OnSignedOut="SignedOut" />
+    }
+
+    @* Een verdiend ✗-paneel springt vanaf de onderkant op, in een eigen kader; een klik opent het register *@
+    <div class="xpanel-popups">
+        @foreach (var popup in _panelPopups)
+        {
+            <button class="xpanel-popup" @key="popup.Id" @onclick="() => { _panelPopups.Remove(popup); _showXRegister = true; }">
+                <span class="badge">✗</span>
+                @if (Art.Panel(popup.Key) is { } art)
+                {
+                    <ArtImage Src="@art" Class="popup-art" />
+                }
+                <span class="words">
+                    <span class="label">@S.T("ui.xregister.earned")</span>
+                    <strong>@S.T($"xpanel.{popup.Key}.name")</strong>
+                    <small>@S.T($"xpanel.{popup.Key}.text")</small>
+                </span>
+            </button>
+        }
+    </div>
+
+    @* Een telefoon rechtop: het spel is liggend. De CSS toont dit alleen op een smal aanraakscherm in portret. *@
+    <div class="rotate-hint">
+        <span class="rotate-phone" aria-hidden="true"></span>
+        <p>@(S.Loaded ? S.T("ui.rotate") : "")</p>
+    </div>
+
+    @* Meldingen staan buiten de schermen, zodat ze ook op het titelscherm verschijnen *@
+    <div class="toasts">
+        @foreach (var toast in _toasts)
+        {
+            <div class="toast @toast.Class" @key="toast.Id">@toast.Text</div>
+        }
+    </div>
+    </div>
+</div>

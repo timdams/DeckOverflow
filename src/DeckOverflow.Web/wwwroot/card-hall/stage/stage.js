@@ -2,12 +2,12 @@
 // speelt events af (timeline.js) en neemt de snapshot als waarheid (sync).
 // Alles is een bladzijde uit een montagehandleiding.
 
-import { juice, sec, wait, roll, text, burst, num, typeOf, typeBadge, circled, stamp, dashed, COLORS, FONT } from './juice.js';
+import { juice, sec, wait, roll, text, burst, num, typeOf, typeBadge, circled, stamp, dashed, COLORS, FONT } from '../../shared/juice.js';
 import { initAudio, sfx, toggleMute, setMuted, isMuted } from './audio.js';
 import { runQueue } from './timeline.js';
 import { buildLog, clearLog } from './log.js';
-import { loadStrings, t, cardName, relicName } from './strings.js';
-import { loadArt, cardTexture, relicTexture, actorTexture, iconTexture } from './art.js';
+import { loadStrings, t, cardName, relicName } from '../../shared/strings.js';
+import { loadArt, cardTexture, relicTexture, actorTexture, iconTexture } from '../../shared/art.js';
 
 const W = 960;
 const H = 540;
@@ -429,26 +429,26 @@ function createActor(c) {
   container.addChild(body);
 
   // HP-balk met het C#-type ernaast: de belangrijkste hint in het hele scherm
-  const barW = 150;
+  const { w: barW, h: barH, textSize: hpSize } = juice.hpBar;
   const bar = new PIXI.Container();
   bar.position.set(-barW / 2, 17);
-  const barBg = new PIXI.Graphics().rect(0, 0, barW, 18).fill(COLORS.white).stroke({ width: 2, color: COLORS.ink });
+  const barBg = new PIXI.Graphics().rect(0, 0, barW, barH).fill(COLORS.white).stroke({ width: 2.5, color: COLORS.ink });
   // Wat er net af ging, blijft even gearceerd staan, zodat je ziet hoeveel een treffer kostte
-  const barLag = new PIXI.Graphics().rect(1, 1, barW - 2, 16).fill(COLORS.shade);
-  const barFill = new PIXI.Graphics().rect(1, 1, barW - 2, 16).fill(COLORS.white);   // getint in de kleur van het type
-  const barLine = new PIXI.Graphics().rect(0, 0, barW, 18).stroke({ width: 2, color: COLORS.ink });
-  const hpText = text('', { size: 12, halo: true });
-  hpText.position.set(barW / 2, 9);
+  const barLag = new PIXI.Graphics().rect(1, 1, barW - 2, barH - 2).fill(COLORS.shade);
+  const barFill = new PIXI.Graphics().rect(1, 1, barW - 2, barH - 2).fill(COLORS.white);   // getint in de kleur van het type
+  const barLine = new PIXI.Graphics().rect(0, 0, barW, barH).stroke({ width: 2.5, color: COLORS.ink });
+  const hpText = text('', { size: hpSize, halo: true });
+  hpText.position.set(barW / 2, barH / 2);
   bar.addChild(barBg, barLag, barFill, barLine, hpText);
 
   const badgeSlot = new PIXI.Container();
-  badgeSlot.position.set(barW + 10, 9);
+  badgeSlot.position.set(barW + 10, barH / 2);
   bar.addChild(badgeSlot);
 
   // Een regel die bij de vijand hoort, naast zijn typelabel: isSolid = true, of cards % 3 == 0
   const ruleText = text('', { size: 14, color: COLORS.ink, halo: true, anchor: 0 });
   ruleText.anchor.set(0, 0.5);
-  ruleText.position.set(barW + 52, 9);
+  ruleText.position.set(barW + 52, barH / 2);
   bar.addChild(ruleText);
 
   // Schild links van de balk, met het getal erin
@@ -458,34 +458,37 @@ function createActor(c) {
   const blockText = text('', { size: 13, halo: true });
   blockText.position.set(0, 2);
   blockBox.addChild(blockIcon, blockText);
-  blockBox.position.set(-barW / 2 - 26, 26);
+  blockBox.position.set(-barW / 2 - 26, 17 + barH / 2);
   blockBox.visible = false;
 
   // Intent als tekstballon boven het hoofd, met een staartje naar de vijand
+  // Groot genoeg om van ver te lezen: het getal is wat telt (juice.intent)
+  const J = juice.intent;
   const intent = new PIXI.Container();
-  intent.position.set(0, -sprite.h - 44);
+  intent.position.set(0, -sprite.h - 50);
   const bubble = new PIXI.Graphics();
   // Geen zwaarden: een aanval is er gewoon op kloppen, zoals op de kaart Whack.
   const whackTex = cardTexture('strike');
-  const intentIcon = whackTex ? new PIXI.Sprite(whackTex) : iconSprite('intent-attack', 30);
-  if (whackTex) { intentIcon.anchor.set(0.5); intentIcon.width = intentIcon.height = 30; }
-  const intentText = text('', { size: 15, anchor: 0 });
+  const intentIcon = whackTex ? new PIXI.Sprite(whackTex) : iconSprite('intent-attack', J.iconSize);
+  if (whackTex) { intentIcon.anchor.set(0.5); intentIcon.width = intentIcon.height = J.iconSize; }
+  const intentText = text('', { size: J.textSize, anchor: 0 });
   intentText.anchor.set(0, 0.5);
-  const intentValue = text('', { size: 15, color: COLORS.muted, anchor: 0 });
+  const intentValue = text('', { size: J.valueSize, color: COLORS.ink, anchor: 0 });
   intentValue.anchor.set(0, 0.5);
   intent.addChild(bubble, intentIcon, intentText, intentValue);
 
   const layoutBubble = () => {
-    const gap = 6;
-    const w = 30 + gap + intentText.width + (intentValue.text ? gap + intentValue.width : 0) + 20;
+    const gap = 8;
+    const h = J.iconSize + 18;
+    const w = J.iconSize + gap + intentText.width + (intentValue.text ? gap + intentValue.width : 0) + 26;
     const left = -w / 2;
-    intentIcon.position.set(left + 10 + 15, 0);
-    intentText.position.set(left + 10 + 30 + gap, 0);
+    intentIcon.position.set(left + 12 + J.iconSize / 2, 0);
+    intentText.position.set(left + 12 + J.iconSize + gap, 0);
     intentValue.position.set(intentText.x + intentText.width + gap, 0);
     bubble.clear()
-      .roundRect(left, -21, w, 42, 8).fill(COLORS.white).stroke({ width: 2, color: COLORS.ink })
-      .poly([-8, 20, 8, 20, 0, 33]).fill(COLORS.white)
-      .moveTo(-8, 21).lineTo(0, 33).lineTo(8, 21).stroke({ width: 2, color: COLORS.ink, join: 'round' });
+      .roundRect(left, -h / 2, w, h, 12).fill(COLORS.white).stroke({ width: J.line, color: COLORS.ink })
+      .poly([-10, h / 2 - 1, 10, h / 2 - 1, 0, h / 2 + 14]).fill(COLORS.white)
+      .moveTo(-10, h / 2).lineTo(0, h / 2 + 14).lineTo(10, h / 2).stroke({ width: J.line, color: COLORS.ink, join: 'round' });
   };
 
   container.addChild(bar, blockBox, intent);
@@ -735,10 +738,18 @@ function cardArt(view) {
   return img;
 }
 
+/**
+ * De hand als waaier: de buitenste kaarten kantelen tot juice.fan.maxAngle en zakken tot maxDrop, op een boog.
+ * Een kleine hand waaiert minder open, zodat twee kaarten niet scheef tegen elkaar hangen.
+ */
 function slotOf(index, count) {
   const spread = Math.min(118, 560 / Math.max(1, count - 1));
+  const half = Math.max(1, (count - 1) / 2);
   const offset = index - (count - 1) / 2;
-  return { x: W / 2 + offset * spread, y: HAND_Y + Math.abs(offset) * 6, rotation: offset * 0.045 };
+  const t = offset / half;                                   // -1 links, 0 midden, 1 rechts
+  const open = Math.min(1, (count - 1) / 4);
+  const { maxAngle, maxDrop } = juice.fan;
+  return { x: W / 2 + offset * spread, y: HAND_Y + t * t * maxDrop * open, rotation: t * maxAngle * open };
 }
 
 function layoutHand(animate = true) {

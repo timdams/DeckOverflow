@@ -7,11 +7,11 @@
 // snelheidslijnen, afkappen is een schaar langs een stippellijn, een overflow is een
 // rondgaande pijl, en wie sterft valt uiteen in een explosietekening.
 
-import { juice, sec, wait, hitPause, sizeOf, shake, floatText, burst, text, num, typeOf, impactStar, speedLines, stamp, circled, dashed, COLORS } from './juice.js';
+import { juice, sec, wait, hitPause, sizeOf, shake, floatText, burst, text, num, typeOf, impactStar, speedLines, stamp, circled, dashed, COLORS } from '../../shared/juice.js';
 import { sfx } from './audio.js';
 import { logEvent } from './log.js';
-import { t, relicName } from './strings.js';
-import { iconTexture } from './art.js';
+import { t, relicName } from '../../shared/strings.js';
+import { iconTexture } from '../../shared/art.js';
 
 export async function runQueue(S, events) {
   const ctx = { tails: [], combo: 0 };

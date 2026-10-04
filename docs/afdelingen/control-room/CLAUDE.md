@@ -6,7 +6,7 @@ Geldt bovenop de [CLAUDE.md op de root](../../../CLAUDE.md). Het ontwerp staat i
 
 - **Motor:** `src/DeckOverflow.ControlRoom` (verwijst alleen naar `DeckOverflow.Core`): `Gambits/` (regels, voorwaarden, `Duel`, events, `DuelRecording`), `Levels/` (`LevelCatalog`, `Solver`, `Histogram`), `Achievements/XRegister.cs` (haar ✗-panelen).
 - **Shell:** `Features/ControlRoom/` (`ControlRoomPage` op `/control-room`, `RuleBoard` met de gereedschapsbak, `RuleText` voor zinnen en C#). `Interop/ControlRoomStage.cs` is de enige brug naar haar stage.
-- **Stage:** `wwwroot/control-room/stage/stage.js` (PixiJS). Ze leent de beeldtaal (`juice.js`), het geluid, de tekeningen en de teksten van de stage van de Card Hall; zie [todo](todo.md) over een gedeelde map.
+- **Stage:** `wwwroot/control-room/stage/stage.js` (PixiJS). Ze deelt de beeldtaal, de tekeningen en de teksten (`wwwroot/shared/`) en het geluid (`wwwroot/audio/`) met de andere stages.
 - **Data:** `wwwroot/control-room/solutions.json`, het histogram van alle winnende borden, gemaakt door `HistogramTests`.
 - **Tests:** `tests/DeckOverflow.ControlRoom.Tests`.
 

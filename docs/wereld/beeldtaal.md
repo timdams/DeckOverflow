@@ -44,7 +44,7 @@ Op 4 oktober 2026, op dezelfde dag als de beslissing:
 - **De bouwstenen** in `wwwroot/css/app.css` (`.heavy`, `.stencil`, `.step-badge`, `.bug-tag`, `.cabinet`, `.lamp`, `.rubber-stamp`, `.digits`, `.clipboard`, `.parts-list`, `button.big-round`), met drie kleine componenten in `World/`: `Digits` (een telwerk), `MachineIcon` (het teken op de grote knop) en `CardboardBox` (de doos).
 - **De plattegrond** met de band en de dozen, en **uit de doos** (zie [de wereld](README.md#één-tekening-de-band-en-de-dozen)).
 - **De Controlekamer** en **de Lopende Band**, elk volgens haar README.
-- **De Card Hall** kreeg de tekening van de act als decor achter het gevecht, zacht en vervaagd (`setBackdrop` in de stage, de getallen in `juice.backdrop`). De platen hebben zelf een figuurtje; decorplaten zonder figuur staan op de [art-todo](../../art/todo.md). Groter type voor intent en HP en de hand als waaier wachten nog (zie [haar todo](../afdelingen/card-hall/todo.md)).
+- **De Card Hall** kreeg de tekening van de act als decor achter het gevecht, zacht en vervaagd (`setBackdrop` in de stage, de getallen in `juice.backdrop`). De platen hebben zelf een figuurtje; decorplaten zonder figuur staan op de [art-todo](../../art/todo.md). Sinds 4 oktober 2026 ook een grotere intent en HP-balk, de hand als waaier en een stapkader linksboven (zie [haar todo](../afdelingen/card-hall/todo.md)).
 
 ## Op een telefoon
 

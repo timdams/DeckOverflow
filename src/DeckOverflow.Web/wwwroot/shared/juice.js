@@ -1,4 +1,4 @@
-// juice.js - alle afstelbare getallen en herbruikbare effecten, in de taal van een
+// juice.js - de gedeelde beeldtaal van elke stage: alle afstelbare getallen en herbruikbare effecten, in de taal van een
 // montagehandleiding: zwarte lijnen op papier, pijlen, stippellijnen, onderdelen.
 // Er bestaan geen pixels meer: wat wegvliegt zijn schroefjes en splinters.
 // Kleur is voorbehouden aan de types (int, double, byte).
@@ -23,6 +23,10 @@ export const juice = {
   // Zodra je sleept, krimpt ze terug, zodat je ziet waar je haar laat vallen.
   touchHold: { liftPx: 70, scale: 1.35, dragScale: 1, dragAfterPx: 12 },
   line: 2.5,                                    // dikte van een gewone lijn
+  // De Kaartenhal, volgens de beeldtaal: wat telt, staat groot
+  intent: { textSize: 18, valueSize: 24, iconSize: 34, line: 3 },   // de ballon boven de vijand
+  hpBar: { w: 170, h: 22, textSize: 15 },
+  fan: { maxAngle: 0.19, maxDrop: 16 },        // de hand als waaier: hoek (rad) en zakking van de buitenste kaart
 };
 
 export const FONT = '"Helvetica Neue", Helvetica, Arial, sans-serif';

@@ -27,6 +27,6 @@ public sealed class Superuser(NavigationManager nav, IServiceProvider services)
     /// <summary>Opnieuw kijken, na inloggen of afmelden.</summary>
     public void Forget() => _active = null;
 
-    private static bool IsLocal(string baseUri) =>
+    internal static bool IsLocal(string baseUri) =>
         new Uri(baseUri).Host is "localhost" or "127.0.0.1" or "[::1]";
 }

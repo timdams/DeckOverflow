@@ -19,6 +19,16 @@ public class CodexTests
 
     private static CodexMoment MomentOf(Combat combat, string key) => combat.Moments.Single(m => m.Key == key);
 
+    [Theory]
+    [InlineData(CodexCatalog.Overflow, 1)]
+    [InlineData(CodexCatalog.Modulo, 1)]
+    [InlineData(CodexCatalog.StringConcat, 2)]
+    [InlineData(CodexCatalog.CharIsNumber, 2)]
+    [InlineData(CodexCatalog.Casting, 3)]
+    [InlineData(CodexCatalog.Parse, 3)]
+    public void Een_pagina_gaat_pas_open_in_de_act_van_haar_hoofdstuk(string key, int act) =>
+        Assert.Equal(act, Acts.ActOfChapter(CodexCatalog.Get(key).Chapter));
+
     [Fact]
     public void Een_overflow_wordt_een_moment_met_de_getallen_erbij()
     {

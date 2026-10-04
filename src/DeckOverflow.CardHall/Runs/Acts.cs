@@ -61,6 +61,12 @@ public static class Acts
 
     public static bool IsLast(ActDefinition act) => act.Number == All[^1].Number;
 
+    /// <summary>
+    /// Vanaf welke act een Codex-pagina van dit hoofdstuk mag opengaan: elke act is een hoofdstuk (act 1 is H2).
+    /// Eerst ervaren, dan benoemen: omgieten voel je in act 1, maar de pagina "Casting" opent pas in act 3, bij H4.
+    /// </summary>
+    public static int ActOfChapter(int? chapter) => Math.Clamp((chapter ?? 2) - 1, 1, All[^1].Number);
+
     /// <summary>Alle beloningskaarten tot en met deze act.</summary>
     public static IReadOnlyList<CardDefinition> CardPool(int upToAct) =>
         [.. All.Where(a => a.Number <= upToAct).SelectMany(a => a.NewCards).Distinct()];

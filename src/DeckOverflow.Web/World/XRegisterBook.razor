@@ -4,37 +4,53 @@
 
 @* Het ✗-register: de panelen uit de handleiding die zeggen wat niet mag, en die jij toch deed.
    Een verdiend paneel is doorkruist en uitgelegd. Een gewoon paneel dat je nog niet hebt, toont
-   wat verboden is: een hint. Een verborgen paneel blijft een silhouet tot je het vindt. *@
+   wat verboden is: een hint. Een verborgen paneel blijft een silhouet tot je het vindt. Elke afdeling heeft
+   een eigen pagina; een afdeling die nog binnenkort opengaat, verklapt haar panelen nog niet. *@
 
 <div class="modal" @onclick="OnClose">
     <div class="modal-body xregister" @onclick:stopPropagation="true">
         <h2>@S.T("ui.xregister")</h2>
         <p class="hint">@S.T("ui.xregister.intro") · @S.T("ui.xregister.count", ("earned", XPanels.All.Count(p => Earned.Contains(p.Key))), ("total", XPanels.All.Count()))</p>
 
-        <div class="xpanels">
-            @foreach (var panel in XPanels.All)
-            {
-                bool earned = Earned.Contains(panel.Key);
-                if (!earned && panel.Hidden)
+        @* Een pagina per afdeling, in de volgorde van de plattegrond; de wereld als laatste *@
+        @foreach (var source in XPanels.Sources)
+        {
+            var department = Departments.All.FirstOrDefault(d => d.Key == source.Department);
+            bool soon = department?.Availability == Availability.Soon && !source.Panels.Any(p => Earned.Contains(p.Key));
+            <section class="xregister-page">
+                <h3>
+                    @S.T(department is null ? "ui.xregister.world" : $"ui.world.{department.Key}.name")
+                    <small>@(soon ? S.T("ui.world.coming") : S.T("ui.xregister.count", ("earned", source.Panels.Count(p => Earned.Contains(p.Key))), ("total", source.Panels.Count)))</small>
+                </h3>
+                @if (!soon)
                 {
-                    <div class="xpanel hidden" title="@S.T("ui.xregister.hidden-hint")">
-                        <span class="cross">✗</span>
-                        <strong>@S.T("ui.xregister.hidden")</strong>
-                    </div>
-                    continue;
-                }
+                    <div class="xpanels">
+                        @foreach (var panel in source.Panels)
+                        {
+                            bool earned = Earned.Contains(panel.Key);
+                            if (!earned && panel.Hidden)
+                            {
+                                <div class="xpanel hidden" title="@S.T("ui.xregister.hidden-hint")">
+                                    <span class="cross">✗</span>
+                                    <strong>@S.T("ui.xregister.hidden")</strong>
+                                </div>
+                                continue;
+                            }
 
-                <div class="xpanel @(earned ? "earned" : "open")">
-                    <span class="cross">✗</span>
-                    @if (earned && Art.Panel(panel.Key) is { } art)
-                    {
-                        <ArtImage Src="@art" Class="xpanel-art" />
-                    }
-                    <strong>@S.T($"xpanel.{panel.Key}.name")</strong>
-                    <p>@(earned ? S.T($"xpanel.{panel.Key}.text") : S.T("ui.xregister.unknown"))</p>
-                </div>
-            }
-        </div>
+                            <div class="xpanel @(earned ? "earned" : "open")">
+                                <span class="cross">✗</span>
+                                @if (earned && Art.Panel(panel.Key) is { } art)
+                                {
+                                    <ArtImage Src="@art" Class="xpanel-art" />
+                                }
+                                <strong>@S.T($"xpanel.{panel.Key}.name")</strong>
+                                <p>@(earned ? S.T($"xpanel.{panel.Key}.text") : S.T("ui.xregister.unknown"))</p>
+                            </div>
+                        }
+                    </div>
+                }
+            </section>
+        }
 
         <button class="secondary" @onclick="OnClose">@S.T("ui.close")</button>
     </div>

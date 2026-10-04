@@ -2,8 +2,8 @@
 // wat een kaart of aanval deed. Kent geen regels, beschrijft alleen events.
 // Zwart op papier; alleen een omgieten krijgt de kleur van zijn type.
 
-import { num, typeOf, COLORS, FONT } from './juice.js';
-import { t, cardName, relicName, enemyName } from './strings.js';
+import { num, typeOf, COLORS, FONT } from '../../shared/juice.js';
+import { t, cardName, relicName, enemyName } from '../../shared/strings.js';
 
 const LINE_GAP = 1;
 

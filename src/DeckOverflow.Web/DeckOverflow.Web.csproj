@@ -24,4 +24,8 @@
     <TrimmerRootAssembly Include="DeckOverflow.ConveyorBelt" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="DeckOverflow.Web.Tests" />
+  </ItemGroup>
+
 </Project>

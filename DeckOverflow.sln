@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeckOverflow.ConveyorBelt",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeckOverflow.ConveyorBelt.Tests", "tests\DeckOverflow.ConveyorBelt.Tests\DeckOverflow.ConveyorBelt.Tests.csproj", "{B3589137-E901-481E-991C-4A4A0B3676D6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeckOverflow.Web.Tests", "tests\DeckOverflow.Web.Tests\DeckOverflow.Web.Tests.csproj", "{E4207C78-80BF-4A97-B122-D2189F5FEACD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -143,6 +145,18 @@ Global
 		{B3589137-E901-481E-991C-4A4A0B3676D6}.Release|x64.Build.0 = Release|Any CPU
 		{B3589137-E901-481E-991C-4A4A0B3676D6}.Release|x86.ActiveCfg = Release|Any CPU
 		{B3589137-E901-481E-991C-4A4A0B3676D6}.Release|x86.Build.0 = Release|Any CPU
+		{E4207C78-80BF-4A97-B122-D2189F5FEACD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4207C78-80BF-4A97-B122-D2189F5FEACD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E4207C78-80BF-4A97-B122-D2189F5FEACD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E4207C78-80BF-4A97-B122-D2189F5FEACD}.Debug|x64.Build.0 = Debug|Any CPU
+		{E4207C78-80BF-4A97-B122-D2189F5FEACD}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E4207C78-80BF-4A97-B122-D2189F5FEACD}.Debug|x86.Build.0 = Debug|Any CPU
+		{E4207C78-80BF-4A97-B122-D2189F5FEACD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E4207C78-80BF-4A97-B122-D2189F5FEACD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E4207C78-80BF-4A97-B122-D2189F5FEACD}.Release|x64.ActiveCfg = Release|Any CPU
+		{E4207C78-80BF-4A97-B122-D2189F5FEACD}.Release|x64.Build.0 = Release|Any CPU
+		{E4207C78-80BF-4A97-B122-D2189F5FEACD}.Release|x86.ActiveCfg = Release|Any CPU
+		{E4207C78-80BF-4A97-B122-D2189F5FEACD}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -157,5 +171,6 @@ Global
 		{F9B576F5-171F-47D1-9FBC-9D6025DF1F76} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{E87DFB87-9F62-44C3-A83A-676DF1E41840} = {EC40B86C-FD5E-4E99-B735-A52FC99C70F5}
 		{B3589137-E901-481E-991C-4A4A0B3676D6} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{E4207C78-80BF-4A97-B122-D2189F5FEACD} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 EndGlobal

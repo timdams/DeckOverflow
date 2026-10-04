@@ -17,7 +17,6 @@ De plattegrond is sinds 4 oktober 2026 één tekening, met dozen en het moment "
 Gebouwd op 4 oktober 2026 (zie [backend.md](backend.md#superuser)).
 
 - **Geen score met `DebugWin` in het klassement.** Een score is een seed plus de commandolijst; zodra de Prikklok scores opslaat, moet een lijst met `DebugWin` geweigerd worden, zowel bij het insturen als bij de nachtelijke controle.
-- **Geen test op `Departments.IsOpen` en `Superuser`.** Die staan in de shell, en er is nog geen testproject voor `DeckOverflow.Web`. Verhuizen ze ooit naar Core, of komt er een shell-testproject, dan horen er tests bij: wel/niet superuser, `Soon` versus `Someday`, localhost.
 
 ## Taal
 
@@ -26,7 +25,7 @@ Het spel is Nederlands sinds 4 oktober 2026, met Engels als optie (zie [architec
 - **Kaart- en vijandnamen laten nalezen.** De woordspelingen ("Mep", "Erin wringen", "Restjeszakje", "De Caster") zijn een eerste versie; nalezen met iemand die de cursus geeft, en met studenten.
 - **Tekeningen met Engelse tekst erin.** Nog niet nagekeken; het titelscherm heeft er geen. Een tekening met tekst moet ofwel zonder tekst, ofwel per taal, en hoort dan in [art/todo.md](../../art/todo.md).
 - **Losse Engelse tekst in Razor of JS** vangt `StringsTests` niet; die controleert alleen sleutels. Een snelle zoektocht op 4 oktober 2026 vond niets, maar een test die zichtbare tekst zonder `S.T(` opspoort, ontbreekt.
-- **Een taalwissel bouwt de schermen opnieuw op** (`@key` op `lang-scope` in `RunPage.razor`): een open Codex-pagina of een half gekozen kaart in een venster springt terug naar het begin. Wisselen is zeldzaam; pas aanpakken als het stoort.
+- **Een taalwissel bouwt de schermen opnieuw op** (`@key` op `lang-scope` in `FactoryPage.razor` en `CardHallRun.razor`; de run zelf blijft): een open Codex-pagina of een half gekozen kaart in een venster springt terug naar het begin. Wisselen is zeldzaam; pas aanpakken als het stoort.
 - **Het accountpaneel** en latere afdelingen: nakijken of al hun tekst via `Strings` loopt. De Controlekamer doet dat sinds 4 oktober 2026.
 
 ## Opties
@@ -61,7 +60,6 @@ Liggend spelen op een telefoon kwam erbij op 4 oktober 2026 (zie [architectuur.m
 
 Gedaan op 3 oktober 2026: `DeckOverflow.Core` en `DeckOverflow.CardHall` als aparte projecten met eigen tests, de shell met `World/` en `Features/CardHall/`, de stage in `wwwroot/card-hall/stage/`, en het ✗-register met `IXPanelSource` (`World/XPanels.cs`). Wat nog rest:
 
-- **`RunPage` splitsen.** Eén pagina toont nu titelscherm, plattegrond, onthulling én de run van de deckbuilder. De wereld (titel, plattegrond, onthulling, Codex, register, account) hoort in een eigen pagina of component in `World/`; de run in `Features/CardHall/`. Pas nodig als een tweede afdeling in het spel komt.
-- **De Codex per afdeling registreren.** De catalogus staat in Core, maar alle pagina's staan nog in één lijst, en `MinAct` is een begrip van de Card Hall. Bij een tweede afdeling: elke afdeling levert haar pagina's (zoals `IXPanelSource`), en de minimale act wordt een minimale stap van die afdeling. Zie [codex.md](codex.md).
-- **Het register toont nog één lijst.** `XRegisterBook` loopt over `XPanels.All`; een pagina per afdeling (met `IXPanelSource.Department`) komt als er een tweede afdeling is.
-- **Teksten van wereldpanelen testen.** `StringsTests` (in de Card Hall-tests) kijkt alleen de panelen van de Card Hall na; "Do not read the manual" staat in `World/XPanels.cs` en heeft geen test. Een klein testproject voor de shell, of de wereldpanelen naar Core.
+Gedaan op 4 oktober 2026: de wereld (`World/FactoryPage`, `World/TitleScreen`) en de run van de Kaartenhal (`Features/CardHall/CardHallRun`) zijn gesplitst; de stages delen `wwwroot/shared/` en `wwwroot/audio/`; het ✗-register heeft een pagina per afdeling; `tests/DeckOverflow.Web.Tests` test de shell. De Codex blijft één catalogus in Core, want ze is het boek en dezelfde pagina gaat in verschillende afdelingen open; wanneer een afdeling een pagina mag openen, beslist ze zelf (`Acts.ActOfChapter` in de Kaartenhal). Wat nog rest:
+
+- **De Controlekamer en de Lopende Band laden hun eigen voortgang** (`Store.LoadAsync` in hun pagina) en tonen hun eigen ✗-popups en meldingen. Een gedeelde dienst voor voortgang, popups en meldingen zou dat één keer doen, zoals `FactoryPage` het nu voor de Kaartenhal doet.

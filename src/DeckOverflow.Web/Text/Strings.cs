@@ -8,7 +8,7 @@ namespace DeckOverflow.Web.Text;
 
 /// <summary>
 /// Alle spelteksten komen uit <c>wwwroot/text/&lt;taal&gt;.json</c>. De motor geeft sleutels en getallen,
-/// hier worden het zinnen. De stage doet hetzelfde in <c>card-hall/stage/strings.js</c>.
+/// hier worden het zinnen. De stage doet hetzelfde in <c>shared/strings.js</c>.
 /// <c>en.json</c> ligt eronder: een tekst die nog niet vertaald is, verschijnt in het Engels.
 /// Een ontbrekende sleutel toont zichzelf, zodat je hem meteen ziet staan.
 /// </summary>
@@ -48,7 +48,7 @@ public sealed partial class Strings(IJSRuntime js)
         Changed?.Invoke();
     }
 
-    /// <summary>Een vaste tekst met benoemde waarden: <c>T("ui.floor", ("floor", 3))</c>.</summary>
+    /// <summary>Een vaste tekst met benoemde waarden: <c>T("ui.step-plate", ("floor", 3), ("kind", "Elite"))</c>.</summary>
     public string T(string key, params (string Name, object Value)[] args) =>
         Format(key, args.ToDictionary(a => a.Name, a => Convert.ToString(a.Value, CultureInfo.InvariantCulture) ?? ""));
 

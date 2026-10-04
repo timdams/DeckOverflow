@@ -6,11 +6,11 @@ namespace DeckOverflow.Core.Codex;
 /// </summary>
 /// <param name="Chapter">Het hoofdstuk in Zie Scherp Scherper. Leeg: een later hoofdstuk.</param>
 /// <param name="BookPage">De pagina in de online versie van het boek, relatief tot <c>content/</c>, eventueel met anker.</param>
-/// <param name="MinAct">
-/// Vanaf welke act de pagina mag opengaan. Eerst ervaren, dan benoemen: Omgieten voel je in act 1,
-/// maar de pagina "Casting" opent pas in act 3, bij hoofdstuk 4.
-/// </param>
-public sealed record CodexEntry(string Key, int? Chapter, string BookPage, int MinAct = 1);
+/// <remarks>
+/// De catalogus is het boek, niet één afdeling: dezelfde pagina kan in elke afdeling opengaan. Wanneer een afdeling
+/// een pagina mag openen, beslist ze zelf (de Kaartenhal pas in de act van het hoofdstuk, zie <c>Acts.ActOfChapter</c>).
+/// </remarks>
+public sealed record CodexEntry(string Key, int? Chapter, string BookPage);
 
 public static class CodexCatalog
 {
@@ -53,13 +53,13 @@ public static class CodexCatalog
         new(Overflow, 2, "1_csharpbasics/1_datatypes.html"),
         new(OperatorPrecedence, 2, "1_csharpbasics/2_expressies.html"),
         new(Constants, 2, "1_csharpbasics/1b_variabelen.html"),
-        new(StringConcat, 3, "2_tekst/5_chars_strings.html", MinAct: 2),
-        new(StringLength, 3, "2_tekst/5_chars_strings.html", MinAct: 2),
-        new(CharIsNumber, 3, "2_tekst/5_chars_strings.html", MinAct: 2),
-        new(Casting, 4, "3_data/4_converteren_casting.html#casting", MinAct: 3),
-        new(Convert, 4, "3_data/4_converteren_casting.html#conversie", MinAct: 3),
-        new(Rounding, 4, "3_data/4d_afronden.html", MinAct: 3),
-        new(Parse, 4, "3_data/4_converteren_casting.html#parsing-en-.tostring", MinAct: 3),
+        new(StringConcat, 3, "2_tekst/5_chars_strings.html"),
+        new(StringLength, 3, "2_tekst/5_chars_strings.html"),
+        new(CharIsNumber, 3, "2_tekst/5_chars_strings.html"),
+        new(Casting, 4, "3_data/4_converteren_casting.html#casting"),
+        new(Convert, 4, "3_data/4_converteren_casting.html#conversie"),
+        new(Rounding, 4, "3_data/4d_afronden.html"),
+        new(Parse, 4, "3_data/4_converteren_casting.html#parsing-en-.tostring"),
         // H5, uit de Controlekamer: de eerste regel die klopt, wint
         new(IfElse, 5, "4_beslissingen/0_if.html#if---else-if"),
         new(RelationalOperators, 5, "4_beslissingen/1_logic_and_relationsoperator.html#relationele-operators"),

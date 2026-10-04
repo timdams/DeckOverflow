@@ -19,7 +19,7 @@ export const cardName = (id) => raw(`card.${id.replace(/\+$/, '')}`) + (id.endsW
 export const relicName = (id) => raw(`relic.${id}`);
 export const enemyName = (key) => raw(`enemy.${key}`);
 
-/** t('ui.floor', { floor: 3 }) of t({ key, args }) zoals de motor een TextRef stuurt. */
+/** t('ui.step-plate', { floor: 3 }) of t({ key, args }) zoals de motor een TextRef stuurt. */
 export function t(keyOrRef, args = {}) {
   const key = typeof keyOrRef === 'string' ? keyOrRef : keyOrRef.key;
   const values = typeof keyOrRef === 'string' ? args : (keyOrRef.args ?? {});

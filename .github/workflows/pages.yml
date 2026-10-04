@@ -30,6 +30,7 @@ jobs:
       - run: dotnet test tests/DeckOverflow.CardHall.Tests
       - run: dotnet test tests/DeckOverflow.ControlRoom.Tests
       - run: dotnet test tests/DeckOverflow.ConveyorBelt.Tests
+      - run: dotnet test tests/DeckOverflow.Web.Tests
 
       - name: Publish
         run: |

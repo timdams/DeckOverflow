@@ -1,14 +1,14 @@
 // stage.js - de stage van de Controlekamer: twee automaten die hun regels volgen.
 // Zet events om in animatie en geluid; kent geen spelregels en leest nooit zelf het duel.
 // Na elke play volgt een sync met de momentopname als waarheid; de tijdlijn gebruikt alleen sync.
-// De beeldtaal (juice), het geluid, de tekeningen en de teksten deelt ze met de stage van de Card Hall.
+// De beeldtaal (juice), de tekeningen en de teksten komen uit shared/, het geluid uit audio/, net als bij de andere afdelingen.
 
 import {
   juice, COLORS, sec, wait, hitPause, sizeOf, shake, text, floatText, dashed, stamp, impactStar, speedLines, burst, roll, typeBadge, typeOf,
-} from '../../card-hall/stage/juice.js';
+} from '../../shared/juice.js';
 import { initAudio, sfx, setMuted, isMuted } from '../../audio/audio.js';
-import { loadArt, actorTexture, iconTexture } from '../../card-hall/stage/art.js';
-import { loadStrings, t } from '../../card-hall/stage/strings.js';
+import { loadArt, actorTexture, iconTexture } from '../../shared/art.js';
+import { loadStrings, t } from '../../shared/strings.js';
 
 // Een vaste wereld die meeschaalt met het vak, zoals de 960×540 van de Card Hall
 const W = 720;

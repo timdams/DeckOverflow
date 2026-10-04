@@ -1,7 +1,7 @@
 // audio.js - de geluiden van de Card Hall, bovenop de gedeelde audio (wwwroot/audio/audio.js).
 // Toonhoogte via rate: elke opeenvolgende trigger in een combo klinkt hoger.
 
-import { juice } from './juice.js';
+import { juice } from '../../shared/juice.js';
 import { sfx as play } from '../../audio/audio.js';
 
 export { initAudio, toggleMute, setMuted, isMuted } from '../../audio/audio.js';

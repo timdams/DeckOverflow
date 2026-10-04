@@ -1,0 +1,76 @@
+@inject Strings S
+@inject ArtStyle Art
+
+@* Het titelscherm, voor de onthulling: de sfeerplaat rechts, die links in het papier wegvloeit; titel en knoppen links *@
+<div class="title-screen">
+    <div class="title-art-wide" style="background-image: url('@ArtStyle.Wide("title")')" aria-hidden="true"></div>
+    <div class="title-panel">
+        <h1 class="title-word">Deck<br /><span>Overflow</span>@if (S.Loaded) { <span class="beta-badge">@S.T("ui.beta")</span> }</h1>
+        <p class="tagline">@(S.Loaded ? S.T("ui.tagline") : "")</p>
+        <div class="title-actions">
+            @if (Paused is { } paused)
+            {
+                @* Een run die wacht: verder spelen staat voorop, een nieuwe run gooit ze weg *@
+                <button class="play-big continue" @onclick="OnContinue">@S.T("ui.continue-run")<small>@paused</small></button>
+                <button class="title-button" disabled="@Starting" @onclick="() => OnStart.InvokeAsync(1)">@S.T("ui.new-run")</button>
+            }
+            else
+            {
+                <button class="play-big" disabled="@(Starting || !S.Loaded)" @onclick="() => OnStart.InvokeAsync(1)">@(Starting || !S.Loaded ? "..." : S.T("ui.play"))</button>
+            }
+            @* Startpunten: elke act die je ooit bereikte *@
+            @for (int act = 2; act <= ReachedAct; act++)
+            {
+                int start = act;
+                <button class="title-button" disabled="@(Starting || !S.Loaded)" @onclick="() => OnStart.InvokeAsync(start)">@S.T("ui.start-at", ("act", start))</button>
+            }
+        </div>
+        @if (CodexCount > 0 || PanelCount > 0 || OnAccount.HasDelegate)
+        {
+            <div class="title-links">
+                @if (CodexCount > 0)
+                {
+                    <button class="title-button" @onclick="OnCodex">@S.T("ui.codex") · @CodexCount</button>
+                }
+                @if (PanelCount > 0)
+                {
+                    <button class="title-button" @onclick="OnXRegister">@S.T("ui.xregister") · @PanelCount</button>
+                }
+                @if (OnAccount.HasDelegate)
+                {
+                    @* Voor wie op een tweede toestel zijn fabriek komt halen *@
+                    <button class="title-button" @onclick="OnAccount">@S.T("ui.account.open")</button>
+                }
+            </div>
+        }
+        <ZssLink />
+        <button class="about-link" @onclick="OnAbout">@S.T("ui.about.open")</button>
+    </div>
+    @if (Crack)
+    {
+        @* Het vangnet: na genoeg runs barst de muur vanzelf, ook zonder de laatste baas te verslaan *@
+        <button class="wall-crack" @onclick="OnCrack"><ArtImage Src="@Art.Scene("wall-crack")" Class="crack-art" />@S.T("ui.reveal.crack-button")</button>
+    }
+</div>
+
+@code {
+    /// <summary>Een run die wacht (uit het optiescherm), als korte regel; leeg als er geen is.</summary>
+    [Parameter] public string? Paused { get; set; }
+    [Parameter] public bool Starting { get; set; }
+    [Parameter] public int ReachedAct { get; set; } = 1;
+    [Parameter] public int CodexCount { get; set; }
+    [Parameter] public int PanelCount { get; set; }
+
+    /// <summary>Het vangnet is bereikt: er zit een barst in de muur.</summary>
+    [Parameter] public bool Crack { get; set; }
+
+    [Parameter] public EventCallback OnContinue { get; set; }
+    [Parameter] public EventCallback<int> OnStart { get; set; }
+    [Parameter] public EventCallback OnCodex { get; set; }
+    [Parameter] public EventCallback OnXRegister { get; set; }
+
+    /// <summary>Je fabriek bewaren of inloggen. Zonder Supabase geen knop.</summary>
+    [Parameter] public EventCallback OnAccount { get; set; }
+    [Parameter] public EventCallback OnAbout { get; set; }
+    [Parameter] public EventCallback OnCrack { get; set; }
+}
