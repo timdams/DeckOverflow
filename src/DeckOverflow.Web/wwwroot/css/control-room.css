@@ -93,6 +93,11 @@ button.step:disabled:not(.current):not(.beaten) .circle { color: var(--muted); b
 
 /* De kast van de vijand is verzegeld: een ronde stempel in de hoek, lezen mag */
 .cabinet.sealed { padding-bottom: 26px; }
+/* Het dossier van een echte bug, onder de verzegelde kast: een witte kaart met de naam, wie en wanneer */
+.dossier { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; padding: 12px 14px; background: var(--white); border: 3px solid var(--ink); border-radius: 12px; }
+.dossier-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.dossier-title { font-family: Consolas, "Courier New", monospace; font-size: 16px; font-weight: 700; }
+.dossier-hint { margin: 4px 0 0; padding-top: 8px; border-top: 2px dashed var(--rule); font-size: 13px; font-weight: 700; color: var(--muted); }
 .cabinet.sealed .flavor { padding-right: 84px; }
 .cabinet .seal {
   position: absolute;

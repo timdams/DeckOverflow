@@ -6,8 +6,8 @@ Anders dan in de Card Hall rekent de shell het hele duel vooraf uit (`DuelRecord
 
 | Event | Velden | Wat de stage ermee doet |
 | --- | --- | --- |
-| `TurnStarted` | turn | "BEURT n" bovenaan |
-| `RuleFired` | side, ruleIndex, move | Een kort knikje; de shell laat de regel oplichten op het bord |
+| `TurnStarted` | turn | Niets: de beurt staat op het bordje van de testcel, in de shell |
+| `RuleFired` | side, ruleIndex, move | Een klikje per regel boven deze (bekeken, klopte niet), een hogere klik voor deze, en een kort knikje; de shell laat de regel oplichten op het bord |
 | `NoRuleMatched` | side | "..." boven het hoofd: de automaat staat stil |
 | `ValueTruncated` | target, before, after | Het kommagetal verschijnt grijs, dan "(int) n": wat na de komma stond, valt weg |
 | `ValueOverflowed` | side, before, added, after, repairsLeft | De balk loopt vol tot 255, bevriest, en klapt om naar het kleine getal |

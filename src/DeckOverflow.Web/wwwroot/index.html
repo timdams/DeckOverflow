@@ -48,6 +48,17 @@
                 window.deckOverflow.save('deckoverflow.lang', lang);
                 document.documentElement.lang = lang;
             },
+            // Een strook die horizontaal scrolt (de ponsband) houdt haar element ".now" in beeld, in het midden.
+            // Alleen de strook schuift, nooit de pagina.
+            keepInView: (strip) => {
+                const now = strip?.querySelector('.now');
+                if (!now) return;
+                const s = strip.getBoundingClientRect();
+                const n = now.getBoundingClientRect();
+                if (n.left >= s.left + 8 && n.right <= s.right - 8) return;
+                // Vloeiend wacht op frames, en een verborgen tabblad tekent er geen: dan meteen
+                strip.scrollBy({ left: n.left - s.left - s.width / 2 + n.width / 2, behavior: document.hidden ? 'auto' : 'smooth' });
+            },
         };
         document.documentElement.lang = window.deckOverflow.lang();
 
@@ -74,6 +85,7 @@
     <script src="lib/gsap.min.js" defer></script>
     <script src="lib/howler.min.js" defer></script>
     <script type="module" src="audio/ui.js"></script>
+    <script src="shared/touch-drag.js" defer></script>
 
     <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
 </body>

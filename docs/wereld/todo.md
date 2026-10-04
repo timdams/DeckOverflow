@@ -45,7 +45,7 @@ Liggend spelen op een telefoon kwam erbij op 4 oktober 2026 (zie [architectuur.m
 
 ## Backend
 
-- **Feedback in de Controlekamer.** `World/FeedbackHeart.razor` zit nu alleen in de Card Hall (na een gevecht en op het eindscherm). De Controlekamer kan ze na een puzzel tonen met onderwerp `level:<n>`.
+- **Feedback op de Lopende Band.** `World/FeedbackHeart.razor` staat in de Card Hall en sinds 4 oktober 2026 in de uitslag van de Controlekamer (onderwerp `level:<key>`); de Lopende Band heeft het nog niet.
 - **Testrijen in `feedback`.** Twee rijen van 4 oktober 2026 (`test:claude` en `enemy:slime`) zijn tests, geen echte spelers. Weggooien voor je telt: `delete from feedback where created_at < '2026-10-05';`
 - **De docent kan alleen nog een klascode maken** (beslist op 3 oktober 2026, zie [backend.md](backend.md)). Wat nu meer doet en eruit moet: afdelingen vrijgeven (`release_department` en `Account.ReleaseAsync`, de knoppen in `AccountPanel.razor`, de kolom `classes.released_departments`, `unlocks.how = teacher`) en de voortgang van de klas lezen (policies op `progress` en `unlocks`). Daarna [backend.md](backend.md) en [supabase.md](supabase.md) bijwerken. Een migratie op het echte project, dus eerst afstemmen met de sessie die de backend bouwde.
 - **Oude gastaccounts opruimen.** Elke nieuwe browser (of gewiste opslag) maakt een gast; wie stopt, laat er een achter. Supabase raadt aan om oude anonieme accounts geregeld te verwijderen. Kan mee in de nachtelijke Action van de scorecontrole, met de service-sleutel: anonieme accounts zonder activiteit sinds bv. 90 dagen. Er staat er nu al een: "Bright Spanner 74", van een test op 3 oktober 2026.

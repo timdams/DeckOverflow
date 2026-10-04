@@ -137,7 +137,7 @@
                             <span class="stencil">@S.T("room.ui.tape")</span>
                             <small>@S.T("room.ui.tape-hint")</small>
                         </div>
-                        <div class="tape-strip">
+                        <div class="tape-strip" @ref="_tapeStrip">
                             <div class="tape-rows" aria-hidden="true"><span>@S.T("room.ui.tape-you")</span><span>@S.T("room.ui.tape-them")</span></div>
                             <button class="tape-start @(_frame < 0 ? "now" : "")" title="@S.T("room.ui.tape-start")" aria-label="@S.T("room.ui.tape-start")" @onclick="() => JumpAsync(-1)">⏮</button>
                             @foreach (var column in Tape())
@@ -200,6 +200,9 @@
                                 <p>@S.T($"bug.{Level.Key}.story")</p>
                             </div>
                         }
+
+                        <FeedbackHeart @key="Level.Key" Department="control-room" Subject="@($"level:{Level.Key}")"
+                                       Question="@TextRef.Of("room.ui.feedback", ("name", S.T($"room.enemy.{Level.Key}")))" />
                     </div>
                 }
 
@@ -227,6 +230,15 @@
                     <p class="flavor">@S.T($"room.flavor.{Level.Key}")</p>
                     <span class="seal" aria-hidden="true">@S.T("room.ui.seal")</span>
                 </div>
+                @if (Level.Bug)
+                {
+                    @* Het dossier van een echte bug: welke, wie en wanneer. Het verhaal zelf komt pas na de overwinning *@
+                    <div class="dossier">
+                        <div class="dossier-head"><span class="stencil">@S.T("room.ui.dossier")</span><span class="bug-tag">@S.T("room.ui.real-bug")</span></div>
+                        <strong class="dossier-title">@S.T($"bug.{Level.Key}.title")</strong>
+                        <p class="dossier-hint">@S.T("room.ui.dossier-hint")</p>
+                    </div>
+                }
                 @if (_showCode)
                 {
                     <pre class="code">@foreach (var line in RuleText.CSharpLines(S, Level.EnemyRules))

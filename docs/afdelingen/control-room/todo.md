@@ -5,11 +5,10 @@ Wat bewust is uitgesteld, met genoeg context om het later op te pakken. Nieuwste
 
 ## Na de schakelkasten (4 oktober 2026)
 
-Het scherm volgt sinds 4 oktober 2026 [de beeldtaal](../../wereld/beeldtaal.md) (zie [Het scherm](README.md#het-scherm-twee-kasten-en-een-testcel)). Wat nog open staat:
+Het scherm volgt sinds 4 oktober 2026 [de beeldtaal](../../wereld/beeldtaal.md) (zie [Het scherm](README.md#het-scherm-twee-kasten-en-een-testcel)). Afgewerkt op 4 oktober 2026: het dossier bij een elite, de ponsband die meeschuift, de testcel zonder dubbele rand, een klikje per bekeken regel, het feedbackhartje en slepen met een vinger. Wat nog open staat:
 
-- **Een dossier bij een elite.** De mockup had onder de kast van de vijand een kaartje met de naam van de bug en het jaar ("goto fail; Apple, 2014"), en het verhaal na de overwinning. Nu staat alleen het oranje label op de kast, en het verhaal in de uitslag.
-- **De ponsband schuift niet mee.** Bij een lang duel (tot 40 beurten) loopt de band uit beeld; ze zou naar de zet in beeld moeten schuiven.
-- **De testcel en de stage.** De stage tekent nog haar eigen bladrand en het label van de beurt, binnen het raam van de testcel. Eén van de twee kan weg.
+- **Het klikje per regel op gevoel afstellen** (`juice.ruleTick` in `wwwroot/shared/juice.js`), in een zichtbaar venster met geluid aan: is het een keten die je hoort, of geratel bij vijf regels?
+- **Slepen met een vinger op een echt toestel.** `wwwroot/shared/touch-drag.js` is getest met nagebootste touch-events in een desktopbrowser.
 
 ## Vrijgeven (4 oktober 2026)
 
@@ -23,6 +22,4 @@ Het scherm volgt sinds 4 oktober 2026 [de beeldtaal](../../wereld/beeldtaal.md) 
 - **Voortgang synchroniseren.** `PlayerProgress.ControlRoom` (beste scores, je borden) blijft in de browser; `SyncedProgressStore` stuurt alleen Codex, onderdelen en ontgrendelingen naar Supabase.
 - **Het histogram van andere spelers**, zoals Opus Magnum het echt doet. Nu toont het alle winnende borden die de oplosser vindt (tot 3 regels, zonder EN/OF/NIET). Kan via de Prikklok-tabellen zodra die bestaan.
 - **Eigen tekeningen.** Alle vijanden zijn plaatshouders uit andere tekeningen (zie [art/todo.md](../../../art/todo.md)); goto fail is de tekening uit de spike.
-- **Slepen op een aanraakscherm.** HTML5-slepen werkt niet met een vinger; daar tik je een tegel en dan een vakje. Echt slepen met de vinger kan met pointer-events, als tikken in een playtest stroef blijkt.
 - **Testen op een echte telefoon.** Getest in een desktopbrowser en in een kader van 844×390, niet op een toestel. De tekst in de stage is liggend op een telefoon klein, zoals in de Card Hall.
-- **Geen geluid voor een regel die oplicht.** De stage kent alleen het knikje; een klik per bekeken regel (van boven naar onder) zou de keten hoorbaar maken.

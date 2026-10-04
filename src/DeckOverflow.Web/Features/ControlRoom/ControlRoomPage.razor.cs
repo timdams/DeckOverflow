@@ -11,6 +11,7 @@ using DeckOverflow.Web.Progress;
 using DeckOverflow.Web.Text;
 using DeckOverflow.Web.World;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 
 namespace DeckOverflow.Web.Features.ControlRoom;
 
@@ -31,6 +32,11 @@ public partial class ControlRoomPage : IAsyncDisposable
     [Inject] private ControlRoomStage Stage { get; set; } = default!;
     [Inject] private NavigationManager Nav { get; set; } = default!;
     [Inject] private Superuser Superuser { get; set; } = default!;
+    [Inject] private IJSRuntime JS { get; set; } = default!;
+
+    /// <summary>De strook van de ponsband, en tot welke zet ze al meeschoof.</summary>
+    private ElementReference _tapeStrip;
+    private int? _tapeShown;
 
     private sealed record LogLine(string Text, string Kind);
     private sealed record Toast(int Id, string Text);
@@ -109,6 +115,12 @@ public partial class ControlRoomPage : IAsyncDisposable
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // Bij een lang duel loopt de band uit beeld: ze schuift mee met de zet in beeld
+        if (_recording is not null && _tapeShown != _frame)
+        {
+            _tapeShown = _frame;
+            await JS.InvokeVoidAsync("deckOverflow.keepInView", _tapeStrip);
+        }
         if (_ready || !Unlocked) return;
         _ready = true;
         await Stage.InitAsync(_host);

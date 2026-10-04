@@ -24,7 +24,6 @@ const S = {
   shaker: null,
   layers: {},
   actors: {},          // Player en Enemy
-  turnLabel: null,
   banner: null,
   baseSpeed: 1,
 };
@@ -57,9 +56,6 @@ export async function init(host) {
   S.root.addChild(S.layers.top);
 
   buildBackground();
-  S.turnLabel = text('', { size: 14, color: COLORS.muted });
-  S.turnLabel.position.set(W / 2, 30);
-  S.layers.bg.addChild(S.turnLabel);
 
   app.ticker.add(fit);
   fit();
@@ -95,7 +91,6 @@ export function sync(snapshot) {
   S.limits = { Player: snapshot.player.crashLength, Enemy: snapshot.enemy.crashLength };
   setActor(S.actors.Player, snapshot.player);
   setActor(S.actors.Enemy, snapshot.enemy);
-  S.turnLabel.text = snapshot.turn > 0 ? t('room.stage.turn', { turn: snapshot.turn }) : '';
   if (!snapshot.outcome) clearBanner();
 }
 
@@ -134,9 +129,8 @@ function fit() {
 }
 
 function buildBackground() {
+  // Geen eigen bladrand: de testcel rond de stage is al het raam
   const bg = S.layers.bg;
-  const page = new PIXI.Graphics().rect(8, 8, W - 16, H - 16).stroke({ width: 1, color: COLORS.rule });
-  bg.addChild(page);
 
   // De vloer: één lijn met arcering, zoals in een technische tekening
   const floor = new PIXI.Graphics().moveTo(60, GROUND_Y + 6).lineTo(W - 60, GROUND_Y + 6).stroke({ width: 2, color: COLORS.ink });
@@ -302,11 +296,17 @@ const head = (a) => ({ x: a.container.x, y: a.container.y - ACTOR_H * 0.6 });
 // ---------------------------------------------------------------- events
 
 const HANDLERS = {
-  TurnStarted: async (e) => {
-    S.turnLabel.text = t('room.stage.turn', { turn: e.turn });
-  },
+  // De beurt staat op het bordje van de testcel, in de shell; de stage hoeft ze niet te tekenen
+  TurnStarted: async () => {},
 
   RuleFired: async (e) => {
+    // Van boven naar onder: een klikje per regel die bekeken werd en niet klopte, dan een hogere voor de regel die vuurt.
+    // Zo hoor je de keten, ook als je niet naar de kast kijkt.
+    for (let i = 0; i < e.ruleIndex; i++) {
+      sfx('tick', { volume: juice.ruleTick.volume, rate: 0.9 });
+      await wait(juice.ruleTick.gapMs);
+    }
+    sfx('click', { volume: juice.ruleTick.volume, rate: 1.2 });
     // Een kort knikje: deze regel klopte als eerste
     const a = S.actors[e.side];
     await gsap.to(a.body, { y: -8, duration: sec(80), yoyo: true, repeat: 1, ease: 'power1.out' });

@@ -27,6 +27,8 @@ export const juice = {
   intent: { textSize: 18, valueSize: 24, iconSize: 34, line: 3 },   // de ballon boven de vijand
   hpBar: { w: 170, h: 22, textSize: 15 },
   fan: { maxAngle: 0.19, maxDrop: 16 },        // de hand als waaier: hoek (rad) en zakking van de buitenste kaart
+  // De Controlekamer: een klikje per regel die bekeken wordt, van boven naar onder
+  ruleTick: { gapMs: 70, volume: 0.35 },
 };
 
 export const FONT = '"Helvetica Neue", Helvetica, Arial, sans-serif';

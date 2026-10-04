@@ -9,7 +9,7 @@ Afdeling ⑤ op de plattegrond, hoofdstuk 5 van Zie Scherp Scherper (beslissinge
 Vijftien gevechten na elkaar, elk een eigen puzzel, vrij te herspelen om beter te scoren. Geen run, geen map: het voorbeeld is Opus Magnum, niet Slay the Spire.
 
 1. **Lees de vijand.** Zijn regels staan rechts, in gewone zinnen, met een korte typering eronder.
-2. **Bouw je bord.** Sleep tegels uit de gereedschapsbak op je regels (of tik op een tegel en dan op een vakje, op een aanraakscherm). De volgorde verander je door te slepen of met ▲▼.
+2. **Bouw je bord.** Sleep tegels uit de gereedschapsbak op je regels, met de muis of met een vinger (`shared/touch-drag.js`), of tik op een tegel en dan op een vakje. De volgorde verander je door te slepen of met ▲▼.
 3. **Start en kijk.** Het duel speelt zet per zet; de regel die vuurt, licht op. Pauzeren, één zet, sneller (1×, 2×, 4×), en een tijdlijn om terug te spoelen naar elke zet.
 4. **Lees de afloop.** Elke regel telt hoe vaak ze vuurde; na het duel krijgt een regel die nooit vuurde het label *nooit bereikt* (een regel erboven klopte altijd eerst) of *nooit waar*.
 5. **Verbeter.** Twee scores, elk apart: beurten en regels. Een histogram toont waar je bord staat tussen alle winnende borden.
@@ -24,8 +24,8 @@ Beslist op 4 oktober 2026, met de [beeldtaal](../../wereld/beeldtaal.md). De Con
 - **Onder de kast het luik *onder de motorkap*.** Dicht is het een gearceerd luik; open toont het je bord als C#, en tijdens het duel licht de regel op die nu vuurt.
 - **In het midden de testcel.** Het duel zie je door een raam met een dikke zwarte lijst, schroeven en een bordje met het gevecht en de beurt. Eronder de grote ronde startknop, de snelheden, en telwerken voor beurten en regels.
 - **De tijdlijn is een ponsband:** per beurt een gaatje voor jou en een voor de vijand, met het nummer van de regel die vuurde (een streepje als er niets klopte). Wat nog moet komen, blijft een leeg gaatje: de band verklapt niets. Klik op een gaatje om naar die zet te springen, ook terug.
-- **Rechts de kast van de vijand, verzegeld:** dezelfde platen en lampen, met zijn typering eronder. Een elite is oranje gemerkt.
-- **Tijdens het duel knipperen de twee kasten naar elkaar.** De lamp van de regel die vuurt, brandt. Een regel die nooit bekeken wordt, blijft donker; het stempel *nooit bereikt* valt pas als het duel voorbij is.
+- **Rechts de kast van de vijand, verzegeld:** dezelfde platen en lampen, met zijn typering eronder. Een elite is oranje gemerkt en krijgt eronder een **dossier**: de naam van de bug, wie en wanneer ("goto fail; (Apple, 2014)"). Het verhaal zelf komt pas na de overwinning, in de uitslag en de Codex.
+- **Tijdens het duel knipperen de twee kasten naar elkaar.** De lamp van de regel die vuurt, brandt, en je hoort de keten: een klikje per regel die bekeken werd en niet klopte, dan een hogere klik voor de regel die vuurt. Een regel die nooit bekeken wordt, blijft donker; het stempel *nooit bereikt* valt pas als het duel voorbij is.
 
 ## De natuurwetten
 
