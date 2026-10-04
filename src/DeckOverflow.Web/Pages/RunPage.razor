@@ -16,7 +16,7 @@
     {
         @if (Revealed)
         {
-            <WorldMap Paused="@PausedRun"OnContinue="ContinueRun" Unlocks="_progress.Unlocks" Pages="_progress.Codex" Trinkets="_progress.Trinkets" ReachedAct="_progress.ReachedAct" PanelCount="_progress.XPanels.Count"
+            <WorldMap Paused="@PausedRun"OnContinue="ContinueRun" Unlocks="_progress.Unlocks" Pages="_progress.Codex" Trinkets="_progress.Trinkets" ReachedAct="ReachedAct" Superuser="_superuser" PanelCount="_progress.XPanels.Count"
                       Starting="_starting" OnStart="StartAsync" OnCodex="() => OpenCodex(null)" OnXRegister="() => _showXRegister = true"
                       OnAccount="@(Account is null ? default : EventCallback.Factory.Create(this, () => _showAccount = true))" />
         }
@@ -26,7 +26,7 @@
         <div class="title-screen">
             <div class="title-art-wide" style="background-image: url('@ArtStyle.Wide("title")')" aria-hidden="true"></div>
             <div class="title-panel">
-                <h1 class="title-word">Deck<br /><span>Overflow</span></h1>
+                <h1 class="title-word">Deck<br /><span>Overflow</span>@if (S.Loaded) { <span class="beta-badge">@S.T("ui.beta")</span> }</h1>
                 <p class="tagline">@(S.Loaded ? S.T("ui.tagline") : "")</p>
                 <div class="title-actions">
                     @if (PausedRun is { } paused)
@@ -40,7 +40,7 @@
                         <button class="play-big" disabled="@(_starting || !S.Loaded)" @onclick="() => StartAsync(1)">@(_starting || !S.Loaded ? "..." : S.T("ui.play"))</button>
                     }
                     @* Startpunten: elke act die je ooit bereikte *@
-                    @for (int act = 2; act <= _progress.ReachedAct; act++)
+                    @for (int act = 2; act <= ReachedAct; act++)
                     {
                         int start = act;
                         <button class="title-button" disabled="@(_starting || !S.Loaded)" @onclick="() => StartAsync(start)">@S.T("ui.start-at", ("act", start))</button>

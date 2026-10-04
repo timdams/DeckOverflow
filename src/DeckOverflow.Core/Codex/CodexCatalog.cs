@@ -34,6 +34,10 @@ public static class CodexCatalog
     public const string IfElse = "if-else";
     public const string RelationalOperators = "relational-operators";
     public const string LogicalOperators = "logical-operators";
+    public const string WhileLoop = "while-loop";
+    public const string ForLoop = "for-loop";
+    public const string NestedLoops = "nested-loops";
+    public const string InfiniteLoop = "infinite-loop";
     public const string Exceptions = "exceptions";
 
     /// <summary>In de volgorde van het boek.</summary>
@@ -60,6 +64,11 @@ public static class CodexCatalog
         new(IfElse, 5, "4_beslissingen/0_if.html#if---else-if"),
         new(RelationalOperators, 5, "4_beslissingen/1_logic_and_relationsoperator.html#relationele-operators"),
         new(LogicalOperators, 5, "4_beslissingen/1_logic_and_relationsoperator.html#logische-operators"),
+        // H6, uit de Lopende Band: een band die terugkomt, is een loop
+        new(WhileLoop, 6, "5_herhalingen/1_while_dowhile.html"),
+        new(ForLoop, 6, "5_herhalingen/2_for.html"),
+        new(NestedLoops, 6, "5_herhalingen/3_nesting.html"),
+        new(InfiniteLoop, 6, "5_herhalingen/0_loops_intro.html"),
         new(Exceptions, 10, "20_exceptions/0_exceptionhandling.html"),
     ];
 

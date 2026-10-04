@@ -14,7 +14,7 @@ public sealed record ClassView(string Id, string Name, bool Owner, string? Code,
 /// Supabase kent alleen e-mail, dus een gebruikersnaam wordt <c>naam@users.deckoverflow.invalid</c>.
 /// Een gebruikersnaam is nooit zichtbaar voor anderen; die zien alleen de bijnaam.
 /// </summary>
-public sealed partial class Account(SupabaseClient supabase, IProgressStore store)
+public sealed partial class Account(SupabaseClient supabase, IProgressStore store, Superuser superuser)
 {
     public const string UsernameDomain = "users.deckoverflow.invalid";
     public const int MinPasswordLength = 8;
@@ -61,6 +61,7 @@ public sealed partial class Account(SupabaseClient supabase, IProgressStore stor
     public Task<AccountError> LogInAsync(string login, string password) => RunAsync(login, password, async address =>
     {
         await supabase.SignInWithPasswordAsync(address, password);
+        superuser.Forget();
         await store.RefreshAsync();
     });
 

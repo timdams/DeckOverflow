@@ -6,7 +6,7 @@ Wat beslist is, verhuist naar zijn document; wat technisch is uitgesteld, staat 
 
 De grootste onzekerheid blijft of studenten de regels in de game herkennen wanneer ze later echte code lezen.
 
-- [x] **Klaarmaken.** De playtests lopen goed (oktober 2026). De sneltoets W blijft erin (beslist op 4 oktober 2026).
+- [x] **Klaarmaken.** De playtests lopen goed (oktober 2026). De sneltoets W blijft erin (beslist op 4 oktober 2026), alleen voor de superuser.
 - [ ] **Wie.** 5 studenten en 2 collega's, zoals eerder beslist. Liefst ook één leerling uit het middelbaar, voor de ondergrens.
 - [ ] **Wat we meten.**
   - Begrijpen ze zonder uitleg wat een intent met `block` of `cards` doet?

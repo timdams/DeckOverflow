@@ -13,13 +13,14 @@ public sealed class StageBridge(IJSRuntime js) : IAsyncDisposable
 {
     private IJSObjectReference? _stage;
 
-    public async Task InitAsync<TPage>(ElementReference host, DotNetObjectReference<TPage> page)
+    /// <param name="debug">Sneltoetsen om te testen (W wint), alleen voor de superuser.</param>
+    public async Task InitAsync<TPage>(ElementReference host, DotNetObjectReference<TPage> page, bool debug = false)
         where TPage : class
     {
         // Eén stage per pagina: een tweede run hergebruikt ze (reset doet de rest)
         if (_stage is not null) return;
         _stage = await js.InvokeAsync<IJSObjectReference>("import", "./card-hall/stage/stage.js");
-        await _stage.InvokeVoidAsync("init", host, page);
+        await _stage.InvokeVoidAsync("init", host, page, debug);
     }
 
     /// <summary>Klaar als de laatste animatie gedaan is.</summary>

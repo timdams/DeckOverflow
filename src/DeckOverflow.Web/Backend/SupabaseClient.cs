@@ -42,6 +42,16 @@ public sealed class SupabaseClient(HttpClient http, IJSRuntime js, string publis
     public string? Email => _session?.User.Email;
 
     /// <summary>
+    /// De rol die alleen de beheerder in Supabase zet (<c>app_metadata.role</c>), bv. <c>superuser</c>.
+    /// Uit de bewaarde sessie, zonder netwerk; een nieuwe rol komt mee bij de volgende vernieuwing.
+    /// </summary>
+    public async Task<string?> RoleAsync()
+    {
+        await LoadOnceAsync();
+        return _session?.User.AppMetadata?.Role;
+    }
+
+    /// <summary>
     /// Zorgt voor een geldige sessie: de bewaarde, vernieuwd als ze bijna verloopt, of anders
     /// een nieuw gastaccount. Nooit een scherm ervoor.
     /// </summary>
@@ -233,5 +243,7 @@ public sealed class SupabaseClient(HttpClient http, IJSRuntime js, string publis
 
     private sealed record Session(string AccessToken, string RefreshToken, long ExpiresAt, SessionUser User);
 
-    private sealed record SessionUser(string Id, bool IsAnonymous, string? Email);
+    private sealed record SessionUser(string Id, bool IsAnonymous, string? Email, AppMetadata? AppMetadata = null);
+
+    private sealed record AppMetadata(string? Role);
 }

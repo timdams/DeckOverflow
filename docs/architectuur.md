@@ -105,7 +105,7 @@ De stage is een wachtrij die events omzet in animaties, één na één. Zolang d
 - **Scene graph (PixiJS):** lagen voor achtergrond, vijanden, speler, hand, effecten en UI-getallen. Elke combatant is een container met sprite, HP-balk en intent-label.
 - **Timeline (GSAP):** per event een kleine GSAP-timeline. De wachtrij voegt ze achter elkaar, met overlap waar het mag (een getal kan al oprollen terwijl de shake uitdooft).
 - **Juice-presets:** een klein bestand met getallen, zodat de feel afstelbaar is zonder code te lezen.
-- **Audio (Howler):** een sprite-bestand met korte geluiden. Toonhoogte via `rate`, die per opeenvolgende trigger in een combo stijgt.
+- **Audio (Howler):** korte Kenney-geluiden (CC0) als losse `.ogg` met een `.mp3` ernaast, gekozen en gekopieerd door `tools/copy_sfx.py`. Eén gedeelde module, `wwwroot/audio/audio.js`, voor elke stage en de shell: een logische naam (`sfx('hit')`) met een paar varianten, zodat herhaling niet mechanisch klinkt. Toonhoogte via `rate`, die in de Card Hall per opeenvolgende trigger in een combo stijgt. De knoppen van de shell klinken via `wwwroot/audio/ui.js`, zonder iets in Razor.
 - **Snelle modus:** één factor die alle duurtijden schaalt, behalve hit pause.
 
 ```js
@@ -169,7 +169,8 @@ Het grootste technische risico is de laadtijd van Blazor WebAssembly op schoolla
 | Pad B wordt niet ontdekt | Het concept werkt niet zonder hint | Intent of vijandtekst subtiel laten verwijzen naar 255 |
 
 - [ ] Licenties van PixiJS, GSAP en Howler nakijken voor gebruik in onderwijs en eventuele verkoop
-- [ ] Placeholder-art en -geluid kiezen (vrije assetpacks of zelf gemaakt)
+- [x] Geluid: Kenney-pakketten (CC0), zie [CREDITS.md](../CREDITS.md)
+- [ ] Placeholder-art kiezen (vrije assetpacks of zelf gemaakt)
 - [x] Hosting van de spike: GitHub Pages (beslist op 3 oktober 2026)
 - [x] Publieke GitHub-repo en Pages-workflow: [timdams/DeckOverflow](https://github.com/timdams/DeckOverflow), gepubliceerd op [timdams.github.io/DeckOverflow](https://timdams.github.io/DeckOverflow/) (3 oktober 2026)
 - [ ] Misbruik van gastaccounts: volstaan de limieten van Supabase, of is er een captcha nodig? Een captcha botst met "meteen spelen".

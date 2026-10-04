@@ -43,6 +43,15 @@ Gebouwd op 4 oktober 2026. Een speler kan de maker laten weten wat hij leuk vond
 - **Geen tracking.** Er wordt niets ongevraagd bijgehouden: alleen wat de speler zelf aanklikt of typt. De disclaimer op het hoofdscherm ("Over dit spel") zegt dat zo.
 - **Lezen**, bv. per vijand: `select subject, count(*) filter (where verdict = 'like') as fun, count(*) filter (where verdict = 'dislike') as meh, count(distinct user_id) as players from feedback group by subject order by subject;` en de berichten met `select created_at, subject, comment from feedback where comment is not null order by created_at desc;`.
 
+## Superuser
+
+Beslist op 4 oktober 2026. De maker speelt als **superuser**, de enige die een gevecht wint met de sneltoets W. Voor de superuser staat alles open wat gebouwd is: ook afdelingen op *binnenkort*, elk level, elke act als startpunt en de plattegrond voor de onthulling. Ook de testroutes `?seed=`, `?fight=` en `?level=` werken alleen voor de superuser; bij een speler doen ze niets. `?all` en `?world` bestaan niet meer.
+
+- **Wie het is, staat alleen in Supabase**, nooit in de (publieke) code: `app_metadata.role = 'superuser'`. Een speler kan zijn `app_metadata` niet zelf aanpassen. Iemand superuser maken: `update auth.users set raw_app_meta_data = raw_app_meta_data || '{"role":"superuser"}' where email = '…';`. De rol komt mee bij de volgende inlog of vernieuwing van de sessie (binnen het uur).
+- **Lokaal** (`localhost`) is iedereen superuser, om te ontwikkelen zonder in te loggen.
+- **Niets in de voortgang.** Open is niet hetzelfde als verdiend: er komen geen sleutels, Codex-pagina's of panelen bij. Wat je speelt, telt wel gewoon mee.
+- **Een controle in de browser** (`Backend/Superuser.cs`, gelezen uit de bewaarde sessie). Wie de app patcht, komt erlangs; daar staat niets tegenover dat dat de moeite waard maakt.
+
 ## Data: Supabase
 
 Postgres in de EU-regio (Frankfurt), met de beveiliging per rij (row level security) en databasefuncties van Supabase. Er is geen eigen API-server: de shell praat met `HttpClient` tegen de REST-API. `DeckOverflow.Api` uit de MVP-tabel vervalt daarmee.

@@ -2,6 +2,13 @@
 
 Wat bewust is uitgesteld voor de wereld (plattegrond, backend, Codex, ✗-register), met genoeg context om het later op te pakken. Nieuwste bovenaan. Wat af is, gaat eruit (de geschiedenis staat in git).
 
+## Superuser
+
+Gebouwd op 4 oktober 2026 (zie [backend.md](backend.md#superuser)).
+
+- **Geen score met `DebugWin` in het klassement.** Een score is een seed plus de commandolijst; zodra de Prikklok scores opslaat, moet een lijst met `DebugWin` geweigerd worden, zowel bij het insturen als bij de nachtelijke controle.
+- **Geen test op `Departments.IsOpen` en `Superuser`.** Die staan in de shell, en er is nog geen testproject voor `DeckOverflow.Web`. Verhuizen ze ooit naar Core, of komt er een shell-testproject, dan horen er tests bij: wel/niet superuser, `Soon` versus `Someday`, localhost.
+
 ## Taal
 
 Het spel is Nederlands sinds 4 oktober 2026, met Engels als optie (zie [architectuur.md](../architectuur.md) en de [woordenlijst](woordenlijst.md)).

@@ -176,7 +176,7 @@ public partial class StringsTests
         return dir?.FullName ?? throw new InvalidOperationException("DeckOverflow.sln niet gevonden.");
     }
 
-    [GeneratedRegex("""["'](?<key>(?:card|effect|enemy|relic|node|event|rest|reject|ui|stage|room)\.[a-z0-9.\-]+)["']""")]
+    [GeneratedRegex("""["'](?<key>(?:card|effect|enemy|relic|node|event|rest|reject|ui|stage|room|belt)\.[a-z0-9.\-]+)["']""")]
     private static partial Regex KeyLiteral();
 
     [GeneratedRegex(@"\{(?:(?:card|relic|enemy):)?(?<name>[a-zA-Z]+)\}")]

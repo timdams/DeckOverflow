@@ -1,5 +1,6 @@
 using CardHallPanels = DeckOverflow.CardHall.Achievements.XRegister;
 using ControlRoomPanels = DeckOverflow.ControlRoom.Achievements.XRegister;
+using ConveyorBeltPanels = DeckOverflow.ConveyorBelt.Achievements.XRegister;
 using DeckOverflow.Core.Achievements;
 
 namespace DeckOverflow.Web.World;
@@ -20,7 +21,7 @@ public static class XPanels
     }
 
     /// <summary>In de volgorde van de plattegrond; de wereld als laatste.</summary>
-    public static readonly IReadOnlyList<IXPanelSource> Sources = [CardHallPanels.Source, ControlRoomPanels.Source, new WorldPanels()];
+    public static readonly IReadOnlyList<IXPanelSource> Sources = [CardHallPanels.Source, ControlRoomPanels.Source, ConveyorBeltPanels.Source, new WorldPanels()];
 
     public static IEnumerable<XPanel> All => Sources.SelectMany(s => s.Panels);
 }

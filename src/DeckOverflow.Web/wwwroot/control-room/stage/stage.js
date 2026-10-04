@@ -6,7 +6,7 @@
 import {
   juice, COLORS, sec, wait, hitPause, sizeOf, shake, text, floatText, dashed, stamp, impactStar, speedLines, burst, roll, typeBadge, typeOf,
 } from '../../card-hall/stage/juice.js';
-import { initAudio, sfx, setMuted, isMuted } from '../../card-hall/stage/audio.js';
+import { initAudio, sfx, setMuted, isMuted } from '../../audio/audio.js';
 import { loadArt, actorTexture, iconTexture } from '../../card-hall/stage/art.js';
 import { loadStrings, t } from '../../card-hall/stage/strings.js';
 

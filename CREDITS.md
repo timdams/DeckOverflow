@@ -6,10 +6,13 @@ De geluidseffecten komen van **Kenney** ([kenney.nl](https://kenney.nl/assets?q=
 
 | Pakket | Gebruikt voor |
 |---|---|
-| _nog niet gekoppeld_ | |
+| [Digital Audio](https://kenney.nl/assets/digital-audio) | herstel, winnen en verliezen, overloop en crash, het alarm van een oververhitte band |
+| [Impact Sounds](https://kenney.nl/assets/impact-sounds) | klappen, blok, gebroken blok, de machines en stempels van de Lopende Band |
+| [Interface Sounds](https://kenney.nl/assets/interface-sounds) | tikken, klikken, kaarten trekken, geweigerde zetten, goedgekeurd |
+| [RPG Audio](https://kenney.nl/assets/rpg-audio) | zwiepen, afgekapte decimalen, wissels, de Codex en het ✗-register |
+| [Sci-fi Sounds](https://kenney.nl/assets/sci-fi-sounds) | wie omvalt, een band die oververhit raakt |
+| [UI Audio](https://kenney.nl/assets/ui-audio) | knoppen en de afdelingen op de plattegrond |
 
-Beschikbaar in `assetsin/`: Digital Audio, Impact Sounds, Interface Sounds, RPG Audio, Sci-fi Sounds en UI Audio.
-
-Zolang een geluid nog niet vervangen is, komt het uit de placeholdersprite die [tools/make_sfx.py](tools/make_sfx.py) genereert (`src/DeckOverflow.Web/wwwroot/audio/sfx.wav`).
+De volledige pakketten staan in `assetsin/`. [tools/copy_sfx.py](tools/copy_sfx.py) kiest welk bestand bij welk geluid hoort en kopieert alleen die naar `src/DeckOverflow.Web/wwwroot/audio/sfx/`, als `.ogg` en `.mp3`.
 
 Voeg je audio uit een andere bron toe, zet die er dan hier bij, met de licentie. Gebruik alleen CC0 of CC-BY: de repo en GitHub Pages zijn publiek, dus elk bestand wordt meeverspreid.

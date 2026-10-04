@@ -36,6 +36,11 @@ Wie een pagina leest, krijgt niets extra. De beloning zit in de volgende run: je
 | If - else if | H5 | Controlekamer: een regel van jou vuurt terwijl een regel eronder ook klopte |
 | Relational operators | H5 | Controlekamer: een regel van jou met `<` of `==` vuurt |
 | Logical operators | H5 | Controlekamer: een regel van jou met EN, OF of NIET vuurt |
+| While en do while | H6 | Lopende Band: een poort ziet hetzelfde product een tweede keer |
+| For | H6 | Lopende Band: een teller is klaar |
+| Nested loops | H6 | Lopende Band: een teller is klaar terwijl een andere nog telt |
+| Infinite loop | H6 | Lopende Band: dezelfde toestand komt terug (de Zune op dag 366, of je eigen band). Ook een band die niet lukt, opent de pagina |
+| (Card Hall-pagina's) | H2 tot H4 | ook op de Lopende Band: modulo, overflow (Level 256), een int delen door een int (de Splijter) en lengte (het Etiket) |
 | Exceptions | H10 | nog nergens: in H2 tot H4 heet het crashen, zoals in het boek, en een crash opent deze pagina niet (beslist op 4 oktober 2026). Ze wacht op een afdeling voor H10 |
 
 De laatste laag linkt naar de juiste pagina in de [online versie van het boek](https://timdams.github.io/ziescherpscherper/content/README.html), waar het kan met een anker (bv. `#conversie`).

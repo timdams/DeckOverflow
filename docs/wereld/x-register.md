@@ -10,6 +10,7 @@ De achievements van de hele fabriek. Het register hoort bij de wereld, niet bij 
 - Een verdiend paneel springt van onderen op in een oranje kader (#e2790a) met zijn tekening.
 - **Do not read the manual** is het enige paneel dat met de Codex te maken heeft: wie een pagina tot het einde leest, overtreedt de laatste regel van een game die draait om de handleiding niet volgen. Het is één verborgen paneel, geen teller per pagina, dus de Codex wordt geen vinkjeslijst. Het hoort bij de wereld, niet bij een afdeling.
 - De Controlekamer levert er vijf (zie [haar map](../afdelingen/control-room/README.md#wat-ze-met-de-wereld-deelt)), herkend aan een afgelopen duel. Winnen met één regel kan in geen enkel gevecht, dus dat werd geen paneel.
+- De Lopende Band levert er drie (zie [haar map](../afdelingen/conveyor-belt/README.md#wat-ze-met-de-wereld-deelt)), herkend aan een afgespeelde band: een oneindige loop, de laatste bestelling, en verborgen niets van de band laten vallen. Ze kunnen pas als de afdeling opengaat.
 - Voorbeelden voor latere afdelingen: een baas laten overlopen tot hij sterft, de band duizend keer laten draaien zonder vast te lopen.
 
 ## Het systeem: hoe een afdeling panelen levert

@@ -3,6 +3,7 @@ using DeckOverflow.ControlRoom.Gambits;
 using DeckOverflow.ControlRoom.Levels;
 using DeckOverflow.Core.Codex;
 using DeckOverflow.Web.Art;
+using DeckOverflow.Web.Backend;
 using DeckOverflow.Web.Interop;
 using DeckOverflow.Web.Progress;
 using DeckOverflow.Web.Text;
@@ -18,7 +19,7 @@ namespace DeckOverflow.Web.Features.ControlRoom;
 /// </summary>
 public partial class ControlRoomPage : IAsyncDisposable
 {
-    [SupplyParameterFromQuery(Name = "all")] public string? AllQuery { get; set; }
+    /// <summary>Een level rechtstreeks openen; alleen voor de superuser.</summary>
     [SupplyParameterFromQuery(Name = "level")] public string? LevelQuery { get; set; }
 
     [Inject] private Strings S { get; set; } = default!;
@@ -27,6 +28,7 @@ public partial class ControlRoomPage : IAsyncDisposable
     [Inject] private IProgressStore Store { get; set; } = default!;
     [Inject] private ControlRoomStage Stage { get; set; } = default!;
     [Inject] private NavigationManager Nav { get; set; } = default!;
+    [Inject] private Superuser Superuser { get; set; } = default!;
 
     private sealed record LogLine(string Text, string Kind);
     private sealed record Toast(int Id, string Text);
@@ -39,6 +41,7 @@ public partial class ControlRoomPage : IAsyncDisposable
     private ElementReference _host;
     private PlayerProgress _progress = new();
     private bool _ready;
+    /// <summary>De superuser: de afdeling en alle levels open, zonder iets in de voortgang te schrijven.</summary>
     private bool _openAll;
     private int _levelIndex;
     private List<RuleDraft> _drafts = [];
@@ -68,7 +71,11 @@ public partial class ControlRoomPage : IAsyncDisposable
     private bool AtEnd => _recording is { } r && _frame == r.Frames.Count - 1;
     private DuelSnapshot? Shown => _recording is not { } r ? null : _frame < 0 ? r.Start : r.Frames[_frame].Snapshot;
 
-    private bool Unlocked => _openAll || Departments.IsOpen(Departments.All.First(d => d.Key == Departments.ControlRoom), _progress.Unlocks);
+    private bool Unlocked => Departments.IsOpen(Departments.Get(Departments.ControlRoom), _progress.Unlocks, _openAll);
+
+    /// <summary>Wat het dichte scherm zegt: de sleutel is er al, of waar je hem vindt.</summary>
+    private string LockedText => Departments.IsEarned(Departments.Get(Departments.ControlRoom), _progress.Unlocks)
+        ? S.T("ui.world.earned") : S.T("ui.world.control-room.needs");
 
     protected override async Task OnInitializedAsync()
     {
@@ -79,8 +86,8 @@ public partial class ControlRoomPage : IAsyncDisposable
         try { _histograms = await Http.GetFromJsonAsync<Dictionary<string, Histogram>>("control-room/solutions.json") ?? []; }
         catch (HttpRequestException) { /* zonder histogram speel je gewoon verder */ }
 
-        _openAll = AllQuery is not null || LevelQuery is not null;
-        int found = LevelQuery is null ? -1 : LevelCatalog.IndexOf(LevelQuery);
+        _openAll = await Superuser.IsActiveAsync();
+        int found = LevelQuery is null || !_openAll ? -1 : LevelCatalog.IndexOf(LevelQuery);
         _levelIndex = found >= 0 ? found : FirstUnbeaten();
         LoadBoard();
     }

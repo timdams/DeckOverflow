@@ -2,6 +2,11 @@
 
 Wat bewust is uitgesteld, met genoeg context om het later op te pakken. Nieuwste bovenaan. Wat af is, gaat eruit.
 
+
+## Vrijgeven (4 oktober 2026)
+
+- **De Controlekamer staat op binnenkort.** Spelers verdienen de sleutel al met de laatste baas van de Card Hall, maar de deur blijft dicht. Als ze af is: `Availability.Released` in `World/Departments.cs`; wie de sleutel heeft, kan dan meteen binnen. Daarna de Lopende Band zijn sleutel geven (zie haar [todo](../conveyor-belt/todo.md)).
+
 ## Na de bouw van 4 oktober 2026
 
 - **Testen met spelers.** De vragen van spike 8 staan nog open: is regels opstellen en toekijken leuk, ontdekken spelers zonder uitleg dat de volgorde telt, lezen ze de regels van de vijand, zegt "onder de motorkap" iets?

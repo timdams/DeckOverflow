@@ -1,0 +1,312 @@
+@page "/conveyor-belt"
+@using DeckOverflow.ConveyorBelt.Belts
+
+@* De Lopende Band (H6): leg band en machines op een rooster, en kijk hoe de producten rijden. Een band die terugkomt,
+   is een loop. Links de gereedschapsbak, in het midden de stage, rechts de bestelbon van het front. *@
+
+<div class="room belt-room">
+    @if (!S.Loaded)
+    {
+        <div class="overlay"><h1>Deck Overflow</h1><p>...</p></div>
+    }
+    else if (!Unlocked)
+    {
+        <div class="overlay">
+            <h1>@S.T("ui.world.conveyor-belt.name")</h1>
+            <p>@LockedText</p>
+            <button @onclick="ToFloorPlan">@S.T("ui.world.back")</button>
+        </div>
+    }
+    else
+    {
+        <header class="room-head">
+            <button class="options-button" title="@S.T("ui.options")" aria-label="@S.T("ui.options")" @onclick="() => _showOptions = true">☰</button>
+            <h1 class="title-word small">@S.T("ui.world.conveyor-belt.name")</h1>
+            <nav class="steps">
+                @for (int i = 0; i < LevelCatalog.All.Count; i++)
+                {
+                    int index = i;
+                    var l = LevelCatalog.All[i];
+                    bool open = Open(index);
+                    <button class="step @(index == _levelIndex ? "current" : "") @(Beaten(l.Key) ? "beaten" : "") @(l.Bug ? "bug" : "")"
+                            disabled="@(!open || _playing)" @onclick="() => SelectLevel(index)" title="@(open ? S.T($"belt.level.{l.Key}.name") : S.T("ui.world.locked"))">
+                        <span class="circle">@(index + 1)</span>
+                        <span class="label">@(open ? S.T($"belt.level.{l.Key}.name") : "?")</span>
+                    </button>
+                }
+            </nav>
+            <span class="head-tools">
+                <button class="title-button" @onclick="() => _showCodex = true">@S.T("ui.codex") · @_progress.Codex.Count</button>
+                <button class="title-button" @onclick="() => _showXRegister = true">@S.T("ui.xregister") · @_progress.XPanels.Count</button>
+            </span>
+        </header>
+
+        <main class="belt-floor">
+            <section class="toolbox">
+                <h2>@S.T("belt.ui.toolbox")</h2>
+                <div class="tools">
+                    <button class="tool @(_tool == BeltTool ? "held" : "")" disabled="@(!Editing)" @onclick="() => _tool = BeltTool">
+                        <span class="glyph">→</span> @S.T("belt.ui.belt")
+                    </button>
+                    @foreach (var offer in Level.Palette)
+                    {
+                        var o = offer;
+                        int left = o.Max - Used(o);
+                        <button class="tool @(o.Kind.ToString().ToLowerInvariant()) @(_tool == o.Id ? "held" : "")" disabled="@(!Editing || left <= 0)" @onclick="() => _tool = o.Id">
+                            <span class="glyph">@PieceText.Offer(o)</span> @S.T($"belt.ui.offer.{o.Kind}") <small>×@left</small>
+                        </button>
+                    }
+                    <button class="tool erase @(_tool == EraseTool ? "held" : "")" disabled="@(!Editing)" @onclick="() => _tool = EraseTool">✕ @S.T("belt.ui.erase")</button>
+                </div>
+                <p class="hint">@S.T("belt.ui.toolbox-hint")</p>
+
+                @if (Editing && _selected is { } cell && _board.TryGetValue(cell, out var piece))
+                {
+                    @* Het paneel van het gekozen stuk: richtingen, getal, voorwaarde *@
+                    <div class="inspector">
+                        <h3>@S.T($"belt.ui.piece.{piece.GetType().Name}")</h3>
+                        @switch (piece)
+                        {
+                            case Belt belt:
+                                @DirPicker(S.T("belt.ui.out"), belt.Out, TurnBeltAsync)
+                                break;
+                            case Machine m:
+                                @ValuePicker(m.Op.Operand, v => ChangeAsync(p => p is Machine x ? x with { Op = x.Op with { Operand = v } } : p))
+                                @DirPicker(S.T("belt.ui.out"), m.Out, d => ChangeAsync(p => p is Machine x ? x with { Out = d } : p))
+                                break;
+                            case Gate g:
+                                @if (OfferFor(g) is { Conditions: { Count: > 1 } kinds })
+                                {
+                                    <label class="row">@S.T("belt.ui.condition")
+                                        <select value="@g.When.Kind" @onchange="e => ChangeAsync(p => p is Gate x ? x with { When = x.When with { Kind = Enum.Parse<CondKind>((string)e.Value!) } } : p)">
+                                            @foreach (var k in kinds)
+                                            {
+                                                <option value="@k">@PieceText.Condition(new Condition(k, g.When.N))</option>
+                                            }
+                                        </select>
+                                    </label>
+                                }
+                                @ValuePicker(g.When.N, v => ChangeAsync(p => p is Gate x ? x with { When = x.When with { N = v } } : p))
+                                @DirPicker("✓ " + S.T("belt.ui.if-true"), g.IfTrue, d => ChangeAsync(p => p is Gate x ? x with { IfTrue = d } : p))
+                                @DirPicker("✗ " + S.T("belt.ui.if-false"), g.IfFalse, d => ChangeAsync(p => p is Gate x ? x with { IfFalse = d } : p))
+                                break;
+                            case Counter c:
+                                @ValuePicker(c.Times, v => ChangeAsync(p => p is Counter x ? x with { Times = v } : p))
+                                @DirPicker("↻ " + S.T("belt.ui.loop"), c.Loop, d => ChangeAsync(p => p is Counter x ? x with { Loop = d } : p))
+                                @DirPicker("⇥ " + S.T("belt.ui.done"), c.Done, d => ChangeAsync(p => p is Counter x ? x with { Done = d } : p))
+                                break;
+                        }
+                        <button class="secondary" @onclick="RemoveSelectedAsync">✕ @S.T("belt.ui.remove")</button>
+                    </div>
+                }
+                <button class="secondary clear" disabled="@(!Editing)" @onclick="ClearAsync">↺ @S.T("belt.ui.clear")</button>
+            </section>
+
+            <section class="arena">
+                <div class="belt-stage" @ref="_host"></div>
+
+                <div class="controls">
+                    @if (Editing)
+                    {
+                        <button class="play-big" @onclick="RunAsync">▶ @S.T("belt.ui.run")</button>
+                    }
+                    else
+                    {
+                        @if (_playing)
+                        {
+                            <button @onclick="Stop">⏸ @S.T("belt.ui.pause")</button>
+                        }
+                        else if (!AllDone)
+                        {
+                            <button class="primary" @onclick="PlayAsync">▶ @S.T("belt.ui.resume")</button>
+                            <button @onclick="StepOnce">⏭ @S.T("belt.ui.step")</button>
+                        }
+                        @if (!_playing)
+                        {
+                            <button @onclick="RestartAsync">↻ @S.T("belt.ui.replay")</button>
+                        }
+                        <button class="secondary" @onclick="Edit">✎ @S.T("belt.ui.edit")</button>
+                    }
+                    <span class="speed">
+                        @foreach (var sp in new[] { 1, 2, 4, 8 })
+                        {
+                            int speed = sp;
+                            <button class="tiny @(speed == _speed ? "on" : "")" @onclick="() => _speed = speed">@(speed)×</button>
+                        }
+                    </span>
+                </div>
+
+                @if (Shown is { } run)
+                {
+                    <div class="belt-timeline">
+                        <input type="range" min="0" max="@(run.Frames.Count - 1)" value="@_frame" @oninput="Scrub" aria-label="@S.T("belt.ui.timeline")" />
+                        <span>@S.T("belt.ui.tick", ("tick", Current?.Tick ?? 0))</span>
+                    </div>
+                    @if (AtEnd)
+                    {
+                        <p class="ending @run.Ending.ToString().ToLowerInvariant()">@S.T($"belt.ui.ending.{run.Ending}", ("got", run.Result), ("want", run.Case.Expected))</p>
+                    }
+                }
+            </section>
+
+            <section class="order">
+                <p class="order-head">@S.T("belt.ui.order", ("n", _levelIndex + 1)) · @S.T("belt.ui.order-from")</p>
+                <h2>@S.T($"belt.level.{Level.Key}.name") @if (Level.Bug) { <small class="tag">@S.T("belt.ui.real-bug")</small> }</h2>
+                <p>@S.T($"belt.level.{Level.Key}.brief")</p>
+                <table class="cases">
+                    <thead><tr><th>@S.T("belt.ui.in")</th><th>@S.T("belt.ui.want")</th><th></th></tr></thead>
+                    <tbody>
+                        @for (int i = 0; i < Level.Cases.Count; i++)
+                        {
+                            int index = i;
+                            var c = Level.Cases[i];
+                            var result = _run?.Cases[i];
+                            bool revealed = result is not null && _revealed.Contains(index);
+                            bool fresh = revealed && index == _fresh;
+                            <tr class="@(index == _case && _run is not null ? "current" : "") @(revealed ? (result!.Passed ? "pass" : "fail") : "") @(fresh ? "fresh" : "")"
+                                @key="(index, fresh ? _freshSeq : 0)" @onclick="() => _run is not null ? ShowCase(index) : Task.CompletedTask">
+                                <td>@c.Input</td>
+                                <td>@c.Expected</td>
+                                <td class="mark">
+                                    @if (revealed && result!.Passed)
+                                    {
+                                        <span class="ok">✓
+                                            @if (fresh)
+                                            {
+                                                @* Vuurwerk: twaalf vonken die uit het vinkje spatten *@
+                                                <span class="burst" aria-hidden="true">
+                                                    @for (int s = 0; s < 12; s++)
+                                                    {
+                                                        <i style="--a:@(s * 30)deg; --d:@(22 + (s % 3) * 8)px"></i>
+                                                    }
+                                                </span>
+                                            }
+                                        </span>
+                                    }
+                                    else if (revealed)
+                                    {
+                                        <span class="stamp">@S.T("belt.ui.fail")</span> <span class="why">@Outcome(result!)</span>
+                                    }
+                                    else if (_run is not null)
+                                    {
+                                        <span class="wait">…</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                @if (AllRevealed && _run is { } done)
+                {
+                    <div class="belt-result @(done.Solved ? "won" : "lost")" @key="_freshSeq">
+                        <h3>@S.T(done.Solved ? "belt.ui.solved" : "belt.ui.not-yet")</h3>
+                        <p>@S.T("belt.ui.score", ("machines", done.Machines), ("cycles", done.Cycles))</p>
+                        @if (Record(Level.Key) is { Beaten: true } best)
+                        {
+                            <p class="best">@S.T("belt.ui.best", ("machines", best.BestMachines!), ("cycles", best.BestCycles!))</p>
+                        }
+                        @if (done.Solved && _levelIndex < LevelCatalog.All.Count - 1)
+                        {
+                            <button class="primary" @onclick="() => SelectLevel(_levelIndex + 1)">@S.T("belt.ui.next") →</button>
+                        }
+                        @if (done.Solved && Level.Bug)
+                        {
+                            <div class="codex-bug">
+                                <span class="codex-label">@S.T("codex.title")</span>
+                                <strong>@S.T($"bug.{Level.Key}.title")</strong>
+                                <p>@S.T($"bug.{Level.Key}.story")</p>
+                            </div>
+                        }
+                    </div>
+                }
+            </section>
+        </main>
+
+        <LanguageToggle Class="corner" />
+    }
+
+    @if (_showOptions)
+    {
+        <div class="modal" @onclick="() => _showOptions = false">
+            <div class="modal-body story-card options" @onclick:stopPropagation="true">
+                <h2>@S.T("ui.options.title")</h2>
+                <div class="choices column">
+                    <button @onclick="ToFloorPlan">@S.T("ui.world.back")</button>
+                </div>
+                <LanguageToggle />
+                <button class="play-big" @onclick="() => _showOptions = false">@S.T("belt.ui.back-to-belt")</button>
+            </div>
+        </div>
+    }
+    @if (_showCodex)
+    {
+        <CodexBook Pages="_progress.Codex" Read="_progress.CodexRead" OnRead="TurnCodexPageAsync" OnClose="() => _showCodex = false" />
+    }
+    @if (_showXRegister)
+    {
+        <XRegisterBook Earned="_progress.XPanels" OnClose="() => _showXRegister = false" />
+    }
+
+    <div class="xpanel-popups">
+        @foreach (var popup in _popups)
+        {
+            <button class="xpanel-popup" @key="popup.Id" @onclick="() => { _popups.Remove(popup); _showXRegister = true; }">
+                <span class="badge">✗</span>
+                <span class="words">
+                    <span class="label">@S.T("ui.xregister.earned")</span>
+                    <strong>@S.T($"xpanel.{popup.Key}.name")</strong>
+                    <small>@S.T($"xpanel.{popup.Key}.text")</small>
+                </span>
+            </button>
+        }
+    </div>
+    <div class="toasts">
+        @foreach (var toast in _toasts)
+        {
+            <div class="toast" @key="toast.Id">@toast.Text</div>
+        }
+    </div>
+    <div class="rotate-hint">
+        <span class="rotate-phone" aria-hidden="true"></span>
+        <p>@(S.Loaded ? S.T("ui.rotate") : "")</p>
+    </div>
+</div>
+
+@code {
+    private static readonly Dir[] Dirs = [Dir.Up, Dir.Right, Dir.Down, Dir.Left];
+
+    private RenderFragment DirPicker(string label, Dir current, Func<Dir, Task> set) =>
+        @<div class="row">
+            <span>@label</span>
+            <span class="dirs">
+                @foreach (var d in Dirs)
+                {
+                    var dir = d;
+                    <button class="tiny @(dir == current ? "on" : "")" @onclick="() => set(dir)">@PieceText.Arrow(dir)</button>
+                }
+            </span>
+        </div>;
+
+    private RenderFragment ValuePicker(int current, Func<int, Task> set)
+    {
+        var choices = _selected is { } c && _board.TryGetValue(c, out var p) && OfferFor(p) is { } offer ? offer.Choices : [];
+        if (choices.Count < 2) return @<span></span>;
+        return @<label class="row">@S.T("belt.ui.number")
+            <select value="@current" @onchange="e => set(int.Parse((string)e.Value!))">
+                @foreach (var v in choices)
+                {
+                    <option value="@v">@v</option>
+                }
+            </select>
+        </label>;
+    }
+
+    /// <summary>Wat er misging, kort, voor de tabel: de verkeerde inhoud, of waarom de kist nooit aankwam.</summary>
+    private string Outcome(CaseRun run) => run.Ending switch
+    {
+        Ending.Forever => S.T("belt.ui.short.forever"),
+        Ending.FellOff => S.T("belt.ui.short.fell-off"),
+        _ => run.Result.ToString(),
+    };
+}

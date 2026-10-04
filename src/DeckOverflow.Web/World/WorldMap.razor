@@ -4,21 +4,24 @@
 
 @* De fabrieksplattegrond, na de onthulling: elke afdeling is een genummerde stap, zoals in een handleiding.
    Hoe meer onderdelen (Codex-pagina's van haar hoofdstukken) uitgepakt, hoe meer van de afdeling ingekt.
-   Een dichte afdeling is gestippeld: nog in de doos. Geen cijfers of percentages: een fabriek die af raakt. *@
+   Een dichte afdeling is gestippeld. "Binnenkort" is gebouwd maar nog dicht en toont al wat erin zit (de tease);
+   "ooit" zit nog in de doos. Geen cijfers of percentages: een fabriek die af raakt. *@
 
 <div class="world">
     <header class="world-head">
-        <h1 class="title-word small">Deck <span>Overflow</span></h1>
+        <h1 class="title-word small">Deck <span>Overflow</span><span class="beta-badge">@S.T("ui.beta")</span></h1>
         <p class="hint">@S.T("ui.world.title")</p>
     </header>
 
     <div class="world-floor">
         @foreach (var d in Departments.All)
         {
-            bool open = Departments.IsOpen(d, Unlocks);
+            bool open = Departments.IsOpen(d, Unlocks, Superuser);
+            bool soon = d.Availability == Availability.Soon;
+            bool key = soon && Departments.IsEarned(d, Unlocks);
             double progress = Progress(d);
             bool loose = open && Parts(d).Any() && progress < 0.5;
-            <button class="department @(open ? "open" : "boxed") @(d.Key == _selected?.Key ? "selected" : "")"
+            <button class="department @(open ? "open" : soon ? "boxed soon" : "boxed") @(d.Key == _selected?.Key ? "selected" : "")"
                     style="--inked: @(open ? (0.25 + 0.75 * progress).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) : "0")"
                     @onclick="() => _selected = d">
                 <span class="step">@d.Step</span>
@@ -32,10 +35,14 @@
                     <span class="dept-box" aria-hidden="true"></span>
                 }
                 <strong>@S.T($"ui.world.{d.Key}.name")</strong>
-                <small>@(open ? S.T($"ui.world.{d.Key}.genre") : S.T("ui.world.locked"))</small>
+                <small>@(open ? S.T($"ui.world.{d.Key}.genre") : soon ? S.T("ui.world.coming") : S.T("ui.world.locked"))</small>
                 @if (loose)
                 {
                     <span class="sticker">@S.T("ui.world.loose")</span>
+                }
+                else if (key)
+                {
+                    <span class="sticker key">@S.T("ui.world.key")</span>
                 }
             </button>
         }
@@ -43,10 +50,24 @@
 
     @if (_selected is { } sel)
     {
-        bool open = Departments.IsOpen(sel, Unlocks);
+        bool open = Departments.IsOpen(sel, Unlocks, Superuser);
+        bool soon = sel.Availability == Availability.Soon;
         <aside class="dept-panel">
             <h2>@S.T($"ui.world.{sel.Key}.name")</h2>
-            <p>@(open ? S.T($"ui.world.{sel.Key}.text") : S.T("ui.world.locked"))</p>
+            @if (open || soon)
+            {
+                <p class="hint">@S.T($"ui.world.{sel.Key}.genre")</p>
+                <p>@S.T($"ui.world.{sel.Key}.text")</p>
+            }
+            else
+            {
+                <p>@S.T("ui.world.locked")</p>
+            }
+            @if (soon)
+            {
+                @* De tease: wat erin zit staat er al, de deur nog niet *@
+                <p class="soon-note">@(Departments.IsEarned(sel, Unlocks) ? S.T("ui.world.earned") : S.T($"ui.world.{sel.Key}.needs"))</p>
+            }
 
             @if (Parts(sel).Any())
             {
@@ -94,10 +115,6 @@
                 {
                     <a class="play-big as-link" href="@url">@S.T("ui.world.enter")</a>
                 }
-                else if (sel.Key == Departments.ControlRoom)
-                {
-                    <p class="hint">@S.T("ui.world.needs-card-hall")</p>
-                }
             </div>
         </aside>
     }
@@ -118,6 +135,9 @@
     [Parameter, EditorRequired] public IReadOnlyDictionary<string, Unlock> Unlocks { get; set; } = default!;
     [Parameter, EditorRequired] public IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> Pages { get; set; } = default!;
     [Parameter] public int ReachedAct { get; set; } = 1;
+
+    /// <summary>De maker: elke gebouwde afdeling staat open, ook "binnenkort".</summary>
+    [Parameter] public bool Superuser { get; set; }
 
     /// <summary>Onderdelen die nergens voor dienden, uit kisten in de Card Hall.</summary>
     [Parameter] public IReadOnlySet<string> Trinkets { get; set; } = new HashSet<string>();

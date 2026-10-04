@@ -20,6 +20,8 @@ namespace DeckOverflow.Web.Pages;
 /// </summary>
 public partial class RunPage
 {
+    // De testroutes ?seed= en ?fight= werken alleen voor de superuser, die ook altijd de plattegrond ziet.
+
     [SupplyParameterFromQuery(Name = "seed")]
     public string? SeedQuery { get; set; }
 
@@ -27,13 +29,15 @@ public partial class RunPage
     [SupplyParameterFromQuery(Name = "fight")]
     public string? FightQuery { get; set; }
 
-    /// <summary>Voor het ontwikkelen: <c>?world</c> toont de plattegrond, ook voor de onthulling.</summary>
-    [SupplyParameterFromQuery(Name = "world")]
-    public string? WorldQuery { get; set; }
-
     [Inject] private HttpClient Http { get; set; } = default!;
     [Inject] private IProgressStore Store { get; set; } = default!;
     [Inject] private IServiceProvider Services { get; set; } = default!;
+    [Inject] private Superuser Superuser { get; set; } = default!;
+
+    /// <summary>De maker: W wint, alles staat open, de testroutes werken. Zie <see cref="Backend.Superuser"/>.</summary>
+    private bool _superuser;
+
+    private string? Fight => _superuser ? FightQuery : null;
 
     /// <summary>Accounts en klassen, alleen als Supabase ingesteld is.</summary>
     private Account? Account => Services.GetService<Account>();
@@ -74,7 +78,10 @@ public partial class RunPage
     private string _revealReason = "won";
 
     /// <summary>De onthulling gebeurde: de plattegrond vervangt het titelscherm.</summary>
-    private bool Revealed => WorldQuery is not null || _progress.Revealed;
+    private bool Revealed => _superuser || _progress.Revealed;
+
+    /// <summary>Tot welke act je een run mag starten: zo ver je kwam, of elke act voor de superuser.</summary>
+    private int ReachedAct => _superuser ? Acts.All[^1].Number : _progress.ReachedAct;
 
     private bool CrackVisible => !Revealed && _progress.RunsStarted >= CrackAfterRuns;
 
@@ -113,6 +120,7 @@ public partial class RunPage
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
+        _superuser = await Superuser.IsActiveAsync();
         _progress = await Store.LoadAsync();
         Store.Changed += OnProgressChanged;
         _progress.ReachedAct = Math.Clamp(_progress.ReachedAct, 1, Acts.All[^1].Number);
@@ -124,16 +132,16 @@ public partial class RunPage
     {
         _startAct = startAct;
         // De allereerste keer: eerst de intro, dan pas de run
-        if (!_progress.IntroSeen && FightQuery is null)
+        if (!_progress.IntroSeen && Fight is null)
         {
             _showIntro = true;
             return;
         }
         _starting = true;
         _self ??= DotNetObjectReference.Create(this);
-        await Stage.InitAsync(_host, _self);
+        await Stage.InitAsync(_host, _self, debug: _superuser);
 
-        ulong seed = ulong.TryParse(SeedQuery, out ulong s) ? s : NewSeed();
+        ulong seed = _superuser && ulong.TryParse(SeedQuery, out ulong s) ? s : NewSeed();
         await NewRunAsync(seed);
         _starting = false;
     }
@@ -148,27 +156,27 @@ public partial class RunPage
 
     private async Task NewRunAsync(ulong seed)
     {
-        RunSetup setup = Bestiary.Exists(FightQuery)
-            ? new RunSetup(Map: SingleFight(FightQuery!), Opening: false, Deck: TestDeck)
+        RunSetup setup = Bestiary.Exists(Fight)
+            ? new RunSetup(Map: SingleFight(Fight!), Opening: false, Deck: TestDeck)
             : new RunSetup(StartAct: _startAct);
         _run = Run.Start(seed, setup);
         _snap = _run.Snapshot();
         _paused = false;
         _showOptions = false;
-        if (FightQuery is null)
+        if (Fight is null)
         {
             _progress.RunsStarted++;
             await Store.SaveAsync(_progress);
         }
         // Elke run begint met de kaart van zijn act, behalve op de testroute ?fight=
-        _actCard = FightQuery is null ? _run.Act.Number : null;
+        _actCard = Fight is null ? _run.Act.Number : null;
         _picker = null;
         _showDeck = false;
         _lastEnemy = null;
         _toasts.Clear();
 
         var query = new Dictionary<string, object?> { ["seed"] = seed.ToString(CultureInfo.InvariantCulture) };
-        if (FightQuery is not null) query["fight"] = FightQuery;
+        if (Fight is not null) query["fight"] = Fight;
         Nav.NavigateTo(Nav.GetUriWithQueryParameters(query), replace: true);
 
         await Stage.ResetAsync();
@@ -287,9 +295,9 @@ public partial class RunPage
     private Task EndTurnAsync() => RunCombatAsync(new EndTurn());
     private Task ScrapAsync() => RunCombatAsync(new ScrapModifiers());
 
-    /// <summary>Sneltoets W wint het lopende gevecht meteen. Blijft ook in playtests.</summary>
+    /// <summary>Sneltoets W wint het lopende gevecht meteen, alleen voor de superuser.</summary>
     [JSInvokable]
-    public Task OnDebugWin() => RunCombatAsync(new DebugWin());
+    public Task OnDebugWin() => _superuser ? RunCombatAsync(new DebugWin()) : Task.CompletedTask;
 
     private async Task RunCombatAsync(ICommand command)
     {
@@ -324,8 +332,8 @@ public partial class RunPage
     }
 
     /// <summary>
-    /// De laatste baas van de Card Hall viel: de Controlekamer gaat open, en wie de fabriek
-    /// nog niet zag, krijgt de onthulling.
+    /// De laatste baas van de Card Hall viel: je verdient de sleutel van de Controlekamer, en wie de fabriek
+    /// nog niet zag, krijgt de onthulling. Staat de Controlekamer nog op binnenkort, dan is de sleutel een tease.
     /// </summary>
     private async Task RememberRunEndAsync(IEnumerable<GameEvent> events)
     {
@@ -333,6 +341,8 @@ public partial class RunPage
         if (_progress.TryUnlock(Departments.ControlRoom, UnlockHow.Boss, DateTimeOffset.UtcNow))
         {
             await Store.SaveAsync(_progress);
+            bool open = Departments.IsOpen(Departments.Get(Departments.ControlRoom), _progress.Unlocks);
+            AddToast(S.T(open ? "ui.toast.unlocked" : "ui.toast.key", ("name", S.T("ui.world.control-room.name"))), "relic");
         }
         if (!_progress.Revealed) await RevealAsync("won");
     }
@@ -433,7 +443,12 @@ public partial class RunPage
         await InvokeAsync(StateHasChanged);
     }
 
-    private void OnProgressChanged() => _ = InvokeAsync(StateHasChanged);
+    /// <summary>Ook na inloggen: misschien ben je nu de superuser.</summary>
+    private void OnProgressChanged() => _ = InvokeAsync(async () =>
+    {
+        _superuser = await Superuser.IsActiveAsync();
+        StateHasChanged();
+    });
 
     private void OpenCodex(string? focus)
     {

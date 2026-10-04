@@ -39,6 +39,7 @@ const S = {
   shaker: null,    // wordt geschud, bevat alle spel-lagen
   layers: {},
   dotnet: null,
+  debug: false,    // sneltoetsen om te testen, alleen voor de superuser
   actors: new Map(),
   hand: [],
   pending: null,
@@ -50,8 +51,9 @@ const S = {
 
 // ---------------------------------------------------------------- publieke API
 
-export async function init(host, dotnetRef) {
+export async function init(host, dotnetRef, debug = false) {
   S.dotnet = dotnetRef;
+  S.debug = debug;
 
   await Promise.all([loadStrings(), loadArt(), initAudio()]).catch(() => {});
 
@@ -780,8 +782,8 @@ function setupInput() {
 function onKey(e) {
   if (e.key === 'f' || e.key === 'F') juice.speed = juice.speed < 1 ? 1 : 0.5;
   if (e.key === 'm' || e.key === 'M') toggleMute();
-  // Sneltoets W: win het gevecht meteen, om snel te testen. Blijft ook in playtests.
-  if ((e.key === 'w' || e.key === 'W') && S.dotnet) S.dotnet.invokeMethodAsync('OnDebugWin');
+  // Sneltoets W: win het gevecht meteen, om snel te testen. Alleen voor de superuser; de shell controleert het ook.
+  if ((e.key === 'w' || e.key === 'W') && S.debug && S.dotnet) S.dotnet.invokeMethodAsync('OnDebugWin');
 }
 
 function onCardDown(card, e) {

@@ -1,66 +1,392 @@
 {
  "hit": [
-  0,
-  160
+  {
+   "file": "hit-1",
+   "gain": 0.4
+  },
+  {
+   "file": "hit-2",
+   "gain": 0.4
+  },
+  {
+   "file": "hit-3",
+   "gain": 0.43
+  },
+  {
+   "file": "hit-4",
+   "gain": 0.44
+  },
+  {
+   "file": "hit-5",
+   "gain": 0.42
+  }
  ],
  "hitBig": [
-  210,
-  350
- ],
- "tick": [
-  610,
-  40
- ],
- "shield": [
-  700,
-  250
- ],
- "shatter": [
-  1000,
-  300
- ],
- "tinkle": [
-  1350,
-  600
- ],
- "heal": [
-  2000,
-  500
- ],
- "click": [
-  2550,
-  30
- ],
- "glitch": [
-  2630,
-  450
+  {
+   "file": "hitBig-1",
+   "gain": 0.38
+  },
+  {
+   "file": "hitBig-2",
+   "gain": 0.38
+  },
+  {
+   "file": "hitBig-3",
+   "gain": 0.37
+  },
+  {
+   "file": "hitBig-4",
+   "gain": 0.39
+  },
+  {
+   "file": "hitBig-5",
+   "gain": 0.38
+  }
  ],
  "bass": [
-  3130,
-  900
+  {
+   "file": "bass-1",
+   "gain": 0.34
+  }
+ ],
+ "shield": [
+  {
+   "file": "shield-1",
+   "gain": 0.86
+  },
+  {
+   "file": "shield-2",
+   "gain": 0.74
+  },
+  {
+   "file": "shield-3",
+   "gain": 0.82
+  },
+  {
+   "file": "shield-4",
+   "gain": 0.61
+  },
+  {
+   "file": "shield-5",
+   "gain": 0.6
+  }
+ ],
+ "shatter": [
+  {
+   "file": "shatter-1",
+   "gain": 0.93
+  },
+  {
+   "file": "shatter-2",
+   "gain": 0.96
+  },
+  {
+   "file": "shatter-3",
+   "gain": 0.99
+  },
+  {
+   "file": "shatter-4",
+   "gain": 0.8
+  },
+  {
+   "file": "shatter-5",
+   "gain": 0.88
+  }
  ],
  "whoosh": [
-  4080,
-  250
+  {
+   "file": "whoosh-1",
+   "gain": 1.0
+  },
+  {
+   "file": "whoosh-2",
+   "gain": 1.0
+  },
+  {
+   "file": "whoosh-3",
+   "gain": 1.0
+  },
+  {
+   "file": "whoosh-4",
+   "gain": 1.0
+  }
  ],
  "deal": [
-  4380,
-  60
+  {
+   "file": "deal-1",
+   "gain": 0.48
+  },
+  {
+   "file": "deal-2",
+   "gain": 0.47
+  },
+  {
+   "file": "deal-3",
+   "gain": 0.99
+  }
  ],
- "buzz": [
-  4490,
-  220
+ "heal": [
+  {
+   "file": "heal-1",
+   "gain": 0.6
+  },
+  {
+   "file": "heal-2",
+   "gain": 0.53
+  },
+  {
+   "file": "heal-3",
+   "gain": 0.41
+  },
+  {
+   "file": "heal-4",
+   "gain": 0.42
+  }
  ],
  "win": [
-  4760,
-  900
+  {
+   "file": "win-1",
+   "gain": 0.26
+  }
  ],
  "lose": [
-  5710,
-  900
+  {
+   "file": "lose-1",
+   "gain": 0.29
+  }
+ ],
+ "tick": [
+  {
+   "file": "tick-1",
+   "gain": 1.0
+  },
+  {
+   "file": "tick-2",
+   "gain": 1.0
+  },
+  {
+   "file": "tick-3",
+   "gain": 0.89
+  }
+ ],
+ "click": [
+  {
+   "file": "click-1",
+   "gain": 1.0
+  },
+  {
+   "file": "click-2",
+   "gain": 1.0
+  },
+  {
+   "file": "click-3",
+   "gain": 1.0
+  }
+ ],
+ "tinkle": [
+  {
+   "file": "tinkle-1",
+   "gain": 1.0
+  },
+  {
+   "file": "tinkle-2",
+   "gain": 1.0
+  }
  ],
  "freeze": [
-  6660,
-  500
+  {
+   "file": "freeze-1",
+   "gain": 0.31
+  }
+ ],
+ "glitch": [
+  {
+   "file": "glitch-1",
+   "gain": 0.3
+  },
+  {
+   "file": "glitch-2",
+   "gain": 0.2
+  }
+ ],
+ "buzz": [
+  {
+   "file": "buzz-1",
+   "gain": 1.0
+  },
+  {
+   "file": "buzz-2",
+   "gain": 0.8
+  },
+  {
+   "file": "buzz-3",
+   "gain": 0.81
+  },
+  {
+   "file": "buzz-4",
+   "gain": 1.0
+  }
+ ],
+ "machine": [
+  {
+   "file": "machine-1",
+   "gain": 0.79
+  },
+  {
+   "file": "machine-2",
+   "gain": 0.85
+  },
+  {
+   "file": "machine-3",
+   "gain": 1.0
+  },
+  {
+   "file": "machine-4",
+   "gain": 0.83
+  },
+  {
+   "file": "machine-5",
+   "gain": 1.0
+  }
+ ],
+ "latch": [
+  {
+   "file": "latch-1",
+   "gain": 0.77
+  },
+  {
+   "file": "latch-2",
+   "gain": 1.0
+  }
+ ],
+ "stamp": [
+  {
+   "file": "stamp-1",
+   "gain": 0.58
+  },
+  {
+   "file": "stamp-2",
+   "gain": 0.59
+  },
+  {
+   "file": "stamp-3",
+   "gain": 0.54
+  },
+  {
+   "file": "stamp-4",
+   "gain": 0.64
+  },
+  {
+   "file": "stamp-5",
+   "gain": 0.61
+  }
+ ],
+ "approve": [
+  {
+   "file": "approve-1",
+   "gain": 0.31
+  },
+  {
+   "file": "approve-2",
+   "gain": 0.37
+  }
+ ],
+ "bin": [
+  {
+   "file": "bin-1",
+   "gain": 0.95
+  },
+  {
+   "file": "bin-2",
+   "gain": 1.0
+  },
+  {
+   "file": "bin-3",
+   "gain": 1.0
+  },
+  {
+   "file": "bin-4",
+   "gain": 1.0
+  },
+  {
+   "file": "bin-5",
+   "gain": 1.0
+  }
+ ],
+ "fall": [
+  {
+   "file": "fall-1",
+   "gain": 0.38
+  },
+  {
+   "file": "fall-2",
+   "gain": 0.37
+  },
+  {
+   "file": "fall-3",
+   "gain": 0.36
+  },
+  {
+   "file": "fall-4",
+   "gain": 0.34
+  },
+  {
+   "file": "fall-5",
+   "gain": 0.36
+  }
+ ],
+ "overheat": [
+  {
+   "file": "overheat-1",
+   "gain": 0.44
+  }
+ ],
+ "alarm": [
+  {
+   "file": "alarm-1",
+   "gain": 0.3
+  },
+  {
+   "file": "alarm-2",
+   "gain": 0.31
+  }
+ ],
+ "uiClick": [
+  {
+   "file": "uiClick-1",
+   "gain": 1.0
+  },
+  {
+   "file": "uiClick-2",
+   "gain": 1.0
+  },
+  {
+   "file": "uiClick-3",
+   "gain": 1.0
+  }
+ ],
+ "uiHover": [
+  {
+   "file": "uiHover-1",
+   "gain": 1.0
+  },
+  {
+   "file": "uiHover-2",
+   "gain": 1.0
+  },
+  {
+   "file": "uiHover-3",
+   "gain": 1.0
+  }
+ ],
+ "uiBook": [
+  {
+   "file": "uiBook-1",
+   "gain": 1.0
+  },
+  {
+   "file": "uiBook-2",
+   "gain": 1.0
+  }
  ]
 }

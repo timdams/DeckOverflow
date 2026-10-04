@@ -41,7 +41,7 @@ Vereist: .NET 10 SDK. Vanuit de root van de repo:
 ```bash
 dotnet test tests/DeckOverflow.Core.Tests        # wat CI draait: de gedeelde regels
 dotnet test tests/DeckOverflow.CardHall.Tests    # en de deckbuilder
-dotnet run --project src/DeckOverflow.Web        # /?seed=255, of /?fight=golem voor één gevecht
+dotnet run --project src/DeckOverflow.Web        # /?seed=255, of /?fight=golem; lokaal ben je superuser
 python tools/cut_sheets.py                       # tekeningen opnieuw uitsnijden uit art/sheets/
 ```
 

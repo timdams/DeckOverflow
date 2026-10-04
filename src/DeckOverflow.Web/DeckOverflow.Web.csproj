@@ -16,6 +16,7 @@
     <ProjectReference Include="..\DeckOverflow.Core\DeckOverflow.Core.csproj" />
     <ProjectReference Include="..\DeckOverflow.CardHall\DeckOverflow.CardHall.csproj" />
     <ProjectReference Include="..\DeckOverflow.ControlRoom\DeckOverflow.ControlRoom.csproj" />
+    <ProjectReference Include="..\DeckOverflow.ConveyorBelt\DeckOverflow.ConveyorBelt.csproj" />
     <!-- Events en snapshots gaan via reflectie naar JSON: niets uit de motor wegtrimmen -->
     <TrimmerRootAssembly Include="DeckOverflow.Core" />
     <TrimmerRootAssembly Include="DeckOverflow.CardHall" />

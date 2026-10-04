@@ -373,7 +373,7 @@ public sealed class Combat
         Emit(new IntentRevealed(EnemyId, next.Expression, next.Hidden ? null : next.TryValueIn(Context())));
     }
 
-    /// <summary>Sneltoets W: de vijand valt meteen om, wat zijn type ook is. Blijft ook in playtests (beslist op 4 oktober 2026).</summary>
+    /// <summary>Sneltoets W: de vijand valt meteen om, wat zijn type ook is. De shell stuurt het alleen voor de superuser.</summary>
     private void HandleDebugWin()
     {
         double before = _enemy.Hp;

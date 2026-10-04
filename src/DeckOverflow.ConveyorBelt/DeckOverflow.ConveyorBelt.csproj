@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- De Lopende Band: de motor van de band (H6). Alleen Core als referentie, geen packages. -->
+  <PropertyGroup>
+    <RootNamespace>DeckOverflow.ConveyorBelt</RootNamespace>
+    <IsTrimmable>true</IsTrimmable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DeckOverflow.Core\DeckOverflow.Core.csproj" />
+  </ItemGroup>
+</Project>

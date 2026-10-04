@@ -14,7 +14,7 @@ Vijftien gevechten na elkaar, elk een eigen puzzel, vrij te herspelen om beter t
 4. **Lees de afloop.** Elke regel telt hoe vaak ze vuurde; na het duel krijgt een regel die nooit vuurde het label *nooit bereikt* (een regel erboven klopte altijd eerst) of *nooit waar*.
 5. **Verbeter.** Twee scores, elk apart: beurten en regels. Een histogram toont waar je bord staat tussen alle winnende borden.
 
-Je bord blijft per gevecht bewaard. Het volgende gevecht gaat open zodra je het vorige wint (`?all` zet alles open om te testen, `?level=sentry` springt naar één gevecht).
+Je bord blijft per gevecht bewaard. Het volgende gevecht gaat open zodra je het vorige wint (voor de [superuser](../../wereld/backend.md#superuser) staat alles open, en `?level=sentry` springt naar één gevecht).
 
 ## De natuurwetten
 
@@ -68,7 +68,7 @@ De histogrammen tellen borden tot 3 regels zonder EN, OF of NIET; met die operat
 - **Codex (H5):** *If - else if* (een hogere regel won terwijl een lagere ook klopte), *Relationele operators* (een vergelijking met `<` of `==` vuurde) en *Logische operators* (een regel met EN, OF of NIET vuurde). Telkens met de getallen van jouw eerste moment. Na een overwinning op een elite staat het verhaal van de bug in de uitslag.
 - **✗-register:** *Geen dode code laten staan* (winnen met een regel die nooit bekeken werd), *Niet stilstaan* (winnen terwijl je automaat een beurt stilstond), *Niet stoppen bij hoofdstuk 5* (het laatste gevecht), en verborgen: *Geen overuren maken* (de shift laten aflopen) en *Niet zonder kras terugbrengen* (winnen zonder HP te verliezen).
 - **Voortgang:** per gevecht je beste beurten, je beste aantal regels en je laatste bord (`PlayerProgress.ControlRoom`). Nog alleen in de browser, zie [todo](todo.md).
-- **Ontgrendelen:** de Controlekamer gaat open als de laatste baas van de Card Hall valt (zie [de wereld](../../wereld/README.md)).
+- **Ontgrendelen:** de laatste baas van de Card Hall geeft de sleutel. Voorlopig staat de Controlekamer op *binnenkort* (beslist op 4 oktober 2026): wie de sleutel heeft, krijgt een tease maar nog geen toegang, tot ze af is (zie [de wereld](../../wereld/README.md#ontgrendelen) en [todo](todo.md)). De [superuser](../../wereld/backend.md#superuser) kan er al in.
 
 ## Onder de motorkap
 

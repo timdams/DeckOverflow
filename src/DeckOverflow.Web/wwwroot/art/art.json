@@ -85,7 +85,8 @@
     "estimator": "actors/nesting-robot",
     "day-248": "actors/mars-orbiter",
     "giant": "actors/blueprint-twins",
-    "titan": "actors/flight-501"
+    "titan": "actors/flight-501",
+    "zune": "actors/zune"
   },
   "nodes": {
     "fight": "items/whack",

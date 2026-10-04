@@ -12,6 +12,7 @@ Deze repo is de enige bron voor het ontwerp. De docs zijn modulair: lees wat je 
 | [wereld/backend.md](wereld/backend.md), [wereld/supabase.md](wereld/supabase.md) | Hosting, accounts, klascode, data; het werkplan van de backend | auth, opslag, klassement |
 | [afdelingen/card-hall/](afdelingen/card-hall/README.md) | De deckbuilder: core loop, kernsysteem, drie acts, kaarten, events | de deckbuilder |
 | [afdelingen/control-room/](afdelingen/control-room/README.md) | Regels voor een automaat (H5): acht gevechten, natuurwetten, events | de Controlekamer |
+| [afdelingen/conveyor-belt/](afdelingen/conveyor-belt/README.md) | Band en machines op een rooster (H6): tien bestellingen, natuurwetten, wat de stage afspeelt | de Lopende Band |
 | [geschiedenis/spikes.md](geschiedenis/spikes.md) | Archief: spike 1 tot 4, succescriteria, de weg naar de MVP | (zelden nodig) |
 | [Architectuurschema](architectuur.svg) | De motor beslist, de stage speelt af | |
 | [Product sheet](product-sheet/product-sheet.html) | A4-pitch voor instellingen en financiers | |
@@ -30,9 +31,9 @@ Op 3 oktober 2026 is **The Card Hall** speelbaar: de deckbuilder met drie acts, 
 - **Bewuste intents** die rekenen met jouw blok, kaarten, energie of HP.
 - **De Codex**: 15 pagina's, geordend per hoofdstuk, met jouw moment als mini-animatie en een link naar het boek.
 - **Het ✗-register**: 11 panelen.
-- **De wereld**: teases, de onthulling en de fabrieksplattegrond met zes afdelingen. De Card Hall en, sinds 4 oktober 2026, de Controlekamer (acht gevechten, overgenomen uit spike 8) zijn speelbaar.
+- **De wereld**: teases, de onthulling en de fabrieksplattegrond met zes afdelingen. Alleen de Card Hall is open voor spelers. De Controlekamer (overgenomen uit spike 8) en de Lopende Band (tien bestellingen, overgenomen uit spike 9) zitten in het spel maar staan op **binnenkort** (beslist op 4 oktober 2026): de plattegrond toont al wat erin zit, en wie de laatste baas van de Card Hall verslaat, krijgt de sleutel van de Controlekamer, maar de deur blijft dicht tot de Controlekamer af is. De rest staat op **ooit**. De [superuser](wereld/backend.md#superuser) kan er al in.
 - **Score van een run** en een dagelijkse seed in de motor; accounts en klascodes in Supabase. Het klassement zelf (de Prikklok) is nog niet aangesloten.
-- **Tijdelijk:** de sneltoets W wint het lopende gevecht. Die moet eruit voor een playtest.
+- **De sneltoets W** wint het lopende gevecht, alleen voor de [superuser](wereld/backend.md#superuser).
 
 Nog niet met spelers getest. Eén bevinding van de ontwikkelaar zelf: Ink tegen een getal zette een run vast (opgelost met Scrap).
 
@@ -41,6 +42,7 @@ Nog niet met spelers getest. Eén bevinding van de ontwikkelaar zelf: Ink tegen 
 Kort, met de datum; de uitwerking staat in het document van het onderwerp.
 
 - 2 oktober 2026: Blazor WebAssembly met PixiJS; de AI-art in handleidingstijl is definitief; runlengte afgestemd op een lesblok.
+- 4 oktober 2026: afdelingen staan op vrijgegeven, binnenkort (gebouwd, dicht, met tease) of ooit (in de doos); de Controlekamer en de Lopende Band staan voorlopig op binnenkort.
 - 3 oktober 2026: elke afdeling krijgt haar eigen spelvorm rond één plattegrond; de Card Hall heeft drie acts, één per hoofdstuk; startpunten met vijf keer 1 uit 3; de Codex is het boek; het vangnet voor de onthulling na 5 gestarte runs; de score van een run; Scrap voor wachtende modifiers; een afdeling ontgrendel je zelf; een docent maakt alleen een klascode voor het klassement, niets anders; gemonteerd is drie gewonnen runs of de elite; de eerste voltooide dagelijkse run telt.
 
 ## Product sheet

@@ -14,6 +14,8 @@ builder.Services.AddSingleton<Strings>();
 builder.Services.AddSingleton<ArtStyle>();
 builder.Services.AddTransient<StageBridge>();
 builder.Services.AddTransient<ControlRoomStage>();
+builder.Services.AddTransient<ConveyorBeltStage>();
+builder.Services.AddScoped<Superuser>();
 
 // Met Supabase in appsettings.json synchroniseert de voortgang; zonder blijft alles in de browser.
 string? supabaseUrl = builder.Configuration["Supabase:Url"];

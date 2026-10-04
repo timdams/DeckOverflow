@@ -41,6 +41,9 @@ public sealed class PlayerProgress
     /// <summary>Per gevecht in de Controlekamer: je beste score en het bord waaraan je laatst werkte.</summary>
     public Dictionary<string, ControlRoomRecord> ControlRoom { get; init; } = [];
 
+    /// <summary>Per bestelling op de Lopende Band: je beste score en het bord waaraan je laatst werkte.</summary>
+    public Dictionary<string, ConveyorBeltRecord> ConveyorBelt { get; init; } = [];
+
     /// <summary>De hoogste act die je ooit bereikte: de startpunten.</summary>
     public int ReachedAct { get; set; } = 1;
 
@@ -77,3 +80,19 @@ public sealed class ControlRoomRecord
 
     public bool Beaten => BestTurns is not null;
 }
+
+/// <summary>
+/// Eén bestelling op de Lopende Band. Machines en tikken zijn aparte scores, zoals in Opus Magnum.
+/// Het bord staat als JSON per stuk, want een stuk kan een band, machine, poort of teller zijn.
+/// </summary>
+public sealed class ConveyorBeltRecord
+{
+    public int? BestMachines { get; set; }
+    public int? BestCycles { get; set; }
+    public List<BeltPiece> Board { get; set; } = [];
+
+    public bool Beaten => BestMachines is not null;
+}
+
+/// <summary>Eén stuk op het bord van de Lopende Band: waar het ligt, en wat het is.</summary>
+public sealed record BeltPiece(int X, int Y, string Json);

@@ -33,7 +33,7 @@ public sealed record EndTurn : ICommand;
 /// <summary>Veeg alle wachtende modifiers weg, tegen <see cref="Combat.Combat.ScrapCost"/> energie. Zo zit je nooit vast met tekst die niets kan raken.</summary>
 public sealed record ScrapModifiers : ICommand;
 
-/// <summary>Om snel te testen: win het lopende gevecht meteen (sneltoets W). Blijft ook in playtests (beslist op 4 oktober 2026).</summary>
+/// <summary>Om snel te testen: win het lopende gevecht meteen (sneltoets W). De shell stuurt het alleen voor de superuser.</summary>
 public sealed record DebugWin : ICommand;
 
 // Map

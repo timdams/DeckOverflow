@@ -1,0 +1,100 @@
+/* De Lopende Band: dezelfde kop en stappen als de Controlekamer (control-room.css), de rest hier, onder .belt-room.
+   Kleur blijft voorbehouden aan types. Groen en rood voor gelukt en mislukt zijn een bewuste uitzondering uit spike 9,
+   nog te beslissen (zie docs/afdelingen/conveyor-belt/todo.md). */
+
+.belt-room { --pass: #2e9d5b; --pass-bg: #e3f3e8; --fail: #d8432f; --fail-bg: #fbe5e1; }
+
+.belt-room .belt-floor {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(200px, 0.7fr) minmax(0, 2fr) minmax(240px, 0.9fr);
+  overflow: hidden;
+  gap: 14px;
+  padding: 12px 14px;
+}
+.belt-room section { min-height: 0; min-width: 0; overflow-y: auto; overflow-x: hidden; }
+.belt-room h2 { margin: 0 0 8px; font-size: 18px; }
+.belt-room h2 .tag { color: var(--zss); font-size: 12px; }
+.belt-room .hint { color: var(--muted); font-size: 12px; font-weight: 700; margin: 8px 0; }
+
+/* De gereedschapsbak en het paneel van een gekozen stuk */
+.belt-room .toolbox { margin: 0; padding: 0; border: none; display: block; }
+.belt-room .tools { display: flex; flex-direction: column; gap: 6px; }
+.belt-room .tool { display: flex; align-items: center; gap: 8px; text-align: left; padding: 6px 10px; box-shadow: 2px 2px 0 var(--ink); font-size: 13px; }
+.belt-room .tool .glyph { display: inline-grid; place-items: center; min-width: 46px; padding: 2px 6px; border: 1.5px solid var(--ink); border-radius: 4px; font-family: Consolas, "Courier New", monospace; font-size: 13px; background: var(--paper); }
+.belt-room .tool small { margin-left: auto; color: var(--muted); }
+.belt-room .tool.held { background: var(--ink); color: var(--white); }
+.belt-room .tool.held .glyph { background: var(--white); color: var(--ink); }
+.belt-room .tool.gate .glyph { border-radius: 12px; }
+.belt-room .tool.counter .glyph { border-style: double; border-width: 3px; }
+.belt-room .inspector { margin-top: 10px; padding: 10px; border: 2px solid var(--ink); border-radius: 6px; background: var(--white); display: flex; flex-direction: column; gap: 8px; }
+.belt-room .inspector h3 { margin: 0; font-size: 15px; }
+.belt-room .inspector .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13px; font-weight: 700; }
+.belt-room .inspector .dirs { display: flex; gap: 3px; }
+.belt-room .clear { margin-top: 10px; }
+.belt-room button.tiny { padding: 2px 7px; font-size: 12px; border-width: 1.5px; box-shadow: 1.5px 1.5px 0 var(--ink); }
+.belt-room button.tiny.on { background: var(--ink); color: var(--white); }
+
+/* De stage en de knoppen eronder */
+.belt-room .belt-stage { width: 100%; height: clamp(320px, 58vh, 620px); border: 2px solid var(--ink); border-radius: 6px; overflow: hidden; background: var(--paper); }
+.belt-room .arena .controls .play-big { padding: 8px 22px; }
+.belt-room .belt-timeline { display: flex; align-items: center; gap: 10px; margin-top: 8px; font-size: 12px; font-weight: 700; color: var(--muted); }
+.belt-room .belt-timeline input { flex: 1; accent-color: var(--ink); }
+.belt-room .ending { margin: 8px 0 0; font-weight: 700; font-size: 14px; }
+.belt-room .ending.forever, .belt-room .ending.felloff, .belt-room .ending.wrong { border-left: 4px solid var(--ink); padding-left: 8px; }
+
+/* De bestelbon van het front: papier met een perforatie bovenaan */
+.belt-room .order { background: var(--white); border: 2px solid var(--ink); padding: 12px 14px 14px; box-shadow: 3px 3px 0 var(--ink); background-image: radial-gradient(circle at 8px 0, var(--paper) 4px, transparent 5px); background-size: 16px 8px; background-repeat: repeat-x; align-self: start; }
+.belt-room .order p { margin: 0 0 10px; font-size: 14px; }
+.belt-room .order .order-head { margin: 4px 0 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+
+table.cases { border-collapse: collapse; width: 100%; font-family: Consolas, "Courier New", monospace; font-size: 13px; }
+table.cases th { text-align: left; font-family: var(--font); font-size: 12px; color: var(--muted); border-bottom: 2px solid var(--ink); padding: 4px; }
+table.cases td { padding: 5px 4px; border-bottom: 1px solid var(--rule); }
+table.cases tr { cursor: pointer; }
+table.cases tr.current { background: var(--shade); }
+table.cases td.mark { position: relative; width: 42%; font-family: var(--font); font-weight: 900; }
+table.cases tr.pass td { background: var(--pass-bg); }
+table.cases tr.fail td { background: var(--fail-bg); }
+table.cases .ok { position: relative; display: inline-block; color: var(--pass); font-size: 22px; line-height: 1; }
+table.cases .wait { color: var(--muted); }
+table.cases .stamp { display: inline-block; color: var(--fail); border: 3px solid var(--fail); border-radius: 4px; padding: 0 6px; font-size: 14px; letter-spacing: 0.1em; transform: rotate(-8deg); }
+table.cases .why { color: var(--fail); font-family: Consolas, "Courier New", monospace; font-size: 12px; }
+
+/* Gelukt: stoer trillen en vonken. Mislukt: een rode stempel die neerkomt */
+table.cases tr.fresh.pass td { animation: belt-brag 520ms ease-out; }
+table.cases tr.fresh.pass .ok { animation: belt-bounce 520ms cubic-bezier(.2, 1.8, .4, 1); }
+table.cases .burst { position: absolute; left: 50%; top: 50%; width: 0; height: 0; pointer-events: none; }
+table.cases .burst i { position: absolute; left: -3px; top: -3px; width: 6px; height: 6px; border-radius: 50%; background: var(--pass); transform: rotate(var(--a)) translateX(0); animation: belt-spark 750ms ease-out forwards; }
+table.cases .burst i:nth-child(3n) { background: var(--zss); }
+table.cases .burst i:nth-child(3n+1) { background: var(--byte); }
+table.cases tr.fresh.fail .stamp { animation: belt-stamp 380ms cubic-bezier(.2, 1.6, .4, 1); }
+table.cases tr.fresh.fail td { animation: belt-thud 380ms ease-out; }
+@keyframes belt-spark { 0% { opacity: 1; transform: rotate(var(--a)) translateX(0) scale(1.4); } 100% { opacity: 0; transform: rotate(var(--a)) translateX(var(--d)) scale(0.4); } }
+@keyframes belt-bounce { 0% { transform: scale(0.2); } 100% { transform: scale(1); } }
+@keyframes belt-brag { 0%, 100% { transform: none; } 20% { transform: translateX(-4px) rotate(-1deg); } 40% { transform: translateX(4px) rotate(1deg); } 60% { transform: translateX(-3px); } 80% { transform: translateX(2px); } }
+@keyframes belt-stamp { 0% { opacity: 0; transform: rotate(-8deg) scale(2.6); } 100% { opacity: 1; transform: rotate(-8deg) scale(1); } }
+@keyframes belt-thud { 0% { transform: translateY(-3px); } 50% { transform: translateY(2px); } 100% { transform: none; } }
+
+/* Alles juist: het resultaat springt op als een stempel */
+.belt-room .belt-result { margin-top: 14px; padding: 10px 12px; border: 2.5px solid var(--ink); border-radius: 6px; background: var(--white); box-shadow: 4px 4px 0 var(--ink); }
+.belt-room .belt-result h3 { margin: 0 0 6px; }
+.belt-room .belt-result p { margin: 0 0 6px; }
+.belt-room .belt-result .best { color: var(--muted); font-weight: 700; font-size: 13px; }
+.belt-room .belt-result.won { border-color: var(--pass); box-shadow: 4px 4px 0 var(--pass); animation: belt-pop 450ms cubic-bezier(.2, 1.6, .4, 1); }
+.belt-room .belt-result.won h3 { color: var(--pass); }
+.belt-room .belt-result.lost { border-color: var(--fail); box-shadow: 4px 4px 0 var(--fail); }
+.belt-room .belt-result.lost h3 { color: var(--fail); }
+.belt-room .belt-result .codex-bug { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--rule); font-size: 13px; }
+.belt-room .belt-result .codex-label { color: var(--zss); font-weight: 700; margin-right: 6px; }
+@keyframes belt-pop { 0% { transform: scale(0.6) rotate(-3deg); opacity: 0; } 100% { transform: none; opacity: 1; } }
+
+@media (max-width: 1150px) and (min-height: 501px) { .belt-room .belt-floor { grid-template-columns: 1fr 1fr; overflow-y: auto; } .belt-room .arena { grid-column: 1 / -1; order: -1; } }
+@media (max-height: 500px) {
+  .belt-room .belt-floor { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.6fr) minmax(0, 0.9fr); padding: 6px 8px; gap: 8px; }
+  .belt-room .tool { padding: 4px 6px; font-size: 11px; }
+  .belt-room .tool .glyph { min-width: 34px; font-size: 11px; }
+  .belt-room .belt-stage { height: 60vh; min-height: 0; }
+  .belt-room .order p { font-size: 12px; }
+}

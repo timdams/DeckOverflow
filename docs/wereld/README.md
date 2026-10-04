@@ -27,7 +27,7 @@ Vier regels houden het één spel:
 
 **De lijn met visuele programmeeromgevingen.** Een regel in de Controlekamer of een machine op de band is een strategische keuze over wat er moet gebeuren, geen statement dat je regel per regel uitschrijft. Het voorbeeld is Opus Magnum, niet Scratch. Het grootste risico zit in de Lopende Band: die mag niet afglijden naar een opdrachtenlijstje. Dezelfde ontwerptoets geldt: zou iemand zonder interesse in programmeren dit willen spelen?
 
-De Card Hall en de Controlekamer zijn gebouwd (die laatste op 4 oktober 2026, zie [haar map](../afdelingen/control-room/README.md)). De Lopende Band bestaat als [spike 9](../../spikes/09-lopende-band/README.md): band en machines op een rooster, tien puzzels met testgevallen; eerst testen met spelers, dan pas een afdeling. De tabel is een richting, geen belofte: elke afdeling moet eerst als spel leuk zijn. De volgende spike is een klein gambit-prototype voor de Controlekamer, omdat dat genre het verst van de deckbuilder ligt, goedkoop te bouwen is en meteen test of gambits als intents in de deckbuilder werken.
+De Card Hall, de Controlekamer (op 4 oktober 2026, zie [haar map](../afdelingen/control-room/README.md)) en de Lopende Band (op 4 oktober 2026 overgenomen uit [spike 9](../../spikes/09-lopende-band/README.md), zie [haar map](../afdelingen/conveyor-belt/README.md)) zijn gebouwd. Alleen de Card Hall is open voor spelers: de andere twee staan op binnenkort (zie [Ontgrendelen](#ontgrendelen)) tot de Controlekamer af is. De tabel is een richting, geen belofte: elke afdeling moet eerst als spel leuk zijn. De volgende spike is een klein gambit-prototype voor de Controlekamer, omdat dat genre het verst van de deckbuilder ligt, goedkoop te bouwen is en meteen test of gambits als intents in de deckbuilder werken.
 
 ## De wereld: de fabrieksplattegrond
 
@@ -35,15 +35,17 @@ De plattegrond verschijnt pas na [de onthulling](#de-onthulling). Tussen de afde
 
 **Gebouwd op 3 oktober 2026.** De plattegrond, de onthulling en een deel van de teases staan in het spel:
 
-- De afdelingen zijn genummerd naar het eerste hoofdstuk: ② The Card Hall (H2 tot H4, speelbaar), ⑤ The Control Room (H5, speelbaar), ⑥ The Conveyor Belt, ⑦ The Tool Wall, ⑧ The Warehouse en ⑨ The Blueprint Office (H9 en verder), die laatste vier nog in de doos.
+- De afdelingen zijn genummerd naar het eerste hoofdstuk: ② The Card Hall (H2 tot H4, open), ⑤ The Control Room (H5) en ⑥ The Conveyor Belt (H6), allebei binnenkort, ⑦ The Tool Wall, ⑧ The Warehouse en ⑨ The Blueprint Office (H9 en verder), die laatste drie ooit: nog in de doos.
 - De onderdelen van een afdeling zijn de Codex-pagina's van haar hoofdstukken. De tekening van een afdeling wordt grijs-naar-ingekt naarmate er meer onderdelen uitgepakt zijn; onder de helft krijgt ze de sticker *loose parts*.
-- De Controlekamer gaat open als de laatste baas van de Card Hall valt. Wie de onthulling via het vangnet kreeg, ziet ze nog dicht.
+- **Drie soorten dicht** (beslist op 4 oktober 2026, `Availability` in `World/Departments.cs`). *Vrijgegeven:* je verdient de sleutel en de deur gaat open. *Binnenkort:* gebouwd maar nog dicht; de plattegrond toont al naam, spelvorm, uitleg en onderdelen (de tease), en zegt waar de sleutel ligt. *Ooit:* gestippeld, "zit nog in de doos". Een afdeling vrijgeven is één regel in `Departments.All`.
+- **De sleutel van de Controlekamer** verdien je met de laatste baas van de Card Hall, ook nu ze op binnenkort staat: je krijgt een melding "Sleutel gevonden", een sticker op de plattegrond, en de dichte pagina zegt dat je de sleutel al hebt. De sleutel blijft bewaard (`PlayerProgress.Unlocks`), dus zodra de Controlekamer vrijkomt, kan wie hem heeft meteen binnen. Wie de onthulling via het vangnet kreeg, heeft hem nog niet.
+- De Lopende Band heeft nog geen sleutel: waarschijnlijk de laatste baas van de Controlekamer, zoals de Controlekamer na de Card Hall.
 - De Prikklok staat er al, uitgeschakeld tot er een backend is.
 - Onthulling: de laatste baas van de Card Hall verslaan, of het vangnet na **5 gestarte runs** (een barst op het titelscherm die je zelf aanklikt).
 - Teases die er al zijn: het paginanummer op de map (`p. 2 / 18`), een gestippelde deur met een 5, een zin op het doodscherm (*Behind the door marked 5, something rattles.*) en de dichtgeniete Codex-tabbladen.
 - **Onderdelen die nergens voor dienen:** een kist bevat in de helft van de gevallen een onderdeel (een kaart met een regel, een schakel van een lopende band, een haak voor een gereedschapsbord, een etiket voor een bak), elk met "Belongs to step N". Ze gaan in een zakje dat je in de bovenbalk opent, en blijven over runs heen. Na de onthulling staan ze bij hun afdeling op de plattegrond.
 - **De vreemde vijand:** *The Stray Automaton*, ontsnapt uit de Controlekamer, zit in de gewone gevechten van act 1 en 2. Zijn intent is een regel, `block > 0 ? 16 : 8`: wie blokt, krijgt het dubbel.
-- Voor het ontwikkelen toont `?world` de plattegrond, ook voor de onthulling.
+- De [superuser](backend.md#superuser) ziet de plattegrond altijd, ook voor de onthulling.
 
 ### Eén scherm
 

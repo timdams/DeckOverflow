@@ -727,6 +727,22 @@ button.small { padding: 6px 12px; font-size: 12px; }
   letter-spacing: -0.04em;
 }
 .title-word span { color: var(--zss); }
+/* Het spel is nog in ontwikkeling: een schuine sticker naast de titel */
+.title-word .beta-badge {
+  display: inline-block;
+  margin-left: 0.25em;
+  padding: 0.12em 0.45em;
+  vertical-align: top;
+  font-size: max(14px, 0.2em);
+  letter-spacing: 0.08em;
+  line-height: 1.1;
+  text-transform: uppercase;
+  color: var(--paper);
+  background: var(--ink);
+  border: 2px solid var(--ink);
+  box-shadow: 2px 2px 0 var(--zss);
+  transform: rotate(-8deg);
+}
 
 .tagline { margin: 0; font-size: 18px; color: var(--ink); max-width: 340px; }
 
@@ -1004,6 +1020,13 @@ a.play-big.as-link { display: inline-block; text-decoration: none; font-size: 18
 /* De kamer van een afdeling: past in haar kaart; dicht is ze een vage schets achter een stippellijn */
 .department .dept-art { object-fit: contain; background: var(--paper); }
 .department .dept-art.sketch { filter: grayscale(1); opacity: 0.18; border: 2px dashed var(--rule); }
+/* Binnenkort: gebouwd maar nog dicht, al beter te zien dan wat ooit komt */
+.department.boxed.soon { color: var(--ink); border-color: var(--ink); }
+.department.boxed.soon .step { background: var(--ink); }
+.department.boxed.soon small { color: var(--ink); font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; }
+.department.soon .dept-art.sketch { opacity: 0.45; }
+.department .sticker.key { background: var(--ink); }
+.dept-panel .soon-note { padding: 8px 10px; border: 2px dashed var(--ink); font-weight: 700; }
 
 /* Het zakje met onderdelen die nergens voor dienen */
 .trinket-found { font-style: italic; color: var(--ink); max-width: 460px; }
