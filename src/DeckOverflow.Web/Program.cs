@@ -13,6 +13,7 @@ builder.Services.AddScoped(_ => new HttpClient { BaseAddress = new Uri(builder.H
 builder.Services.AddSingleton<Strings>();
 builder.Services.AddSingleton<ArtStyle>();
 builder.Services.AddTransient<StageBridge>();
+builder.Services.AddTransient<ControlRoomStage>();
 
 // Met Supabase in appsettings.json synchroniseert de voortgang; zonder blijft alles in de browser.
 string? supabaseUrl = builder.Configuration["Supabase:Url"];

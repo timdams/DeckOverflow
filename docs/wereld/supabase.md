@@ -77,6 +77,8 @@ Na de migraties: de security advisors van Supabase draaien en alles oplossen.
 - Een score kan alleen voor vandaag of gisteren (UTC), voor een run die over middernacht loopt.
 - Zonder sessie (rol `anon`) kan je niets, ook het histogram niet: elke speler heeft minstens een gastsessie.
 
+**Erbij op 4 oktober 2026:** de migratie `feedback` (tabel `feedback`, type `feedback_verdict`), uitgevoerd via de connector. Spelers mogen alleen `department`, `subject`, `verdict` en `comment` invullen; `user_id` vult de database met `auth.uid()`. Er is geen leesregel. Getest tegen het echte project als gast: invoegen lukt, lezen geeft `permission denied`, een eigen `user_id` meegeven wordt geweigerd, een rij zonder hartje en zonder bericht ook. De security advisors melden niets nieuws.
+
 ## Stap 4: inloggen met een gebruikersnaam of e-mail
 
 Beslist op 3 oktober 2026: geen Edge Function, geen tabel `accounts`. Supabase logt in met een e-mailadres, en het spel heeft één veld "gebruikersnaam of e-mail":

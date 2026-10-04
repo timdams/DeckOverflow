@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- De Controlekamer: de regelmotor van de gambits (H5). Alleen Core als referentie, geen packages. -->
+  <PropertyGroup>
+    <RootNamespace>DeckOverflow.ControlRoom</RootNamespace>
+    <IsTrimmable>true</IsTrimmable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DeckOverflow.Core\DeckOverflow.Core.csproj" />
+  </ItemGroup>
+</Project>

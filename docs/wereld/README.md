@@ -1,23 +1,24 @@
 # De wereld
 
-Alles rond de afdelingen: welke afdelingen er zijn, de fabrieksplattegrond, ontgrendelen, mastery, de Prikklok en de onthulling. Aparte documenten: de [Codex](codex.md), het [✗-register](x-register.md) en de [backend](backend.md) (accounts, klascode, data, hosting).
+Alles rond de afdelingen: welke afdelingen er zijn, de fabrieksplattegrond, ontgrendelen, mastery, de Prikklok en de onthulling. Aparte documenten: de [Codex](codex.md), het [✗-register](x-register.md), de [backend](backend.md) (accounts, klascode, data, hosting) en de [woordenlijst](woordenlijst.md) (de termen en de toon van *Zie Scherp Scherper* voor de Nederlandse spelteksten).
 
 ## Afdelingen: elk hoofdstuk zijn eigen spelvorm
 
 De game volgt Zie Scherp Scherper, en elk blok hoofdstukken is een afdeling van de fabriek. Een deckbuilder is perfect voor types en expressies, omdat een kaart een waarde is: je stelt waarden samen en de game doet de control flow. Voor `if` en loops wringt dat: daar moet de speler zelf regels opstellen die de game uitvoert. Daarom kiest elke afdeling de spelvorm die dezelfde vorm heeft als het concept.
 
-Drie regels houden het één spel:
+Vier regels houden het één spel:
 
 1. **De vorm volgt het concept.** Een genre komt er alleen in als zijn kernmechaniek het concept *is*: in een gambit-systeem wint de eerste regel die klopt, en dat is een `else if`-keten.
 2. **De natuurwetten blijven gelden.** In elke afdeling kapt `int` nog altijd af en loopt `byte` over. Wat je in de Vatenvallei leerde, werkt overal.
 3. **De afdelingen voeden elkaar.** Wat je in de ene afdeling bouwt, duikt op in de andere: gambits uit de Controlekamer worden intents van vijanden in de deckbuilder, een blueprint uit de Gereedschapsmuur wordt een kaart. Wie `if` snapt, leest vijanden beter.
+4. **Elke afdeling bouwt op wat ervoor kwam** (beslist op 4 oktober 2026). Ze begint met de basis van haar eigen hoofdstuk en wordt stelselmatig complexer, tot puzzels die ook kennis uit vorige hoofdstukken vragen: in de Controlekamer beslissen afkappen en overflow uit H2 welke regels werken. Zo herhaalt de stof zich zonder ooit een herhalingsoefening te zijn.
 
 | Afdeling | Hoofdstuk | Spelvorm | Waarom deze vorm | Echte bug |
 | --- | --- | --- | --- | --- |
 | The Card Hall, act 1: De Vatenvallei | H2 basis | Roguelike deckbuilder | Getallen: types, afkappen, overflow, deling, voorrang; Omgieten als ervaring | Level 256, The Counter |
 | The Card Hall, act 2: De Drukkerij | H3 tekst | Roguelike deckbuilder | Tekst: `string` plakt, `char` is een getal, `Length`, Unicode | Effective Power, Y2K |
 | The Card Hall, act 3: De Gieterij | H4 werken met data | Roguelike deckbuilder | Expliciet omzetten: cast kapt af, Convert rondt af, Parse kan crashen, Math als gereedschap | Flight 501, The Index |
-| De Controlekamer | H5 beslissingen | Gambits: je stelt de regels van een automaat op ("als een vijand onder 10 HP staat: aanvallen") en kijkt dan hoe hij vecht | De eerste regel die klopt wint: volgorde, `else if`, logische operatoren. `switch` is een tabel van gevallen | nog te kiezen |
+| De Controlekamer | H5 beslissingen | Gambits: je stelt de regels van een automaat op ("als een vijand onder 10 HP staat: aanvallen") en kijkt dan hoe hij vecht | De eerste regel die klopt wint: volgorde, `else if`, logische operatoren. `switch` is een tabel van gevallen | goto fail (Apple, 2014), Knight Capital (2012) |
 | De Lopende Band | H6 loops | Automatiseringspuzzel: banden en machines die herhalen tot een voorwaarde waar is | Herhaling met een stopvoorwaarde; een band die nooit stopt, is de oneindige lus | Zune (2008): een `while`-lus die op 31 december van een schrikkeljaar nooit stopte |
 | De Gereedschapsmuur | H7 methoden | Dezelfde band, met blueprints: een machine één keer bouwen en overal stempelen, met instelknoppen | Hergebruik en parameters; een blueprint wordt ook een kaart in de deckbuilder | nog te kiezen |
 | Het Magazijn | H8 arrays | Grid en inventaris: vakken met een nummer, effecten op de buren | Index, lengte, off-by-one dat je meteen ziet | Heartbleed (2014): lezen voorbij het einde van een array |
@@ -26,7 +27,7 @@ Drie regels houden het één spel:
 
 **De lijn met visuele programmeeromgevingen.** Een regel in de Controlekamer of een machine op de band is een strategische keuze over wat er moet gebeuren, geen statement dat je regel per regel uitschrijft. Het voorbeeld is Opus Magnum, niet Scratch. Het grootste risico zit in de Lopende Band: die mag niet afglijden naar een opdrachtenlijstje. Dezelfde ontwerptoets geldt: zou iemand zonder interesse in programmeren dit willen spelen?
 
-Alleen de Card Hall is gebouwd, en de Controlekamer als prototype. De tabel is een richting, geen belofte: elke afdeling moet eerst als spel leuk zijn. De volgende spike is een klein gambit-prototype voor de Controlekamer, omdat dat genre het verst van de deckbuilder ligt, goedkoop te bouwen is en meteen test of gambits als intents in de deckbuilder werken.
+De Card Hall en de Controlekamer zijn gebouwd (die laatste op 4 oktober 2026, zie [haar map](../afdelingen/control-room/README.md)). De Lopende Band bestaat als [spike 9](../../spikes/09-lopende-band/README.md): band en machines op een rooster, tien puzzels met testgevallen; eerst testen met spelers, dan pas een afdeling. De tabel is een richting, geen belofte: elke afdeling moet eerst als spel leuk zijn. De volgende spike is een klein gambit-prototype voor de Controlekamer, omdat dat genre het verst van de deckbuilder ligt, goedkoop te bouwen is en meteen test of gambits als intents in de deckbuilder werken.
 
 ## De wereld: de fabrieksplattegrond
 
@@ -34,7 +35,7 @@ De plattegrond verschijnt pas na [de onthulling](#de-onthulling). Tussen de afde
 
 **Gebouwd op 3 oktober 2026.** De plattegrond, de onthulling en een deel van de teases staan in het spel:
 
-- De afdelingen zijn genummerd naar het eerste hoofdstuk: ② The Card Hall (H2 tot H4, speelbaar), ⑤ The Control Room (H5, de gambit-spike als prototype), ⑥ The Conveyor Belt, ⑦ The Tool Wall, ⑧ The Warehouse en ⑨ The Blueprint Office (H9 en verder), die laatste vier nog in de doos.
+- De afdelingen zijn genummerd naar het eerste hoofdstuk: ② The Card Hall (H2 tot H4, speelbaar), ⑤ The Control Room (H5, speelbaar), ⑥ The Conveyor Belt, ⑦ The Tool Wall, ⑧ The Warehouse en ⑨ The Blueprint Office (H9 en verder), die laatste vier nog in de doos.
 - De onderdelen van een afdeling zijn de Codex-pagina's van haar hoofdstukken. De tekening van een afdeling wordt grijs-naar-ingekt naarmate er meer onderdelen uitgepakt zijn; onder de helft krijgt ze de sticker *loose parts*.
 - De Controlekamer gaat open als de laatste baas van de Card Hall valt. Wie de onthulling via het vangnet kreeg, ziet ze nog dicht.
 - De Prikklok staat er al, uitgeschakeld tot er een backend is.
@@ -77,6 +78,17 @@ De afdeling op de plattegrond groeit mee: hoe meer onderdelen gemonteerd, hoe me
 - Elke spelvorm meet iets eigens: in de deckbuilder winst en resterende HP, in de Controlekamer het aantal regels, op de band het aantal machines en cycli.
 - **De score van een run** (beslist op 3 oktober 2026, `RunScore` in de motor): 100 per verdieping die je voorbij bent, over alle acts heen (een volledige run is 21 verdiepingen). Wie uitspeelt, krijgt er 10 per resterende HP bij, en 5 per beurt onder de 150 (alle gevechten samen). Verliezen geeft geen bonus, dus snel sterven loont nooit, en een gewonnen run scoort altijd meer dan een verloren run. Het eindscherm toont de som, geen geheime formule. De server rekent hem na met `Run.Replay`.
 - **Histogram in plaats van ranglijst**, zoals bij Opus Magnum: je ziet waar je oplossing valt tegenover de klas, niet dat je 27ste van 28 bent. Een top 10 van bijnamen kan ernaast, maar het histogram is de standaard.
+
+### Opties: dezelfde knop in elke afdeling
+
+Elke afdeling heeft linksboven dezelfde knop (☰) naar hetzelfde optiescherm, de component `World/OptionsMenu.razor` (sinds 4 oktober 2026). Op een scherm staat de knop vooraan in de bovenbalk, in een gevecht of puzzel in de lege hoek linksboven. Het scherm biedt:
+
+- **Main menu:** terug naar het titelscherm of de plattegrond, zonder de run af te breken. Daar staat dan "Continue run", met waar je was. Een nieuwe run starten gooit de wachtende weg.
+- **Restart run:** dezelfde run opnieuw, met dezelfde seed en startpunt. Vraagt eerst bevestiging.
+- **Abandon run:** de run stopt en telt nergens mee (geen score, geen verlies). Vraagt eerst bevestiging.
+- **Sound:** aan of uit, onthouden op dit toestel (`deckoverflow.muted`). De toets M doet hetzelfde.
+
+Zolang een animatie loopt, kan je het geluid omzetten, maar de run niet verlaten. Een nieuwe afdeling gebruikt dezelfde component en vult de callbacks in voor haar eigen run of puzzel.
 
 ## De onthulling
 
@@ -124,11 +136,11 @@ Beslist: een moment in een gewonnen gevecht in drie verschillende runs, of de el
 
 ## De wereld
 
-- [ ] **De Controlekamer** als tweede echte afdeling. Spike 8 staat los; eerst testen of spelers de regels van een automaat lezen. Een echte bug voor H5 kiezen.
+- [ ] **De Controlekamer met spelers testen**: lezen ze de regels van een automaat, en ontdekken ze dat de volgorde telt? Gebouwd op 4 oktober 2026.
 - [ ] **Gambits als intents** in de deckbuilder: de Stray is de eerste. Meer pas als spike 8 toont dat spelers ze lezen.
 - [ ] **Spelvorm voor OOP**: tower defense of eigen kaarten ontwerpen.
 - [ ] **De plattegrond** als papieren mock testen: ziet een student zonder uitleg waar er te oefenen valt?
-- [ ] **Echte bugs** kiezen voor de Controlekamer (H5) en de Gereedschapsmuur (H7).
+- [ ] **Echte bugs** kiezen voor de Gereedschapsmuur (H7). De Controlekamer heeft goto fail en Knight Capital.
 
 ## De Prikklok
 

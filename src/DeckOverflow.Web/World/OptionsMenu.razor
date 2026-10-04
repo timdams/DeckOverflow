@@ -1,0 +1,46 @@
+@inject Strings S
+
+@* Het optiescherm, hetzelfde in elke afdeling: terug naar het hoofdmenu (de run wacht), de run
+   opgeven of opnieuw beginnen, het geluid en de taal. Wat een run afbreekt, vraagt eerst bevestiging. *@
+
+<div class="modal" @onclick="OnClose">
+    <div class="modal-body story-card options" @onclick:stopPropagation="true">
+        <h2>@S.T("ui.options.title")</h2>
+
+        @if (_confirm is { } confirm)
+        {
+            <p>@S.T($"ui.options.{confirm}.confirm")</p>
+            <div class="options-confirm">
+                <button class="secondary" @onclick="() => _confirm = null">@S.T("ui.cancel")</button>
+                <button class="danger" @onclick="ConfirmedAsync">@S.T($"ui.options.{confirm}.yes")</button>
+            </div>
+        }
+        else
+        {
+            <div class="choices column">
+                <button disabled="@(!CanLeave)" @onclick="OnMainMenu">@S.T("ui.options.main-menu")<small>@S.T("ui.options.main-menu.detail")</small></button>
+                <button disabled="@(!CanLeave)" @onclick="@(() => _confirm = "restart")">@S.T("ui.options.restart")<small>@S.T("ui.options.restart.detail")</small></button>
+                <button disabled="@(!CanLeave)" @onclick="@(() => _confirm = "abandon")">@S.T("ui.options.abandon")<small>@S.T("ui.options.abandon.detail")</small></button>
+                <button @onclick="OnToggleSound">@S.T(SoundOn ? "ui.options.sound-on" : "ui.options.sound-off")</button>
+            </div>
+            <LanguageToggle />
+            <button class="play-big" @onclick="OnClose">@S.T("ui.options.resume")</button>
+        }
+    </div>
+</div>
+
+@code {
+    /// <summary>Of de run nu verlaten kan worden; niet terwijl een animatie nog loopt.</summary>
+    [Parameter] public bool CanLeave { get; set; } = true;
+    [Parameter] public bool SoundOn { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnMainMenu { get; set; }
+    [Parameter] public EventCallback OnRestart { get; set; }
+    [Parameter] public EventCallback OnAbandon { get; set; }
+    [Parameter] public EventCallback OnToggleSound { get; set; }
+
+    /// <summary>Welke bevestiging open staat: <c>restart</c> of <c>abandon</c>.</summary>
+    private string? _confirm;
+
+    private Task ConfirmedAsync() => _confirm == "restart" ? OnRestart.InvokeAsync() : OnAbandon.InvokeAsync();
+}

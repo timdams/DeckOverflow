@@ -25,6 +25,10 @@ public static class Bestiary
     /// <summary>Zijn schild is alleen open bij elke derde kaart van je beurt: <c>cards % 3 == 0</c>.</summary>
     public const string RhythmTurtle = "rhythm-turtle";
     public const string Counter = "counter";
+    /// <summary>Twee schutters met één teller: <c>shots++ + ++shots</c>. De ene slaat met de oude waarde, de andere met de nieuwe.</summary>
+    public const string TwinShooters = "twin-shooters";
+    /// <summary>Een elite die je alleen raakt als zijn naam klopt: <c>Shadow</c> is niet <c>shadow</c>, en <c>2shadow</c> compileert niet.</summary>
+    public const string Nameless = "nameless";
     /// <summary>Een tease: een robotje dat ontsnapte uit de Controlekamer, met een regel als intent.</summary>
     public const string Stray = "stray";
 
@@ -41,11 +45,11 @@ public static class Bestiary
     public const string Label = "label";
 
     /// <summary>Alle elites, over de acts heen. Welke elite in welke act zit, staat in <see cref="Runs.Acts"/>.</summary>
-    public static readonly IReadOnlyList<string> Elites = [Colossus, Golem, Counter, EffectivePower, Y2K, Index];
+    public static readonly IReadOnlyList<string> Elites = [Colossus, Golem, Counter, Nameless, EffectivePower, Y2K, Index];
 
     public static readonly IReadOnlyList<string> Bosses = [Reckoner, Typesetter, Caster];
 
-    public static readonly IReadOnlyList<string> All = [Slime, Knight, Ghost, Dripper, Jug, Colossus, Golem, Reckoner, Splitter, Counter, Stray, BoolGhost, RhythmTurtle, EffectivePower, Y2K, TypeBlock, PaperGolem, Typesetter, Ingot, Rounder, Index, Caster, Label];
+    public static readonly IReadOnlyList<string> All = [Slime, Knight, Ghost, Dripper, Jug, Colossus, Golem, Reckoner, Splitter, Counter, Stray, BoolGhost, RhythmTurtle, TwinShooters, Nameless, EffectivePower, Y2K, TypeBlock, PaperGolem, Typesetter, Ingot, Rounder, Index, Caster, Label];
 
     public static bool Exists(string? key) => key is not null && All.Contains(key);
 
@@ -72,7 +76,11 @@ public static class Bestiary
         // Zijn tweede aanval straft energie die je overhoudt.
         Dripper => new(
             new CombatantSetup(Dripper, ValueKind.Double, Hp: 19.5, MaxHp: 19.5),
-            [new("5 * 1.5", 5 * 1.5), Intent.Live("energy * 4 + 2.5", c => c.Energy * 4 + 2.5)]),
+            [new("5 * 1.5", 5 * 1.5), Intent.Live("energy * 4 + 2.5", c => c.Energy * 4 + 2.5) with
+            {
+                // Met de haakjes rond 4 + 2.5 kost elke energie die je overhoudt 6.5, maar zonder energie is het 0
+                Regrouped = Intent.Live("energy * (4 + 2.5)", c => c.Energy * (4 + 2.5)),
+            }]),
 
         // Effective Power (iPhone, 2015): zijn HP is een bericht. Elke treffer plakt eraan vast,
         // en vanaf 32 tekens crasht het bericht. "2.5" plakt drie tekens, "6" maar één.
@@ -119,6 +127,27 @@ public static class Bestiary
             [Intent.Live("turn % 2 == 0 ? 16 : 4", c => c.Turn % 2 == 0 ? 16 : 4)],
             OpenEvery: 3),
 
+        // De Twin Shooters: twee schutters, één teller. De linkse slaat met shots++ (de oude waarde),
+        // de rechtse met ++shots (eerst optellen). Met shots = 1 is dat 1 + 3; daarna is shots 3.
+        // Elke beurt slaan ze 4 harder, dus wie treuzelt, krijgt het zwaar.
+        TwinShooters => new(
+            new CombatantSetup(TwinShooters, ValueKind.Int, Hp: 34, MaxHp: 34),
+            [Intent.Live("shots++ + ++shots", c => { int shots = c.Shots; return shots++ + ++shots; }) with
+            {
+                Fill = c => $"{c.Shots} + {c.Shots + 2}",
+            }],
+            Shots: 1,
+            ShotsPerAttack: 2),
+
+        // The Nameless: zijn variabele heet shadow, maar elke beurt wordt hij anders aangesproken.
+        // Shadow is een andere naam, 2shadow en sha-dow compileren niet: dan weigert elke kaart die hem viseert.
+        // Op die beurten slaat hij hard, dus dan blok je en zet je modifiers klaar voor de volgende.
+        Nameless => new(
+            new CombatantSetup(Nameless, ValueKind.Int, Hp: 44, MaxHp: 44),
+            [new("3 * 3", 3 * 3), new("7 * 2", 7 * 2), new("4 + 5", 4 + 5), new("30 / 2", 30 / 2), new("2 * 5", 2 * 5), new("8 + 8", 8 + 8)],
+            Names: ["shadow", "Shadow", "shadow", "2shadow", "shadow", "sha-dow"],
+            RealName: "shadow"),
+
         // ---------- Act 2: de Drukkerij ----------
 
         // Zijn HP is het teken '0': er staat een 0, maar het is 48. Een cijferteken is geen cijfer.
@@ -143,7 +172,11 @@ public static class Bestiary
         // Deling van gehele getallen als verdediging: zonder blok 30, met 5 blok nog 5
         Splitter => new(
             new CombatantSetup(Splitter, ValueKind.Int, Hp: 26, MaxHp: 26),
-            [Intent.Live("30 / (block + 1)", c => 30 / (c.Block + 1)), new("4 * 3", 4 * 3)]),
+            [Intent.Live("30 / (block + 1)", c => 30 / (c.Block + 1)) with
+            {
+                // Zonder de haakjes deelt hij door je blok: met 5 blok 7, zonder blok een DivideByZeroException
+                Regrouped = Intent.Live("30 / block + 1", c => 30 / c.Block + 1),
+            }, new("4 * 3", 4 * 3)]),
 
         // Het wondermoment: een byte die zoveel drinkt dat hij omklapt. Hij heelt meer dan
         // een starterdeck per beurt kan slaan, dus hij klapt altijd om, wat je ook doet.
@@ -170,8 +203,9 @@ public static class Bestiary
             new CombatantSetup(Reckoner, ValueKind.Int, Hp: 90, MaxHp: 90),
             [
                 new("3 + 2 * 4", 3 + 2 * 4, Hidden: true),
-                new("(3 + 2) * 4", (3 + 2) * 4, Hidden: true),
-                new("17 / 5 + 17 % 5", 17 / 5 + 17 % 5, Hidden: true),
+                // Move the Brackets keert zijn tablet tegen hem: zonder haakjes is het 11, met andere haakjes 0
+                new("(3 + 2) * 4", (3 + 2) * 4, Hidden: true) { Regrouped = new("3 + 2 * 4", 3 + 2 * 4, Hidden: true) },
+                new("17 / 5 + 17 % 5", 17 / 5 + 17 % 5, Hidden: true) { Regrouped = new("17 / (5 + 17) % 5", 17 / (5 + 17) % 5, Hidden: true) },
                 new("2 * 3 + 4 * 2", 2 * 3 + 4 * 2, Hidden: true),
             ]),
 

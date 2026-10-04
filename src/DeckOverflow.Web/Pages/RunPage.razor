@@ -1,7 +1,6 @@
 @page "/"
 @implements IAsyncDisposable
 @inject StageBridge Stage
-@inject IJSRuntime JS
 @inject NavigationManager Nav
 @inject Strings S
 @inject ArtStyle Art
@@ -10,11 +9,14 @@
     @* De stage staat altijd klaar onder de schermen, zodat PixiJS zijn maat houdt *@
     <div class="stage-host" @ref="_host"></div>
 
-    @if (_run is null || _snap is null)
+    @* Alles boven de stage tekent opnieuw bij een andere taal: de @key bouwt de schermen opnieuw op *@
+    <div class="lang-scope" @key="S.Language">
+
+    @if (_run is null || _snap is null || _paused)
     {
         @if (Revealed)
         {
-            <WorldMap Unlocks="_progress.Unlocks" Pages="_progress.Codex" Trinkets="_progress.Trinkets" ReachedAct="_progress.ReachedAct" PanelCount="_progress.XPanels.Count"
+            <WorldMap Paused="@PausedRun"OnContinue="ContinueRun" Unlocks="_progress.Unlocks" Pages="_progress.Codex" Trinkets="_progress.Trinkets" ReachedAct="_progress.ReachedAct" PanelCount="_progress.XPanels.Count"
                       Starting="_starting" OnStart="StartAsync" OnCodex="() => OpenCodex(null)" OnXRegister="() => _showXRegister = true"
                       OnAccount="@(Account is null ? default : EventCallback.Factory.Create(this, () => _showAccount = true))" />
         }
@@ -27,7 +29,16 @@
                 <h1 class="title-word">Deck<br /><span>Overflow</span></h1>
                 <p class="tagline">@(S.Loaded ? S.T("ui.tagline") : "")</p>
                 <div class="title-actions">
-                    <button class="play-big" disabled="@(_starting || !S.Loaded)" @onclick="() => StartAsync(1)">@(_starting || !S.Loaded ? "..." : S.T("ui.play"))</button>
+                    @if (PausedRun is { } paused)
+                    {
+                        @* Een run die wacht: verder spelen staat voorop, een nieuwe run gooit ze weg *@
+                        <button class="play-big continue" @onclick="ContinueRun">@S.T("ui.continue-run")<small>@paused</small></button>
+                        <button class="title-button" disabled="@_starting" @onclick="() => StartAsync(1)">@S.T("ui.new-run")</button>
+                    }
+                    else
+                    {
+                        <button class="play-big" disabled="@(_starting || !S.Loaded)" @onclick="() => StartAsync(1)">@(_starting || !S.Loaded ? "..." : S.T("ui.play"))</button>
+                    }
                     @* Startpunten: elke act die je ooit bereikte *@
                     @for (int act = 2; act <= _progress.ReachedAct; act++)
                     {
@@ -53,6 +64,8 @@
                         }
                     </div>
                 }
+                <ZssLink />
+                <button class="about-link" @onclick="() => _showAbout = true">@S.T("ui.about.open")</button>
             </div>
             @if (CrackVisible)
             {
@@ -61,6 +74,7 @@
             }
         </div>
         }
+        <LanguageToggle Class="corner" />
         @if (_showIntro)
         {
             @* Eén keer, voor de eerste run: het thema in drie zinnen, geen regels *@
@@ -74,6 +88,10 @@
                     <button class="play-big" @onclick="FinishIntroAsync">@S.T("ui.intro.start")</button>
                 </div>
             </div>
+        }
+        @if (_showAbout)
+        {
+            <AboutPanel OnClose="() => _showAbout = false" />
         }
         @if (_showXRegister)
         {
@@ -90,6 +108,8 @@
 
         @if (s.Phase == RunPhase.Combat || _busy)
         {
+            @* Tijdens het gevecht staat de optieknop in de lege hoek linksboven *@
+            <button class="options-button in-combat" title="@S.T("ui.options")" aria-label="@S.T("ui.options")" @onclick="OpenOptionsAsync">☰</button>
             <div class="hud">
                 <span class="seed">@S.T("ui.floor", ("floor", s.Floor)) · @S.T("ui.seed", ("seed", s.Seed))</span>
                 <span class="hud-buttons">
@@ -106,6 +126,7 @@
         {
             <div class="screen">
                 <header class="topbar">
+                    <button class="options-button" title="@S.T("ui.options")" aria-label="@S.T("ui.options")" @onclick="OpenOptionsAsync">☰</button>
                     <span class="hp" title="@S.T("ui.hp")"><img src="@ArtStyle.Icon("hp")" alt="" />@s.Hp/@s.MaxHp</span>
                     <span class="gold" title="@S.T("ui.gold")"><img src="@ArtStyle.Icon("gold")" alt="" />@s.Gold</span>
                     <span class="floor">@S.T("ui.act-short", ("act", s.Act)) · @S.T("ui.floor-of", ("floor", s.Floor), ("rows", s.Map.Rows))</span>
@@ -181,6 +202,11 @@
                                     }
                                 </div>
                                 <button class="secondary" @onclick="() => DoAsync(new SkipReward())">@S.T("ui.skip")</button>
+                                @if (reward.Gold > 0 && _lastEnemy is { } foe)
+                                {
+                                    <FeedbackHeart @key="@($"{s.Act}-{s.Floor}-{foe}")" Department="card-hall" Subject="@($"enemy:{foe}")"
+                                                   Question="@TextRef.Of("ui.feedback.fight", ("enemy", foe))" />
+                                }
                             </section>
                             break;
 
@@ -368,6 +394,7 @@
                                         <button class="secondary" @onclick="BackToFloor">@S.T("ui.world.back")</button>
                                     }
                                 </div>
+                                <FeedbackHeart @key="s.Seed" Department="card-hall" Subject="run" Question="@TextRef.Of("ui.feedback.run")" AllowComment="true" />
                             </section>
                             break;
                     }
@@ -426,6 +453,12 @@
         @if (_showRelics)
         {
             <RelicBook Relics="s.Relics" OnClose="() => _showRelics = false" />
+        }
+
+        @if (_showOptions)
+        {
+            <OptionsMenu CanLeave="!_busy" SoundOn="_soundOn" OnClose="() => _showOptions = false" OnMainMenu="ToMainMenu"
+                         OnRestart="RestartAsync" OnAbandon="Abandon" OnToggleSound="ToggleSoundAsync" />
         }
 
         @if (_picker is { } picker)
@@ -492,5 +525,6 @@
         {
             <div class="toast @toast.Class" @key="toast.Id">@toast.Text</div>
         }
+    </div>
     </div>
 </div>

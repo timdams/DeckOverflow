@@ -37,6 +37,8 @@ public sealed class Run
     private static readonly (int Min, int Max) EliteGold = (28, 40);
     private static readonly (int Min, int Max) TreasureGold = (20, 30);
     public const int FoundryGold = 100;
+    /// <summary>Zo vaak een aanval van dezelfde soort vijand overschrijven, en een revisie maakt ze <c>const</c>.</summary>
+    public const int PatchAfter = 3;
 
     // Een start in een latere act: ongeveer wat je had gehad als je had doorgespeeld
     public const int DraftRounds = 5;
@@ -77,6 +79,10 @@ public sealed class Run
     /// <summary>Voor de score: verdiepingen in afgewerkte acts, en beurten in alle gevechten.</summary>
     private int _floorsBefore;
     private int _turns;
+    /// <summary>Per soort vijand: hoe vaak je zijn aanval overschreef (Wrong Label, Remainder).</summary>
+    private readonly Dictionary<string, int> _assignments = [];
+    /// <summary>Vijanden waarvan een revisie de aanval <c>const</c> maakte.</summary>
+    private readonly HashSet<string> _patched = [];
     /// <summary>Onderdelen die in deze run uit een kist kwamen.</summary>
     private readonly List<string> _trinkets = [];
 
@@ -321,9 +327,11 @@ public sealed class Run
     private void StartCombat(string enemy, int nodeId)
     {
         double block = _relics.Sum(id => RelicCatalog.Create(id).BlockAtCombatStartFor(Hp, MaxHp));
+        EnemySetup foe = Bestiary.Create(enemy);
+        if (_patched.Contains(enemy)) foe = foe with { ConstAttack = true };
         var setup = new CombatSetup(
             Scenarios.Player(Hp, MaxHp, block),
-            Bestiary.Create(enemy),
+            foe,
             [.. _deck],
             Relics: [.. _relics]);
 
@@ -335,7 +343,11 @@ public sealed class Run
     private void HandleCombat(ICommand command)
     {
         Combat.Combat combat = _combat!;
-        foreach (GameEvent e in combat.Handle(command)) Emit(e);
+        foreach (GameEvent e in combat.Handle(command))
+        {
+            Emit(e);
+            if (e is IntentAssigned && _enemyKey is { } assignedTo) _assignments[assignedTo] = _assignments.GetValueOrDefault(assignedTo) + 1;
+        }
 
         if (combat.Outcome == CombatOutcome.Ongoing) return;
 
@@ -343,13 +355,23 @@ public sealed class Run
         var enemy = snapshot.Combatants.Single(c => c.IsEnemy);
         _turns += combat.Turn;
         Hp = (int)snapshot.Combatants.Single(c => !c.IsEnemy).Hp;
+        var relicMoments = new List<CodexMoment>();
         if (combat.Outcome == CombatOutcome.Won)
         {
             _combatsWon++;
-            int heal = _relics.Sum(id => RelicCatalog.Create(id).HealAfterWin(_combatsWon));
+            var relics = _relics.Select(RelicCatalog.Create).ToList();
+            int heal = relics.Sum(r => r.HealAfterWin(_combatsWon));
             if (heal > 0) ChangeHp(heal);
+            relicMoments.AddRange(relics.Select(r => r.MomentAfterWin(_combatsWon)).OfType<CodexMoment>());
         }
-        UnlockCodex(combat, enemy, combat.Outcome == CombatOutcome.Won);
+        UnlockCodex(combat, enemy, combat.Outcome == CombatOutcome.Won, relicMoments);
+
+        // Te vaak dezelfde aanval overschreven: tussen twee gevechten komt een revisie, en die aanval wordt const
+        if (combat.Outcome == CombatOutcome.Won && _enemyKey is { } key && !_patched.Contains(key) && _assignments.GetValueOrDefault(key) >= PatchAfter)
+        {
+            _patched.Add(key);
+            Emit(new EnemyPatched(key));
+        }
 
         if (combat.Outcome == CombatOutcome.Lost)
         {
@@ -391,9 +413,9 @@ public sealed class Run
     /// Na een gevecht: elke regel die erin iets deed, krijgt zijn Codex-pagina, als de act ver genoeg is.
     /// Eerst ervaren, dan benoemen: Omgieten in act 1 opent "Casting" nog niet.
     /// </summary>
-    private void UnlockCodex(Combat.Combat combat, CombatantView enemy, bool won)
+    private void UnlockCodex(Combat.Combat combat, CombatantView enemy, bool won, IEnumerable<CodexMoment> relicMoments)
     {
-        var moments = combat.Moments.ToList();
+        var moments = combat.Moments.Concat(relicMoments).ToList();
         // De Rekenmeester verslaan is operatorvoorrang doorhebben
         if (won && enemy.Key == Bestiary.Reckoner)
         {

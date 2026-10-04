@@ -1,0 +1,246 @@
+@page "/control-room"
+@using DeckOverflow.ControlRoom.Gambits
+@using DeckOverflow.ControlRoom.Levels
+
+@* De Controlekamer (H5): je stelt de regels van een automaat op en kijkt hoe hij vecht. Links jouw bord en de
+   gereedschapsbak, in het midden de stage met de tijdlijn, rechts de regels van de vijand. *@
+
+<div class="room">
+    @if (!S.Loaded)
+    {
+        <div class="overlay"><h1>Deck Overflow</h1><p>...</p></div>
+    }
+    else if (!Unlocked)
+    {
+        <div class="overlay">
+            <h1>@S.T("ui.world.control-room.name")</h1>
+            <p>@S.T("ui.world.needs-card-hall")</p>
+            <button @onclick="ToFloorPlan">@S.T("ui.world.back")</button>
+        </div>
+    }
+    else
+    {
+        <header class="room-head">
+            <button class="options-button" title="@S.T("ui.options")" aria-label="@S.T("ui.options")" @onclick="OpenOptionsAsync">☰</button>
+            <h1 class="title-word small">@S.T("ui.world.control-room.name")</h1>
+            <nav class="steps">
+                @for (int i = 0; i < LevelCatalog.All.Count; i++)
+                {
+                    int index = i;
+                    var l = LevelCatalog.All[i];
+                    bool open = LevelOpen(index);
+                    <button class="step @(index == _levelIndex ? "current" : "") @(Record(l.Key).Beaten ? "beaten" : "") @(l.Bug ? "bug" : "")"
+                            disabled="@(!open || _playing)" @onclick="() => SelectLevelAsync(index)"
+                            title="@(open ? S.T($"room.enemy.{l.Key}") : S.T("ui.world.locked"))">
+                        <span class="circle">@(index + 1)</span>
+                        <span class="label">@(open ? S.T($"room.enemy.{l.Key}") : "?")</span>
+                    </button>
+                }
+            </nav>
+            <span class="head-tools">
+                <button class="title-button" @onclick="() => OpenCodex(null)">@S.T("ui.codex") · @_progress.Codex.Count</button>
+                <button class="title-button" @onclick="() => _showXRegister = true">@S.T("ui.xregister") · @_progress.XPanels.Count</button>
+            </span>
+        </header>
+
+        <main class="room-floor">
+            <section class="board mine">
+                <h2>@S.T("room.ui.your-rules") <small>@S.T("room.ui.slots", ("used", _drafts.Count), ("max", Level.Slots))</small></h2>
+                <p class="hint">↓ @S.T("room.ui.top-first")</p>
+                <RuleBoard Rules="_drafts" Editable="Editing" Level="Level" Slots="Level.Slots"
+                           Checks="Level.Checks" Moves="Level.Moves" Joins="Level.Joins" AllowNot="Level.AllowNot"
+                           Checked="Shown?.PlayerChecked" Fired="Shown?.PlayerFired" Finished="AtEnd"
+                           FlashIndex="FlashOf(Side.Player)" OnChanged="BoardChangedAsync" />
+                <label class="code-toggle"><input type="checkbox" @bind="_showCode" /> @S.T("room.ui.code")</label>
+                @if (_showCode)
+                {
+                    <pre class="code">@RuleText.CSharp(S, _drafts.Select(d => d.ToRule()).ToList())</pre>
+                }
+            </section>
+
+            <section class="arena">
+                <div class="stage-box" @ref="_host"></div>
+
+                <div class="controls">
+                    @if (Editing)
+                    {
+                        <button class="play-big" disabled="@(_drafts.Count == 0)" @onclick="RunAsync">▶ @S.T("room.ui.run")</button>
+                    }
+                    else
+                    {
+                        @if (_playing)
+                        {
+                            <button @onclick="Stop">⏸ @S.T("room.ui.pause")</button>
+                        }
+                        else if (!AtEnd)
+                        {
+                            <button class="primary" @onclick="ResumeAsync">▶ @S.T("room.ui.resume")</button>
+                            <button @onclick="StepAsync">⏭ @S.T("room.ui.step")</button>
+                        }
+                        <button class="secondary" @onclick="EditAsync">✎ @S.T("room.ui.edit")</button>
+                    }
+                    <span class="speed">
+                        @foreach (var sp in new[] { 1, 2, 4 })
+                        {
+                            int speed = sp;
+                            <button class="tiny @(speed == _speed ? "on" : "")" @onclick="() => SetSpeedAsync(speed)">@(speed)×</button>
+                        }
+                    </span>
+                </div>
+
+                @if (_recording is { } rec)
+                {
+                    @* De tijdlijn: het duel ligt vast, dus je kan naar elke zet springen *@
+                    <div class="timeline">
+                        <input type="range" min="-1" max="@(rec.Frames.Count - 1)" value="@_frame" @oninput="ScrubAsync"
+                               aria-label="@S.T("room.ui.timeline")" />
+                        <span class="turn">@S.T("room.ui.turn", ("turn", Shown?.Turn ?? 0), ("max", Duel.MaxTurns))</span>
+                    </div>
+                }
+
+                @if (_recording is { } done && AtEnd)
+                {
+                    <div class="result @done.Outcome.ToString().ToLowerInvariant()">
+                        @switch (done.Outcome)
+                        {
+                            case Outcome.PlayerWon:
+                                <h3>@S.T("room.ui.won")</h3>
+                                <p>@S.T("room.ui.won-detail", ("turns", done.Turns), ("rules", done.Rules.Count), ("hp", done.Frames[^1].Snapshot.Player.Hp))</p>
+                                break;
+                            case Outcome.EnemyWon:
+                                <h3>@S.T("room.ui.lost")</h3>
+                                <p>@S.T("room.ui.lost-detail", ("hp", done.Frames[^1].Snapshot.Enemy.Hp))</p>
+                                break;
+                            default:
+                                <h3>@S.T("room.ui.shift-over")</h3>
+                                <p>@S.T("room.ui.shift-over-detail", ("turns", done.Turns))</p>
+                                break;
+                        }
+
+                        @if (done.Score is { } score && _histograms.TryGetValue(Level.Key, out var histogram))
+                        {
+                            @* Zoals Opus Magnum: waar staat jouw bord tussen alle borden die winnen? *@
+                            <div class="histograms">
+                                @Bars(S.T("room.ui.hist-turns"), histogram.Turns, score.Turns, Record(Level.Key).BestTurns)
+                                @Bars(S.T("room.ui.hist-rules"), histogram.Rules, score.Rules, Record(Level.Key).BestRules)
+                            </div>
+                            <p class="hint">@S.T("room.ui.hist-hint", ("total", histogram.Total), ("max", Histogram.MaxRules))</p>
+                        }
+
+                        <div class="actions">
+                            <button class="secondary" @onclick="EditAsync">✎ @S.T("room.ui.edit")</button>
+                            @if (done.Won && _levelIndex < LevelCatalog.All.Count - 1)
+                            {
+                                <button class="primary" @onclick="NextLevelAsync">@S.T("room.ui.next") →</button>
+                            }
+                            else if (done.Won)
+                            {
+                                <button class="primary" @onclick="ToFloorPlan">@S.T("ui.world.back")</button>
+                            }
+                        </div>
+
+                        @if (done.Won && Level.Bug)
+                        {
+                            <div class="codex-bug">
+                                <span class="codex-label">@S.T("codex.title")</span>
+                                <strong>@S.T($"bug.{Level.Key}.title")</strong>
+                                <p>@S.T($"bug.{Level.Key}.story")</p>
+                            </div>
+                        }
+                    </div>
+                }
+
+                <ol class="log">
+                    @foreach (var line in Log())
+                    {
+                        <li class="@line.Kind">@line.Text</li>
+                    }
+                </ol>
+            </section>
+
+            <section class="board theirs">
+                <h2>
+                    @S.T($"room.enemy.{Level.Key}")
+                    @if (Level.Bug)
+                    {
+                        <small class="tag">@S.T("room.ui.real-bug")</small>
+                    }
+                </h2>
+                <p class="hint">↓ @S.T("room.ui.top-first")</p>
+                <RuleBoard Rules="_enemyDrafts" Checked="Shown?.EnemyChecked" Fired="Shown?.EnemyFired" Finished="AtEnd"
+                           FlashIndex="FlashOf(Side.Enemy)" />
+                <p class="flavor">@S.T($"room.flavor.{Level.Key}")</p>
+                @if (_showCode)
+                {
+                    <pre class="code">@RuleText.CSharp(S, Level.EnemyRules)</pre>
+                }
+            </section>
+        </main>
+
+        <LanguageToggle Class="corner" />
+    }
+
+    @if (_showOptions)
+    {
+        <div class="modal" @onclick="() => _showOptions = false">
+            <div class="modal-body story-card options" @onclick:stopPropagation="true">
+                <h2>@S.T("ui.options.title")</h2>
+                <div class="choices column">
+                    <button @onclick="ToFloorPlan">@S.T("ui.world.back")</button>
+                    <button @onclick="ToggleSoundAsync">@S.T(_soundOn ? "ui.options.sound-on" : "ui.options.sound-off")</button>
+                </div>
+                <LanguageToggle />
+                <button class="play-big" @onclick="() => _showOptions = false">@S.T("room.ui.back-to-room")</button>
+            </div>
+        </div>
+    }
+    @if (_showCodex)
+    {
+        <CodexBook Pages="_progress.Codex" Read="_progress.CodexRead" OnRead="TurnCodexPageAsync" Focus="_codexFocus" OnClose="() => _showCodex = false" />
+    }
+    @if (_showXRegister)
+    {
+        <XRegisterBook Earned="_progress.XPanels" OnClose="() => _showXRegister = false" />
+    }
+
+    <div class="xpanel-popups">
+        @foreach (var popup in _popups)
+        {
+            <button class="xpanel-popup" @key="popup.Id" @onclick="() => { _popups.Remove(popup); _showXRegister = true; }">
+                <span class="badge">✗</span>
+                <span class="words">
+                    <span class="label">@S.T("ui.xregister.earned")</span>
+                    <strong>@S.T($"xpanel.{popup.Key}.name")</strong>
+                    <small>@S.T($"xpanel.{popup.Key}.text")</small>
+                </span>
+            </button>
+        }
+    </div>
+    <div class="toasts">
+        @foreach (var toast in _toasts)
+        {
+            <div class="toast" @key="toast.Id">@toast.Text</div>
+        }
+    </div>
+    <div class="rotate-hint">
+        <span class="rotate-phone" aria-hidden="true"></span>
+        <p>@(S.Loaded ? S.T("ui.rotate") : "")</p>
+    </div>
+</div>
+
+@code {
+    /// <summary>Een histogram als staafjes, met jouw bord in inkt en je beste ooit omkaderd.</summary>
+    private RenderFragment Bars(string title, IReadOnlyDictionary<int, int> bars, int yours, int? best) =>
+        @<div class="histogram">
+            <span class="hist-title">@title</span>
+            <div class="hist-bars">
+                @foreach (var key in bars.Keys.Append(yours).Distinct().Order())
+                {
+                    <span class="bar @(key == yours ? "yours" : "") @(key == best ? "best" : "")" title="@key: @bars.GetValueOrDefault(key)">
+                        <span class="fill" style="height:@(Math.Max(4, BarHeight(bars, key)).ToString(System.Globalization.CultureInfo.InvariantCulture))%"></span>
+                        <span class="key">@key</span>
+                    </span>
+                }
+            </div>
+        </div>;
+}

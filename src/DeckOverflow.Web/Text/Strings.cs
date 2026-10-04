@@ -2,24 +2,50 @@ using System.Globalization;
 using System.Net.Http.Json;
 using System.Text.RegularExpressions;
 using DeckOverflow.Core.Text;
+using Microsoft.JSInterop;
 
 namespace DeckOverflow.Web.Text;
 
 /// <summary>
-/// Alle spelteksten komen uit <c>wwwroot/text/en.json</c>. De motor geeft sleutels en getallen,
+/// Alle spelteksten komen uit <c>wwwroot/text/&lt;taal&gt;.json</c>. De motor geeft sleutels en getallen,
 /// hier worden het zinnen. De stage doet hetzelfde in <c>card-hall/stage/strings.js</c>.
+/// <c>en.json</c> ligt eronder: een tekst die nog niet vertaald is, verschijnt in het Engels.
 /// Een ontbrekende sleutel toont zichzelf, zodat je hem meteen ziet staan.
 /// </summary>
-public sealed partial class Strings
+public sealed partial class Strings(IJSRuntime js)
 {
+    /// <summary>De talen van het spel, in de volgorde van de knop. De standaardtaal staat in index.html.</summary>
+    public static readonly IReadOnlyList<string> Languages = ["nl", "en"];
+
     private Dictionary<string, string> _texts = [];
 
     public bool Loaded { get; private set; }
 
-    public async Task LoadAsync(HttpClient http)
+    public string Language { get; private set; } = "en";
+
+    /// <summary>Na het laden en na een taalwissel, zodat elk scherm opnieuw tekent.</summary>
+    public event Action? Changed;
+
+    public async Task LoadAsync(HttpClient http) =>
+        await LoadAsync(http, await js.InvokeAsync<string>("deckOverflow.lang"));
+
+    /// <summary>Een andere taal kiezen: bewaren, laden en de schermen laten weten.</summary>
+    public async Task SwitchAsync(HttpClient http, string language)
     {
-        _texts = await http.GetFromJsonAsync<Dictionary<string, string>>("text/en.json") ?? [];
+        await js.InvokeVoidAsync("deckOverflow.setLang", language);
+        await LoadAsync(http, language);
+    }
+
+    private async Task LoadAsync(HttpClient http, string language)
+    {
+        var texts = await http.GetFromJsonAsync<Dictionary<string, string>>("text/en.json") ?? [];
+        if (language != "en")
+            foreach (var (key, text) in await http.GetFromJsonAsync<Dictionary<string, string>>($"text/{language}.json") ?? [])
+                texts[key] = text;
+        _texts = texts;
+        Language = language;
         Loaded = true;
+        Changed?.Invoke();
     }
 
     /// <summary>Een vaste tekst met benoemde waarden: <c>T("ui.floor", ("floor", 3))</c>.</summary>

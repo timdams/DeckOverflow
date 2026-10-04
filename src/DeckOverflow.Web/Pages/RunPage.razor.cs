@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Globalization;
 using DeckOverflow.CardHall.Cards;
 using DeckOverflow.CardHall.Combat;
@@ -47,12 +46,16 @@ public partial class RunPage
     private DotNetObjectReference<RunPage>? _self;
     private Run? _run;
     private RunSnapshot? _snap;
-    private double _loadMs;
     private bool _starting;
     private bool _busy;
     private bool _showDeck;
     private bool _showRelics;
     private int _startAct = 1;
+
+    /// <summary>Terug in het hoofdmenu terwijl de run wacht: ze blijft in het geheugen, tot je herlaadt.</summary>
+    private bool _paused;
+    private bool _showOptions;
+    private bool _soundOn = true;
 
     /// <summary>Alles wat over runs heen blijft: Codex, panelen, ontgrendelde afdelingen, de onthulling.</summary>
     private PlayerProgress _progress = new();
@@ -61,6 +64,8 @@ public partial class RunPage
     private bool _showCodex;
     private string? _codexFocus;
     private bool _showXRegister;
+    /// <summary>Het venster "Over dit spel" op het hoofdscherm.</summary>
+    private bool _showAbout;
     private bool _showPouch;
     private bool _showIntro;
     /// <summary>Een act die net begon: de actkaart staat open tot je verdergaat.</summary>
@@ -95,14 +100,19 @@ public partial class RunPage
     {
         if (!S.Loaded) await S.LoadAsync(Http);
         if (!Art.Loaded) await Art.LoadAsync(Http);
+        S.Changed += OnLanguageChanged;
     }
+
+    /// <summary>Een andere taal: de stage laadt haar teksten opnieuw, de schermen tekenen opnieuw.</summary>
+    private void OnLanguageChanged() => _ = InvokeAsync(async () =>
+    {
+        await Stage.SetLanguageAsync(S.Language);
+        StateHasChanged();
+    });
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
-        // Meetpunt "laadtijd tot speelbaar": de Speel-knop staat op het scherm
-        _loadMs = await JS.InvokeAsync<double>("deckOverflow.now");
-
         _progress = await Store.LoadAsync();
         Store.Changed += OnProgressChanged;
         _progress.ReachedAct = Math.Clamp(_progress.ReachedAct, 1, Acts.All[^1].Number);
@@ -120,8 +130,8 @@ public partial class RunPage
             return;
         }
         _starting = true;
-        _self = DotNetObjectReference.Create(this);
-        await Stage.InitAsync(_host, _self, _loadMs);
+        _self ??= DotNetObjectReference.Create(this);
+        await Stage.InitAsync(_host, _self);
 
         ulong seed = ulong.TryParse(SeedQuery, out ulong s) ? s : NewSeed();
         await NewRunAsync(seed);
@@ -143,6 +153,8 @@ public partial class RunPage
             : new RunSetup(StartAct: _startAct);
         _run = Run.Start(seed, setup);
         _snap = _run.Snapshot();
+        _paused = false;
+        _showOptions = false;
         if (FightQuery is null)
         {
             _progress.RunsStarted++;
@@ -164,7 +176,8 @@ public partial class RunPage
 
     /// <summary>Voor <c>?fight=</c>: het starterdeck plus de kaarten die de puzzelvijanden nodig hebben.</summary>
     private static IReadOnlyList<CardDefinition> TestDeck =>
-        [.. CardCatalog.StarterDeck(), CardCatalog.RemoldByte, CardCatalog.MeasureTwice, CardCatalog.ReadTheLabel, CardCatalog.CountLetters, CardCatalog.LetterA, CardCatalog.Ink, CardCatalog.Read];
+        [.. CardCatalog.StarterDeck(), CardCatalog.RemoldByte, CardCatalog.MeasureTwice, CardCatalog.ReadTheLabel, CardCatalog.CountLetters, CardCatalog.LetterA, CardCatalog.Ink, CardCatalog.Read,
+         CardCatalog.HitThenTighten, CardCatalog.TightenThenHit, CardCatalog.Brackets];
 
     private static ActMap SingleFight(string enemy)
     {
@@ -172,6 +185,47 @@ public partial class RunPage
             : Bestiary.Elites.Contains(enemy) ? NodeKind.Elite
             : NodeKind.Fight;
         return ActMap.Path((kind, enemy), (NodeKind.Rest, null));
+    }
+
+    // ---------- Opties ----------
+
+    private async Task OpenOptionsAsync()
+    {
+        _soundOn = await Stage.SoundOnAsync();
+        _showOptions = true;
+    }
+
+    /// <summary>Naar het hoofdmenu (titelscherm of plattegrond); de run wacht.</summary>
+    private void ToMainMenu()
+    {
+        _showOptions = false;
+        _showDeck = _showRelics = _showPouch = _showCodex = _showXRegister = false;
+        _picker = null;
+        _paused = true;
+    }
+
+    private void ContinueRun() => _paused = false;
+
+    /// <summary>De wachtende run, als korte regel voor de knop om verder te spelen.</summary>
+    private string? PausedRun => _paused && _snap is { } s
+        ? S.T("ui.continue-run.where", ("act", s.Act), ("floor", s.Floor), ("rows", s.Map.Rows))
+        : null;
+
+    /// <summary>Dezelfde run van voren af aan: zelfde seed, zelfde startact.</summary>
+    private Task RestartAsync() => _snap is { } s ? NewRunAsync(s.Seed) : Task.CompletedTask;
+
+    /// <summary>De run opgeven: ze telt nergens mee en je staat weer in het hoofdmenu.</summary>
+    private void Abandon()
+    {
+        _showOptions = false;
+        _paused = false;
+        BackToFloor();
+    }
+
+    private async Task ToggleSoundAsync()
+    {
+        _soundOn = !_soundOn;
+        await Stage.SetSoundAsync(_soundOn);
     }
 
     // ---------- Buiten het gevecht ----------
@@ -233,7 +287,7 @@ public partial class RunPage
     private Task EndTurnAsync() => RunCombatAsync(new EndTurn());
     private Task ScrapAsync() => RunCombatAsync(new ScrapModifiers());
 
-    /// <summary>TIJDELIJK: sneltoets W wint het lopende gevecht meteen.</summary>
+    /// <summary>Sneltoets W wint het lopende gevecht meteen. Blijft ook in playtests.</summary>
     [JSInvokable]
     public Task OnDebugWin() => RunCombatAsync(new DebugWin());
 
@@ -247,11 +301,9 @@ public partial class RunPage
         {
             _lastEnemy = _run.CombatSnapshot()?.Combatants.FirstOrDefault(c => c.IsEnemy)?.Key;
             if (_run.CombatSnapshot()?.Turn == 1) _newPages.Clear();
-            long start = Stopwatch.GetTimestamp();
             var events = _run.Handle(command);
-            double engineMs = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
 
-            await Stage.PlayAsync(events, engineMs);
+            await Stage.PlayAsync(events);
             if (_run.CombatSnapshot() is { } combat) await Stage.SyncAsync(combat);
 
             // Even blijven staan op VICTORY of CRASHED voor het volgende scherm komt
@@ -417,6 +469,7 @@ public partial class RunPage
                 CardRemoved c => (S.T(TextRef.Of("ui.toast.card-removed", ("card", c.CardId))), "card"),
                 CardTransformed t => (S.T(TextRef.Of("ui.toast.card-changed", ("from", t.FromId), ("to", t.ToId))), "card"),
                 RelicGained r => (S.T(TextRef.Of("ui.toast.relic", ("relic", r.RelicId))), "relic"),
+                EnemyPatched p => (S.T(TextRef.Of("ui.toast.patched", ("enemy", p.EnemyKey))), "relic"),
                 ActStarted a => (S.T("ui.act", ("act", a.Act), ("name", S.T($"act.{Acts.Get(a.Act).Key}"))), "act"),
                 RunRejected r => (S.T(r.Reason), "rejected"),
                 _ => null
@@ -453,6 +506,7 @@ public partial class RunPage
     public async ValueTask DisposeAsync()
     {
         Store.Changed -= OnProgressChanged;
+        S.Changed -= OnLanguageChanged;
         await Stage.DisposeAsync();
         _self?.Dispose();
     }

@@ -1,0 +1,30 @@
+@implements IDisposable
+@inject Strings S
+@inject HttpClient Http
+
+@* De taalknop: klein in een hoek van het hoofdmenu, en in het optiescherm. Wisselen kan altijd,
+   ook midden in een run; de schermen tekenen opnieuw via Strings.Changed. *@
+
+<div class="lang-toggle @Class" role="group" aria-label="Language / Taal">
+    @foreach (string language in Strings.Languages)
+    {
+        string lang = language;
+        bool active = S.Loaded && lang == S.Language;
+        <button class="@(active ? "active" : "")" aria-pressed="@active"
+                disabled="@(!S.Loaded)" @onclick="() => SwitchAsync(lang)">@lang.ToUpperInvariant()</button>
+    }
+</div>
+
+@code {
+    [Parameter] public string? Class { get; set; }
+
+    // Zonder eigen parameters die veranderen, tekent de knop alleen opnieuw als de teksten dat melden
+    protected override void OnInitialized() => S.Changed += OnChanged;
+
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private Task SwitchAsync(string language) =>
+        language == S.Language ? Task.CompletedTask : S.SwitchAsync(Http, language);
+
+    public void Dispose() => S.Changed -= OnChanged;
+}

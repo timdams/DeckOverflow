@@ -23,7 +23,7 @@ Het starterdeck is bewust saai, zodat elke beloning een echte keuze wordt.
 
 **Starterdeck (10 kaarten, gebouwd):** 4× Whack (6 schade), 2× Floating Bolts (3× 2.5), 3× Hold Firmly (5 blok), 1× Spare Screw (+3 op je volgende kaart).
 
-**Gebouwd (25 kaarten).** Elke kaart heeft een verbeterde versie aan het rustvuur.
+**Gebouwd (28 kaarten).** Elke kaart heeft een verbeterde versie aan het rustvuur.
 
 | Kaart | Kost | Effect | Concept |
 | --- | --- | --- | --- |
@@ -48,6 +48,9 @@ Het starterdeck is bewust saai, zodat elke beloning een echte keuze wordt.
 | Read the Label (act 3) | 1 | `int.Parse` op tekst-HP | parse |
 | Flip | 1 | `isSolid = !isSolid` op een vijand met een `bool` | `bool`, `!` |
 | Remainder | 1 | `% 5` op de aanval van een vijand | modulo |
+| Hit, Then Tighten | 0 | Slaat `count++` (begint op 3), verbeterd `count++ + 3` | `i++` |
+| Tighten, Then Hit | 1 | Slaat `++count * 2`, verbeterd `++count * 3` | `++i` |
+| Move the Brackets | 1 | Verschuift de haakjes in de aanval van een vijand, waar dat kan | operatorvoorrang |
 
 Molded Bolts en Molded Parts zijn de omgegoten versies van de Floating-kaarten (event De Smeltkroes).
 
@@ -63,7 +66,7 @@ Erbij op 3 oktober 2026, elk rond één C#-regel:
 | TryParse Glove | Read gebruikt `int.TryParse`: ongeldige tekst wordt 0 in plaats van een crash. Alleen je eigen aanval; Read the Label op een vijand crasht nog gewoon, anders zou 0 HP hem meteen doden | `int.TryParse` |
 | Half Shim | +0.5 op elke treffer. Op een `int`-vijand kapt het weg (en vult het de Scrap Pouch), op een `double` telt het, op tekst plakt `"6.5"` drie tekens | afkappen, `double` |
 
-**Oorspronkelijk ontwerp.** De tabellen hieronder zijn de eerste kaartenlijst. Flip, Voorsprong, Snelle Steek, Haakjes en Etiketmaker wachten op hun vijanden.
+**Oorspronkelijk ontwerp.** De tabellen hieronder zijn de eerste kaartenlijst. Flip, Voorsprong (Tighten, Then Hit), Snelle Steek (Hit, Then Tighten) en Haakjes (Move the Brackets) zijn gebouwd; de Etiketmaker is geschrapt.
 
 | Kaart | Kost | Effect | Concept |
 | --- | --- | --- | --- |

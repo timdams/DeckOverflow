@@ -107,13 +107,29 @@ public static class CardCatalog
     public static readonly CardDefinition Remainder =
         new("remainder", 1, TargetMode.Enemy, new RemainderEffect(5), Rarity: Rarity.Uncommon);
 
+    /// <summary>
+    /// <c>count++</c>: slaat met de teller zoals hij is, en draait hem dan een slag verder. Goedkoop en vroeg in de beurt:
+    /// elke volgende Tighten-kaart slaat harder.
+    /// </summary>
+    public static readonly CardDefinition HitThenTighten =
+        new("hit-then-tighten", 0, TargetMode.Enemy, new IncrementEffect(Prefix: false), ValueKind.Int, Rarity.Common);
+
+    /// <summary><c>++count * 2</c>: eerst een slag verder, dan slaan met de nieuwe waarde. De afmaker na een paar keer Hit, Then Tighten.</summary>
+    public static readonly CardDefinition TightenThenHit =
+        new("tighten-then-hit", 1, TargetMode.Enemy, new IncrementEffect(Prefix: true, Factor: 2), ValueKind.Int, Rarity.Uncommon);
+
+    /// <summary>Verschuift de haakjes in de aanval van een vijand: <c>(3 + 2) * 4</c> wordt <c>3 + 2 * 4</c>. Operatorvoorrang als verdediging.</summary>
+    public static readonly CardDefinition Brackets =
+        new("brackets", 1, TargetMode.Enemy, new RegroupEffect(), Rarity: Rarity.Uncommon);
+
     /// <summary>Wat je in act 1 na een gevecht, in de winkel of in een kist kan vinden.</summary>
     public static readonly IReadOnlyList<CardDefinition> RewardPool =
     [
         FloatingStrike, HeavyStrike, FloatingRain, ThickShield, Mend, RemoldInt, RemoldByte,
         SetTo1, Add, DoubleUp,
         FloatingPoint, Split, Ink, Read,
-        ByteTrap, Flip, Remainder
+        ByteTrap, Flip, Remainder,
+        HitThenTighten, TightenThenHit, Brackets
     ];
 
     /// <summary>
@@ -156,6 +172,9 @@ public static class CardCatalog
         Read with { Id = "read+", Cost = 1 },
         Flip with { Id = "flip+", Cost = 0 },
         Remainder with { Id = "remainder+", Effect = new RemainderEffect(3) },
+        HitThenTighten with { Id = "hit-then-tighten+", Effect = new IncrementEffect(Prefix: false, Bonus: 3) },
+        TightenThenHit with { Id = "tighten-then-hit+", Effect = new IncrementEffect(Prefix: true, Factor: 3) },
+        Brackets with { Id = "brackets+", Cost = 0 },
     }.ToDictionary(c => c.BaseId);
 
     /// <summary>De verbeterde versie, of null als de kaart niet (meer) beter kan.</summary>

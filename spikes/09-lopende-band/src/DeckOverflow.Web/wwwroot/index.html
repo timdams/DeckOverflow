@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="nl">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Deck Overflow · De Lopende Band</title>
+    <base href="/" />
+    <link rel="preload" id="webassembly" />
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="css/app.css" />
+</head>
+
+<body>
+    <div id="app">
+        <div class="overlay">
+            <h1>Deck Overflow</h1>
+            <p>laden...</p>
+        </div>
+    </div>
+
+    <div id="blazor-error-ui">
+        Er liep iets mis. <a href="." class="reload">Herladen</a> <span class="dismiss">✕</span>
+    </div>
+
+    <!-- Opslag kan leeg terugkomen of falen (privévenster): dan begin je gewoon opnieuw -->
+    <script>
+        window.belt = {
+            load: (key) => { try { return localStorage.getItem(key); } catch { return null; } },
+            save: (key, value) => { try { localStorage.setItem(key, value); } catch { } },
+        };
+    </script>
+    <!-- Stage-bibliotheken (vendored, geen CDN nodig) -->
+    <script src="lib/pixi.min.js" defer></script>
+    <script src="lib/gsap.min.js" defer></script>
+    <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
+</body>
+
+</html>

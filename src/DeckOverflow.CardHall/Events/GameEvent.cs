@@ -43,6 +43,9 @@ namespace DeckOverflow.CardHall.Events;
 [JsonDerivedType(typeof(HitPassedThrough), nameof(HitPassedThrough))]
 [JsonDerivedType(typeof(HitBounced), nameof(HitBounced))]
 [JsonDerivedType(typeof(ModifiersApplied), nameof(ModifiersApplied))]
+[JsonDerivedType(typeof(VariableIncremented), nameof(VariableIncremented))]
+[JsonDerivedType(typeof(IntentRegrouped), nameof(IntentRegrouped))]
+[JsonDerivedType(typeof(AttackCrashed), nameof(AttackCrashed))]
 [JsonDerivedType(typeof(RelicTriggered), nameof(RelicTriggered))]
 [JsonDerivedType(typeof(NodeEntered), nameof(NodeEntered))]
 [JsonDerivedType(typeof(GoldChanged), nameof(GoldChanged))]
@@ -58,6 +61,7 @@ namespace DeckOverflow.CardHall.Events;
 [JsonDerivedType(typeof(CodexUnlocked), nameof(CodexUnlocked))]
 [JsonDerivedType(typeof(XPanelEarned), nameof(XPanelEarned))]
 [JsonDerivedType(typeof(TrinketFound), nameof(TrinketFound))]
+[JsonDerivedType(typeof(EnemyPatched), nameof(EnemyPatched))]
 public abstract record GameEvent
 {
     public int Seq { get; init; }
@@ -156,6 +160,16 @@ public sealed record ModifiersScrapped(string Pending, int Cost) : GameEvent;
 /// <summary>De wachtende modifiers zijn op een kaart toegepast, in volgorde: "(6 + 3) × 2" wordt 18.</summary>
 public sealed record ModifiersApplied(string CardId, double Before, double After, string Expression) : GameEvent;
 
+/// <summary>
+/// Een teller ging omhoog met <c>++</c>: <paramref name="Expression"/> is bv. <c>count++</c> of <c>shots++ + ++shots</c>,
+/// <paramref name="Value"/> wat de expressie opleverde, <paramref name="After"/> de teller daarna.
+/// </summary>
+public sealed record VariableIncremented(int TargetId, string Expression, int Before, double Value, int After) : GameEvent;
+/// <summary>Move the Brackets: dezelfde aanval met de haakjes elders. Leeg <paramref name="Value"/>: verborgen, of het crasht.</summary>
+public sealed record IntentRegrouped(int EnemyId, string ExpressionBefore, string Expression, double? Value) : GameEvent;
+/// <summary>De aanval van de vijand crashte tijdens het uitrekenen, bv. <c>30 / 0</c>. Hij valt niet aan.</summary>
+public sealed record AttackCrashed(int EnemyId, string Exception, string Expression) : GameEvent;
+
 /// <summary>Een relic deed iets. Wat precies, volgt als gewone events (schade, kost).</summary>
 public sealed record RelicTriggered(string RelicId) : GameEvent;
 
@@ -191,6 +205,10 @@ public sealed record CodexUnlocked(string Key, IReadOnlyDictionary<string, strin
 }
 /// <summary>Een onderdeel dat nergens voor dient, met een labeltje "hoort bij stap N".</summary>
 public sealed record TrinketFound(string Key, int Step) : GameEvent;
+/// <summary>
+/// Een revisie tussen twee gevechten: deze vijand kreeg te vaak Wrong Label, en zijn aanval is voortaan <c>const</c>.
+/// </summary>
+public sealed record EnemyPatched(string EnemyKey) : GameEvent;
 /// <summary>Een ✗-paneel verdiend: iets wat de handleiding verbiedt en wat jij toch deed.</summary>
 public sealed record XPanelEarned(string Key) : GameEvent;
 /// <summary>Een nieuwe act met een nieuwe map. Wordt ook een startpunt voor volgende runs.</summary>

@@ -6,7 +6,7 @@ Wat beslist is, verhuist naar zijn document; wat technisch is uitgesteld, staat 
 
 De grootste onzekerheid blijft of studenten de regels in de game herkennen wanneer ze later echte code lezen.
 
-- [ ] **Klaarmaken.** De sneltoets W eruit (`DebugWin`, gemarkeerd TIJDELIJK). Een korte lijst van wat we willen zien.
+- [x] **Klaarmaken.** De playtests lopen goed (oktober 2026). De sneltoets W blijft erin (beslist op 4 oktober 2026).
 - [ ] **Wie.** 5 studenten en 2 collega's, zoals eerder beslist. Liefst ook één leerling uit het middelbaar, voor de ondergrens.
 - [ ] **Wat we meten.**
   - Begrijpen ze zonder uitleg wat een intent met `block` of `cards` doet?
@@ -29,10 +29,10 @@ De grootste onzekerheid blijft of studenten de regels in de game herkennen wanne
 Uit het oorspronkelijke ontwerp, nog niet gebouwd. Elk punt moet eerst als gevecht leuk zijn (de ontwerptoets).
 
 - [x] **Bool-schim** (`bool`) en **Ritmeschildpad** (`%`), gebouwd, zie [act-1.md](act-1.md).
-- [ ] **Tweelingschutters** (`i++` tegenover `++i`) met Snelle Steek en Voorsprong. De Tally Counter (`++count`) is de eerste smaak.
-- [ ] **De Naamloze en De Etiketkamer** (identifiers): blijft het zwakste concept als mechaniek. Testen op fun, niet alleen op leerwaarde, of schrappen.
-- [ ] **De patch met `const`**: na een paar keer Wrong Label op dezelfde soort vijand maakt een revisie zijn aanval `const`. Zit in het ontwerp van act 1, nog niet in het spel.
-- [ ] **Operatorvoorrang in je eigen aanval** (Haakjes): nu werken modifiers van links naar rechts.
+- [x] **Tweelingschutters, De Naamloze, de patch met `const` en Haakjes**: gebouwd op 4 oktober 2026, zie [act-1.md](act-1.md). De Etiketkamer is geschrapt: een etiket kiezen om een vat te openen is een vraag als poort.
+- [ ] **The Nameless testen op fun.** Identifiers blijft het zwakste concept als mechaniek. Is een vaste kring van namen (raak, blok, raak, blok) spannend, of een sleur? En een echte bug voor hem zoeken, zoals de andere elites hebben.
+- [ ] **De Tighten-kaarten afstellen.** Tighten, Then Hit+ (`++count * 3`) na drie Hit, Then Tighten slaat 21 voor 1 energie. Te sterk?
+- [ ] **Operatorvoorrang in je eigen aanval.** Modifiers werken nog van links naar rechts, met haakjes in beeld: `(6 + 3) × 2`. Echte voorrang (`6 + 3 × 2` is 12) verandert elke combo; eerst beslissen of dat de bedoeling is. Move the Brackets doet het nu alleen op de aanval van een vijand.
 - [ ] **Exceptions met een catch**: de beurt als call stack en de blueprints. Een eigen act, of een afdeling na H10.
 - [ ] **Een derde elite voor act 3?** Nu Flight 501 en The Index. The Counter kan ook in act 3 terugkomen; Mars Climate Orbiter (verwisselde eenheden) heeft al een tekening.
 

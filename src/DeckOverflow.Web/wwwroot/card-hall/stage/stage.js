@@ -3,7 +3,7 @@
 // Alles is een bladzijde uit een montagehandleiding.
 
 import { juice, sec, wait, roll, text, burst, num, typeOf, typeBadge, circled, stamp, dashed, COLORS, FONT } from './juice.js';
-import { initAudio, sfx, toggleMute } from './audio.js';
+import { initAudio, sfx, toggleMute, setMuted, isMuted } from './audio.js';
 import { runQueue } from './timeline.js';
 import { buildLog, clearLog } from './log.js';
 import { loadStrings, t, cardName, relicName } from './strings.js';
@@ -45,15 +45,13 @@ const S = {
   busy: false,
   turn: 0,
   snapshot: null,
-  hud: null,
-  metrics: { loadMs: null, t0: null, reactMs: null, engineMs: null, fps: 0, minFps: null, playing: false },
+  playing: false,   // zolang de wachtrij speelt
 };
 
 // ---------------------------------------------------------------- publieke API
 
-export async function init(host, dotnetRef, loadMs) {
+export async function init(host, dotnetRef) {
   S.dotnet = dotnetRef;
-  S.metrics.loadMs = loadMs;
 
   await Promise.all([loadStrings(), loadArt(), initAudio()]).catch(() => {});
 
@@ -82,30 +80,20 @@ export async function init(host, dotnetRef, loadMs) {
 
   buildBackground();
   buildUi();
-  buildHud();
-  // Gevechtslog links, onder de HUD en naast de speler
+  // Gevechtslog links, naast de speler
   buildLog(S.layers.ui, 22, 84, 172, 220);
   setupInput();
 
-  app.ticker.add(onTick);
+  app.ticker.add(fit);
   fit();
 }
 
-export async function play(events, meta = {}) {
-  S.metrics.engineMs = meta.engineMs ?? null;
-  S.metrics.playing = true;
-  S.metrics.minFps = null;
-
-  if (S.metrics.t0 !== null) {
-    const t0 = S.metrics.t0;
-    S.metrics.t0 = null;
-    requestAnimationFrame(() => { S.metrics.reactMs = performance.now() - t0; });
-  }
-
+export async function play(events) {
+  S.playing = true;
   try {
     await runQueue(S, events);
   } finally {
-    S.metrics.playing = false;
+    S.playing = false;
   }
 }
 
@@ -152,6 +140,23 @@ export function reset() {
   S.pending = null;
   S.busy = false;
   clearLog();
+}
+
+/** Geluid aan of uit, vanuit het optiescherm van de shell. */
+export function setSound(on) {
+  setMuted(!on);
+}
+
+export function soundOn() {
+  return !isMuted();
+}
+
+/** Andere taal gekozen in de shell: de kaarten in je hand en het label erboven in die taal hertekenen. */
+export async function setLanguage(lang) {
+  await loadStrings(lang);
+  if (!S.snapshot) return;
+  S.setModifiers(S.snapshot.modifiers);
+  if (S.hand.length) dealHand(S.hand.map((c) => c.view));
 }
 
 export function dispose() {
@@ -361,33 +366,6 @@ function drawRelics() {
     label.position.set(tex ? -ICON_SIZE - 6 : 0, y);
     box.addChild(label);
   });
-}
-
-function buildHud() {
-  const hud = new PIXI.Text({ text: '', style: { fontFamily: FONT, fontSize: 10, fill: COLORS.muted } });
-  hud.position.set(22, 18);
-  S.root.addChild(hud);
-  S.hud = hud;
-  S.hudTimer = 0;
-}
-
-function onTick(ticker) {
-  fit();
-
-  // Meetpunten voor de succescriteria
-  const instant = 1000 / Math.max(1, ticker.deltaMS);
-  if (S.metrics.playing) S.metrics.minFps = Math.min(S.metrics.minFps ?? instant, instant);
-  S.hudTimer += ticker.deltaMS;
-  if (S.hudTimer > 250) {
-    S.hudTimer = 0;
-    const m = S.metrics;
-    const f = (v, unit = 'ms') => (v === null || v === undefined ? '-' : `${v.toFixed(v < 10 ? 1 : 0)} ${unit}`);
-    S.hud.text = [
-      `fps ${ticker.FPS.toFixed(0)}  min during last animation ${m.minFps === null ? '-' : m.minFps.toFixed(0)}`,
-      `click→frame ${f(m.reactMs)}  engine ${f(m.engineMs)}  playable after ${f(m.loadMs)}`,
-      t('stage.fast', { state: t(juice.speed < 1 ? 'stage.on' : 'stage.off') }),
-    ].join('\n');
-  }
 }
 
 function fit() {
@@ -750,7 +728,8 @@ function layoutHand(animate = true) {
 }
 
 function dealHand(views) {
-  for (const c of S.hand) c.destroy({ children: true });
+  // Een hand die nog binnenvliegt (opnieuw delen na een taalwissel): eerst haar tweens stoppen
+  for (const c of S.hand) { gsap.killTweensOf(c); gsap.killTweensOf(c.scale); c.destroy({ children: true }); }
   S.hand = views.map(createCard);
   S.hand.forEach((card, i) => { card.targetAlpha = views[i].playable ? 1 : 0.5; });
   layoutHand(false);
@@ -801,7 +780,7 @@ function setupInput() {
 function onKey(e) {
   if (e.key === 'f' || e.key === 'F') juice.speed = juice.speed < 1 ? 1 : 0.5;
   if (e.key === 'm' || e.key === 'M') toggleMute();
-  // TIJDELIJK: win het gevecht meteen, om snel te testen
+  // Sneltoets W: win het gevecht meteen, om snel te testen. Blijft ook in playtests.
   if ((e.key === 'w' || e.key === 'W') && S.dotnet) S.dotnet.invokeMethodAsync('OnDebugWin');
 }
 
@@ -871,7 +850,6 @@ async function onDragEnd(e) {
 
   S.busy = true;
   S.pending = { card: d.card };
-  S.metrics.t0 = performance.now();
   try {
     await S.dotnet.invokeMethodAsync('OnCardPlayed', d.card.handIndex, target.id);
   } catch (err) {
@@ -885,7 +863,7 @@ async function onDragEnd(e) {
 
 /** Zolang de wachtrij speelt, is input geblokkeerd. */
 function inputLocked() {
-  return S.busy || S.metrics.playing;
+  return S.busy || S.playing;
 }
 
 function targetAt(p, mode) {

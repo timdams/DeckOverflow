@@ -11,6 +11,7 @@ Deze repo is de enige bron voor het ontwerp. De docs zijn modulair: lees wat je 
 | [wereld/x-register.md](wereld/x-register.md) | Het ✗-register: achievements, en hoe een afdeling panelen levert | achievements |
 | [wereld/backend.md](wereld/backend.md), [wereld/supabase.md](wereld/supabase.md) | Hosting, accounts, klascode, data; het werkplan van de backend | auth, opslag, klassement |
 | [afdelingen/card-hall/](afdelingen/card-hall/README.md) | De deckbuilder: core loop, kernsysteem, drie acts, kaarten, events | de deckbuilder |
+| [afdelingen/control-room/](afdelingen/control-room/README.md) | Regels voor een automaat (H5): acht gevechten, natuurwetten, events | de Controlekamer |
 | [geschiedenis/spikes.md](geschiedenis/spikes.md) | Archief: spike 1 tot 4, succescriteria, de weg naar de MVP | (zelden nodig) |
 | [Architectuurschema](architectuur.svg) | De motor beslist, de stage speelt af | |
 | [Product sheet](product-sheet/product-sheet.html) | A4-pitch voor instellingen en financiers | |
@@ -29,7 +30,7 @@ Op 3 oktober 2026 is **The Card Hall** speelbaar: de deckbuilder met drie acts, 
 - **Bewuste intents** die rekenen met jouw blok, kaarten, energie of HP.
 - **De Codex**: 15 pagina's, geordend per hoofdstuk, met jouw moment als mini-animatie en een link naar het boek.
 - **Het ✗-register**: 11 panelen.
-- **De wereld**: teases, de onthulling en de fabrieksplattegrond met zes afdelingen. Alleen de Card Hall is echt speelbaar; de Controlekamer is een los prototype (spike 8).
+- **De wereld**: teases, de onthulling en de fabrieksplattegrond met zes afdelingen. De Card Hall en, sinds 4 oktober 2026, de Controlekamer (acht gevechten, overgenomen uit spike 8) zijn speelbaar.
 - **Score van een run** en een dagelijkse seed in de motor; accounts en klascodes in Supabase. Het klassement zelf (de Prikklok) is nog niet aangesloten.
 - **Tijdelijk:** de sneltoets W wint het lopende gevecht. Die moet eruit voor een playtest.
 

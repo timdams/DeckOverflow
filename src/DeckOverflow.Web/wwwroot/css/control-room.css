@@ -1,0 +1,175 @@
+/* De Controlekamer: hetzelfde papier en dezelfde inkt als de Card Hall. Kleur blijft voorbehouden aan types;
+   een regel die vuurt, licht op in inkt, niet in een kleur. */
+
+.room {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+}
+
+.room-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 112px 8px 14px;
+  border-bottom: 1px solid var(--rule);
+}
+.room-head h1.title-word { margin: 0; white-space: nowrap; font-size: clamp(20px, 2.2vw, 28px); }
+.room-head .head-tools { margin-left: auto; display: flex; gap: 8px; flex: none; }
+.room-head .head-tools .title-button { padding: 6px 10px; font-size: 13px; white-space: nowrap; }
+
+/* De gevechten als stappen in een handleiding */
+.steps { display: flex; gap: 6px; flex-wrap: nowrap; overflow-x: auto; min-width: 0; padding: 2px 4px 4px 2px; }
+.step {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px 4px 4px; font-size: 12px; box-shadow: 2px 2px 0 var(--ink); white-space: nowrap; flex: none;
+}
+.step .circle {
+  display: inline-grid; place-items: center; width: 22px; height: 22px;
+  border: 2px solid var(--ink); border-radius: 50%; font-size: 12px;
+}
+.step.current { background: var(--ink); color: var(--paper); }
+.step.current .circle { border-color: var(--paper); }
+.step.beaten .circle { background: var(--ink); color: var(--paper); }
+.step.current.beaten .circle { background: var(--paper); color: var(--ink); }
+.step.bug .label::after { content: " ✗"; color: var(--zss); }
+
+.room-floor {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(300px, 1.1fr) minmax(340px, 1.6fr) minmax(240px, 0.9fr);
+  gap: 14px;
+  padding: 12px 14px;
+}
+
+.board { display: flex; flex-direction: column; gap: 6px; min-height: 0; overflow-y: auto; }
+.board h2 { margin: 0; font-size: 18px; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.board h2 small { font-size: 12px; color: var(--muted); font-weight: 700; }
+.board h2 .tag { color: var(--zss); }
+.board .hint, .room .hint { margin: 0; color: var(--muted); font-size: 12px; font-weight: 700; }
+.board .flavor { margin: 4px 0 0; font-size: 13px; color: var(--ink); }
+
+/* Regels: genummerde stappen. Wat vuurt, staat in inkt; wat nooit bereikt werd, is doorgestreept */
+.rules { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.rule {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 5px;
+  padding: 6px 8px; background: var(--white); border: 2px solid var(--ink); border-radius: 6px;
+  font-size: 13px; transition: background 120ms, color 120ms;
+}
+.rule .num {
+  display: inline-grid; place-items: center; width: 20px; height: 20px; flex: none;
+  border: 2px solid var(--ink); border-radius: 50%; font-size: 11px; font-weight: 700;
+}
+.rule .handle { cursor: grab; color: var(--muted); user-select: none; }
+.rule .kw { font-weight: 700; color: var(--muted); }
+.rule .arrow { font-weight: 700; }
+.rule .tools { margin-left: auto; display: flex; gap: 2px; }
+.rule .stat { font-size: 11px; color: var(--muted); font-weight: 700; margin-left: auto; }
+.rule .sentence { font-weight: 700; }
+.rule.lifted { opacity: 0.4; }
+.rule.live { box-shadow: 3px 3px 0 var(--ink); }
+.rule.flash { background: var(--ink); color: var(--paper); }
+.rule.flash .num { border-color: var(--paper); }
+.rule.flash .kw, .rule.flash .stat { color: var(--shade); }
+.rule.dead { border-style: dashed; color: var(--muted); }
+.rule.dead .sentence, .rule.dead .chip { text-decoration: line-through; }
+.rule.idle { border-style: dashed; }
+.rule.new { border-style: dashed; color: var(--muted); cursor: pointer; background: transparent; }
+.rule.new.hot { border-color: var(--ink); color: var(--ink); background: var(--shade); }
+
+/* Vakjes op een regel en de tegels die erin passen */
+.slot { display: inline-flex; align-items: center; gap: 4px; border-radius: 5px; padding: 1px; }
+.slot.hot { outline: 2px dashed var(--ink); outline-offset: 1px; background: var(--shade); cursor: copy; }
+.slot.empty { min-width: 26px; justify-content: center; border: 2px dashed var(--ink); font-weight: 700; }
+.chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 7px; border: 1.5px solid var(--ink); border-radius: 12px; background: var(--paper); font-weight: 700;
+}
+.chip.move-chip { border-radius: 3px; background: var(--white); }
+.chip .not { font-weight: 900; }
+.chip.negated { border-style: double; border-width: 3px; }
+.chip select.value { font: inherit; font-size: 12px; padding: 0 2px; border: 1px solid var(--ink); border-radius: 3px; background: var(--white); }
+.chip .unit { font-weight: 400; font-size: 11px; }
+button.join-chip { padding: 1px 6px; font-size: 11px; box-shadow: none; border-width: 1.5px; }
+
+button.tiny { padding: 1px 6px; font-size: 11px; box-shadow: none; border-width: 1.5px; }
+button.tiny.on { background: var(--ink); color: var(--paper); }
+
+/* De gereedschapsbak */
+.toolbox { margin-top: 6px; padding: 8px; border: 2px dashed var(--rule); border-radius: 6px; display: flex; flex-direction: column; gap: 6px; }
+.toolbox .tiles { display: flex; flex-wrap: wrap; gap: 6px; }
+button.tile { padding: 4px 9px; font-size: 12px; box-shadow: 2px 2px 0 var(--ink); cursor: grab; border-radius: 12px; }
+button.tile.move { border-radius: 3px; }
+button.tile.op { font-weight: 900; }
+button.tile.held { background: var(--ink); color: var(--paper); transform: translate(-1px, -2px); box-shadow: 3px 4px 0 var(--muted); }
+
+.code-toggle { font-size: 12px; font-weight: 700; display: flex; gap: 6px; align-items: center; color: var(--muted); }
+pre.code {
+  margin: 0; padding: 8px 10px; background: var(--white); border: 1.5px solid var(--rule); border-radius: 4px;
+  font-family: Consolas, "Courier New", monospace; font-size: 12px; white-space: pre; overflow-x: auto;
+}
+
+/* Het midden: stage, knoppen, tijdlijn, uitslag en log */
+.arena { display: flex; flex-direction: column; gap: 8px; min-height: 0; overflow-y: auto; }
+.stage-box { flex: none; height: clamp(220px, 46vh, 460px); border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; }
+.arena .controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.arena .controls .play-big { padding: 8px 22px; }
+.arena .speed { margin-left: auto; display: flex; gap: 3px; }
+.timeline { display: flex; align-items: center; gap: 10px; }
+.timeline input[type=range] { flex: 1; accent-color: var(--ink); }
+.timeline .turn { font-size: 12px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+
+.result { padding: 10px 12px; border: 2.5px solid var(--ink); border-radius: 6px; background: var(--white); box-shadow: 4px 4px 0 var(--ink); }
+.result h3 { margin: 0 0 4px; font-size: 20px; }
+.result p { margin: 0 0 6px; font-size: 14px; }
+.result .actions { display: flex; gap: 8px; margin-top: 8px; }
+.result .codex-bug { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--rule); font-size: 13px; }
+.result .codex-bug .codex-label { color: var(--zss); font-weight: 700; margin-right: 6px; }
+.result .codex-bug p { margin: 4px 0 0; }
+
+/* Histogrammen zoals Opus Magnum: jouw bord in inkt, je beste ooit omkaderd */
+.histograms { display: flex; gap: 18px; flex-wrap: wrap; margin: 6px 0 2px; }
+.histogram { display: flex; flex-direction: column; gap: 3px; }
+.hist-title { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.hist-bars { display: flex; align-items: flex-end; gap: 3px; height: 64px; }
+.hist-bars .bar { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; width: 16px; height: 100%; }
+.hist-bars .fill { width: 100%; background: var(--rule); border: 1px solid var(--muted); border-bottom: none; }
+.hist-bars .key { font-size: 9px; color: var(--muted); font-weight: 700; }
+.hist-bars .bar.yours .fill { background: var(--ink); border-color: var(--ink); }
+.hist-bars .bar.yours .key { color: var(--ink); }
+.hist-bars .bar.best .fill { outline: 2px solid var(--zss); outline-offset: 1px; }
+
+.log { list-style: none; margin: 0; padding: 0; font-size: 12px; display: flex; flex-direction: column; gap: 1px; }
+.log li { color: var(--ink); }
+.log li.turn { color: var(--muted); font-weight: 700; margin-top: 3px; }
+.log li.enemy { padding-left: 14px; }
+.log li.wasted { color: var(--muted); font-style: italic; }
+
+/* Een tablet rechtop: de stage bovenaan over de hele breedte, de twee borden eronder */
+@media (max-width: 980px) and (min-height: 501px) {
+  .room-floor { grid-template-columns: 1fr 1fr; overflow-y: auto; }
+  .room-floor .arena { grid-column: 1 / -1; order: -1; }
+}
+
+/* Liggend op een telefoon: drie smalle kolommen naast elkaar, elk met een eigen schuifbalk */
+@media (max-height: 500px) {
+  .room-head { padding: 4px 104px 4px 8px; gap: 8px; }
+  .room-head h1.title-word { display: none; }
+  .room-head .head-tools .title-button { padding: 4px 8px; font-size: 12px; }
+  .step .label { display: none; }
+  .step { padding: 2px; }
+  .room-floor { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, 0.8fr); padding: 6px 8px; gap: 8px; }
+  .board h2 { font-size: 15px; }
+  .board .hint, .board .flavor { font-size: 11px; }
+  .rule { padding: 4px 6px; font-size: 12px; gap: 4px; }
+  .chip { padding: 1px 5px; }
+  button.tile { padding: 3px 7px; font-size: 11px; }
+  .toolbox { padding: 6px; }
+  .stage-box { height: 50vh; min-height: 0; }
+  .arena .controls .play-big { padding: 6px 16px; font-size: 16px; }
+  .arena .controls button { padding: 6px 10px; font-size: 12px; }
+  .log { font-size: 11px; }
+}

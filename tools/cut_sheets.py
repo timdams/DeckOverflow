@@ -95,6 +95,20 @@ SHEETS_SPEC = [
         "loop-snake", "crate-stack", "null-ghost", "switch", "foreman",
         "hero-cheer", "hero-down", "hero-reading", "punch-clock", "pouch",
     ]),
+    # De laatste vijanden van act 1, plus tekeningen voor later: recursie, off-by-one, een oneindige lus,
+    # arrays, methoden, switch, catch, de call stack, &&, de changelog en objecten uit één blauwdruk
+    ("future", 5, 3, "actors", "tight", 300, 3, [
+        "rhythm-turtle", "twin-shooters", "nameless", "nesting-robot", "fencepost",
+        "hamster-wheel", "lockers", "shelf-overrun", "stamp-press", "junction-box",
+        "safety-net", "plate-stack", "and-levers", "changelog", "blueprint-twins",
+    ]),
+    # Kaarten en relics van act 1, twee ✗-panelen, en voor later een catch-kaart, Undo en een haakjesrelic.
+    # Een naam met een map ervoor ("panels/...") gaat naar die map.
+    ("items2", 5, 3, "items", "square", 192, 5, [
+        "flip", "remainder", "hit-then-tighten", "tighten-then-hit", "brackets",
+        "relic-ternary-plate", "relic-metronome", "relic-overflow-valve", "relic-tryparse-glove", "relic-half-shim",
+        "panels/after-midnight", "panels/divide-by-zero", "catch", "relic-undo", "relic-brackets",
+    ]),
 ]
 
 # Figuren die op hun vel naar rechts kijken: gespiegeld, zodat ze vanaf rechts de held aankijken.
@@ -104,6 +118,7 @@ FLIP = {"level-256", "flight-501", "the-index", "reckoner", "ghost", "typesetter
 FILL = 12          # tot dit kanaalverschil met de achtergrond is een pixel achtergrond
 SOFT = (12, 60)    # zachte rand daarboven
 MARGIN = 0.05
+SMALL_PIECE = 0.005  # een stuk kleiner dan dit deel van een vakje gaat mee met zijn grote buur
 
 
 def background(rgb: np.ndarray) -> np.ndarray:
@@ -128,19 +143,34 @@ def alpha_mask(rgb: np.ndarray, bg: np.ndarray) -> np.ndarray:
 
 
 def pieces_per_cell(alpha: np.ndarray, cols: int, rows: int) -> list[np.ndarray]:
-    """Een masker per vakje met alle stukken waarvan het midden in dat vakje ligt."""
+    """
+    Een masker per vakje. Een groot stuk gaat naar het vakje waar zijn midden ligt; een klein stuk
+    (bewegingsstreepjes, een vonk) gaat mee met het dichtstbijzijnde grote stuk, ook als het over de
+    grens van zijn vakje steekt.
+    """
     cell_w, cell_h = alpha.shape[1] / cols, alpha.shape[0] / rows
     labels, _ = ndimage.label(alpha > 24, structure=np.ones((3, 3)))
     masks = [np.zeros(alpha.shape, dtype=bool) for _ in range(cols * rows)]
+    small_limit = cell_w * cell_h * SMALL_PIECE
+
+    pieces = []
     for i, sl in enumerate(ndimage.find_objects(labels), start=1):
         part = labels[sl] == i
-        if part.sum() < 6:
+        size = part.sum()
+        if size < 6:
             continue  # stofje
         cy = (sl[0].start + sl[0].stop) / 2
         cx = (sl[1].start + sl[1].stop) / 2
-        col = min(int(cx // cell_w), cols - 1)
-        row = min(int(cy // cell_h), rows - 1)
-        masks[row * cols + col][sl] |= part
+        pieces.append((sl, part, size, cx, cy))
+
+    big = [(cx, cy, min(int(cy // cell_h), rows - 1) * cols + min(int(cx // cell_w), cols - 1))
+           for _, _, size, cx, cy in pieces if size >= small_limit]
+    for sl, part, size, cx, cy in pieces:
+        if size >= small_limit or not big:
+            cell = min(int(cy // cell_h), rows - 1) * cols + min(int(cx // cell_w), cols - 1)
+        else:
+            cell = min(big, key=lambda b: (b[0] - cx) ** 2 + (b[1] - cy) ** 2)[2]
+        masks[cell][sl] |= part
     return masks
 
 
@@ -179,9 +209,10 @@ def main() -> None:
         alpha = alpha_mask(rgb, background(rgb))
         masks = pieces_per_cell(alpha, cols, rows)
 
-        target = OUT / folder
-        target.mkdir(parents=True, exist_ok=True)
-        for name, mask in zip(names, masks):
+        for entry, mask in zip(names, masks):
+            sub, _, name = entry.rpartition("/")
+            target = OUT / (sub or folder)
+            target.mkdir(parents=True, exist_ok=True)
             if not mask.any():
                 raise ValueError(f"{prefix}: vakje {name} is leeg")
             img = fit(thicken(crop(rgb, alpha, mask, shape), line), size)

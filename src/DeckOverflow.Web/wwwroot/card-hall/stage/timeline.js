@@ -742,6 +742,40 @@ const handlers = {
     await wait(200);
   },
 
+  /** Een teller ging omhoog met ++: bij de speler zijn Tighten-kaarten, bij de Twin Shooters hun shots. */
+  async VariableIncremented(S, e, ctx) {
+    const a = S.actor(e.targetId);
+    if (!a) return;
+    const body = a.center();
+    if (a.isEnemy) a.pulseRule();
+    sfx('tick', { combo: ctx.combo++, volume: 0.6 });
+    floatText(S.layers.fx, `${e.before} → ${e.after}`, body.x, body.y, { size: 16, rise: 24 });
+    await wait(180);
+  },
+
+  /** Move the Brackets: dezelfde getallen, andere haakjes. De intent wordt opnieuw uitgeschreven. */
+  async IntentRegrouped(S, e) {
+    const a = S.actor(e.enemyId);
+    const head = a.head();
+    sfx('click', { volume: 0.6 });
+    floatText(S.layers.fx, '( )', head.x, head.y - 70, { size: 22, rise: 20 });
+    gsap.fromTo(a.intentNode.scale, { x: 1.4, y: 1.4 }, { x: 1, y: 1, duration: sec(260), ease: 'back.out(2)' });
+    await a.typeIntent(e.expression, e.value);
+  },
+
+  /** De aanval van de vijand crashte tijdens het uitrekenen: hij schudt, en er komt niets. */
+  async AttackCrashed(S, e) {
+    const a = S.actor(e.enemyId);
+    const head = a.head();
+    sfx('glitch');
+    shake(S.shaker, juice.shakePx.large);
+    floatText(S.layers.fx, t('stage.exception', { exception: e.exception }), head.x, head.y - 60, { size: 20, rise: 30, holdMs: 800 });
+    floatText(S.layers.fx, e.expression, head.x, head.y - 30, { size: 14, rise: 30, holdMs: 800, color: COLORS.muted });
+    gsap.to(a.intentNode, { alpha: 0.25, duration: sec(200) });
+    gsap.to(a.intentNode, { alpha: 1, duration: sec(200), delay: sec(700) });
+    await wait(600);
+  },
+
   /** De wachtende modifiers zijn weggeveegd: ze vallen weg boven de batterij. */
   async ModifiersScrapped(S, e) {
     sfx('click', { volume: 0.6 });

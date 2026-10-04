@@ -15,12 +15,15 @@ public sealed record CodexEntry(string Key, int? Chapter, string BookPage, int M
 public static class CodexCatalog
 {
     public const string Variables = "variables";
+    public const string Identifiers = "identifiers";
     public const string IntTruncation = "int-truncation";
     public const string IntegerDivision = "integer-division";
     public const string Modulo = "modulo";
+    public const string Increment = "increment";
     public const string Booleans = "booleans";
     public const string Overflow = "overflow";
     public const string OperatorPrecedence = "operator-precedence";
+    public const string Constants = "constants";
     public const string StringConcat = "string-concat";
     public const string StringLength = "string-length";
     public const string CharIsNumber = "char-is-number";
@@ -28,18 +31,24 @@ public static class CodexCatalog
     public const string Convert = "convert";
     public const string Rounding = "rounding";
     public const string Parse = "parse";
+    public const string IfElse = "if-else";
+    public const string RelationalOperators = "relational-operators";
+    public const string LogicalOperators = "logical-operators";
     public const string Exceptions = "exceptions";
 
     /// <summary>In de volgorde van het boek.</summary>
     public static readonly IReadOnlyList<CodexEntry> All =
     [
         new(Variables, 2, "1_csharpbasics/1b_variabelen.html"),
+        new(Identifiers, 2, "1_csharpbasics/1b_variabelen.html"),
         new(IntTruncation, 2, "1_csharpbasics/1_datatypes.html"),
         new(IntegerDivision, 2, "1_csharpbasics/2_expressies.html"),
         new(Modulo, 2, "1_csharpbasics/2_expressies.html"),
+        new(Increment, 2, "1_csharpbasics/2_expressies.html"),
         new(Booleans, 2, "1_csharpbasics/1_datatypes.html"),
         new(Overflow, 2, "1_csharpbasics/1_datatypes.html"),
         new(OperatorPrecedence, 2, "1_csharpbasics/2_expressies.html"),
+        new(Constants, 2, "1_csharpbasics/1b_variabelen.html"),
         new(StringConcat, 3, "2_tekst/5_chars_strings.html", MinAct: 2),
         new(StringLength, 3, "2_tekst/5_chars_strings.html", MinAct: 2),
         new(CharIsNumber, 3, "2_tekst/5_chars_strings.html", MinAct: 2),
@@ -47,6 +56,10 @@ public static class CodexCatalog
         new(Convert, 4, "3_data/4_converteren_casting.html#conversie", MinAct: 3),
         new(Rounding, 4, "3_data/4d_afronden.html", MinAct: 3),
         new(Parse, 4, "3_data/4_converteren_casting.html#parsing-en-.tostring", MinAct: 3),
+        // H5, uit de Controlekamer: de eerste regel die klopt, wint
+        new(IfElse, 5, "4_beslissingen/0_if.html#if---else-if"),
+        new(RelationalOperators, 5, "4_beslissingen/1_logic_and_relationsoperator.html#relationele-operators"),
+        new(LogicalOperators, 5, "4_beslissingen/1_logic_and_relationsoperator.html#logische-operators"),
         new(Exceptions, 10, "20_exceptions/0_exceptionhandling.html"),
     ];
 

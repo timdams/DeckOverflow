@@ -38,6 +38,12 @@ public sealed class Combat
     /// <summary>De <c>bool</c> van de Bool Ghost (<see cref="EnemySetup.Toggles"/>): alleen als hij solid is, raakt een treffer.</summary>
     private bool _enemySolid = true;
     private int _cardsPlayed;
+    /// <summary>De teller van de Tighten-kaarten (<see cref="IncrementEffect"/>): <c>count++</c> en <c>++count</c> delen hem.</summary>
+    private int _count = IncrementEffect.Start;
+    /// <summary>De teller van de Twin Shooters (<see cref="EnemySetup.Shots"/>).</summary>
+    private int _shots;
+    /// <summary>Move the Brackets verschoof de haakjes van de aanval die nu komt.</summary>
+    private bool _regrouped;
     /// <summary>Kaarten deze beurt: een variabele voor bewuste intents.</summary>
     private int _cardsThisTurn;
     /// <summary>Schade op de vijand deze beurt, voor de interpolatie van The Typesetter.</summary>
@@ -51,6 +57,7 @@ public sealed class Combat
         _player = new Combatant(PlayerId, setup.Player, isEnemy: false);
         _enemy = new Combatant(EnemyId, setup.Enemy.Stats, isEnemy: true);
         _deck = new Deck(setup.Deck, new SeededRng(seed));
+        _shots = setup.Enemy.Shots ?? 0;
         _relics = RelicCatalog.CreateAll(setup.Relics ?? []);
         Turn = 1;
         Energy = setup.MaxEnergy;
@@ -97,7 +104,7 @@ public sealed class Combat
         Turn,
         Energy,
         _setup.MaxEnergy,
-        [.. _deck.Hand.Select(c => new CardView(c.Id, CostOf(c), CardText.Of(c), c.Target, c.Kind, c.CastTo, CostOf(c) <= Energy))],
+        [.. _deck.Hand.Select(c => new CardView(c.Id, CostOf(c), CardText.Of(c, _count), c.Target, c.Kind, c.CastTo, CostOf(c) <= Energy))],
         _deck.DrawCount,
         _deck.DiscardCount,
         [View(_player, intent: null, Context()), View(_enemy, _enemy.IsDead ? null : CurrentIntent, Context())],
@@ -118,6 +125,10 @@ public sealed class Combat
         CardDefinition card = _deck.Hand[play.HandIndex];
         int cost = CostOf(card);
 
+        // Een Tighten-kaart slaat met wat haar teller nu oplevert; de teller zelf gaat pas omhoog als ze echt gespeeld wordt
+        IncrementEffect? increment = card.Effect as IncrementEffect;
+        if (increment is not null) card = card with { Effect = new DamageEffect(increment.Peek(_count)) };
+
         if (cost > Energy)
         {
             Emit(new PlayRejected(play.HandIndex, "reject.no-energy"));
@@ -128,6 +139,35 @@ public sealed class Combat
         if (target is null)
         {
             Emit(new PlayRejected(play.HandIndex, "reject.bad-target"));
+            return;
+        }
+
+        // The Nameless: een naam die niet compileert of naar niets wijst, kan je niet raken
+        if (target.IsEnemy && NameRejection() is { } badName)
+        {
+            Emit(new PlayRejected(play.HandIndex, badName));
+            return;
+        }
+
+        // Een const kan je niets toekennen: attack = 1 compileert niet meer
+        if (card.Effect is SetAttackEffect or RemainderEffect && _setup.Enemy.ConstAttack)
+        {
+            string assignment = card.Effect is RemainderEffect r ? $"attack = attack % {r.Divisor}" : $"attack = {((SetAttackEffect)card.Effect).Value}";
+            Moment(CodexCatalog.Constants, ("expression", assignment));
+            Emit(new PlayRejected(play.HandIndex, "reject.const"));
+            return;
+        }
+
+        if (card.Effect is RegroupEffect && CurrentIntent.Regrouped is null)
+        {
+            Emit(new PlayRejected(play.HandIndex, "reject.no-brackets"));
+            return;
+        }
+
+        // De rest van een aanval die toch al crasht, bestaat niet
+        if (card.Effect is RemainderEffect && CurrentIntent.TryValueIn(Context()) is null)
+        {
+            Emit(new PlayRejected(play.HandIndex, "reject.attack-crashes"));
             return;
         }
 
@@ -197,11 +237,11 @@ public sealed class Combat
 
         if (crash is not null)
         {
-            // Nog geen catch in act 1: een exception beëindigt gewoon je beurt
+            // Nog geen catch in act 1: een exception beëindigt gewoon je beurt. In beeld heet het crashen;
+            // het woord exception en de Codex-pagina horen bij H10 (beslist op 4 oktober 2026)
             string expression = Evaluate(ModifiedAmount(card)!.Value.Amount, ModifiedAmount(card)!.Value.Kind, describeOnly: true).Expression;
             _modifiers.Clear();
             Emit(new ExceptionThrown(crash.GetType().Name, expression));
-            Moment(CodexCatalog.Exceptions, ("exception", crash.GetType().Name), ("expression", expression));
             HandleEndTurn();
             return;
         }
@@ -212,7 +252,10 @@ public sealed class Combat
             return;
         }
 
+        // ++count telt op voor de treffer, count++ erna
+        if (increment is { Prefix: true }) Increment(increment);
         Apply(card, card.Effect, target);
+        if (increment is { Prefix: false }) Increment(increment);
         FireRelics();
         CheckOutcome();
     }
@@ -231,23 +274,42 @@ public sealed class Combat
 
         // Vijand valt aan, tenzij hij crashte
         Intent attack = CurrentIntent;
+        bool assigned = _assignedAttack is not null;
+        bool regrouped = _regrouped;
         _assignedAttack = null;
+        _regrouped = false;
+        IntentContext context = Context();
         if (_enemyCrashed)
         {
             _enemyCrashed = false;
             Emit(new AttackSkipped(EnemyId));
         }
+        else if (attack.TryValueIn(context) is not { } value)
+        {
+            // Zijn eigen aanval crasht: 30 / 0 is een DivideByZeroException, en dan valt hij niet aan
+            string filled = attack.FilledIn(context);
+            Emit(new AttackCrashed(EnemyId, nameof(DivideByZeroException), filled));
+        }
         else
         {
             // Een bewuste intent rekent nu uit, met wat je aan het eind van je beurt hebt
-            IntentContext context = Context();
-            double value = attack.ValueIn(context);
             Emit(new AttackLaunched(EnemyId, PlayerId, attack.FilledIn(context), value));
             if (attack.IsLive)
             {
                 Moment(CodexCatalog.Variables, ("expression", attack.Expression), ("filled", attack.FilledIn(context)), ("value", value));
                 if (attack.Expression.Contains(" / ")) Moment(CodexCatalog.IntegerDivision, ("expression", attack.FilledIn(context)), ("value", value));
             }
+            if (regrouped) Moment(CodexCatalog.OperatorPrecedence, ("expression", attack.FilledIn(context)), ("value", value));
+
+            // De Twin Shooters: na shots++ + ++shots staat de teller twee hoger. Een overschreven aanval telt niet.
+            if (_setup.Enemy.Shots is not null && !assigned)
+            {
+                int before = _shots;
+                _shots += _setup.Enemy.ShotsPerAttack;
+                Emit(new VariableIncremented(EnemyId, attack.Expression, before, value, _shots));
+                Moment(CodexCatalog.Increment, ("expression", attack.Expression), ("value", value), ("after", _shots));
+            }
+
             DealDamage(_player, value, fromPlayer: false);
             if (CheckOutcome()) return;
         }
@@ -308,10 +370,10 @@ public sealed class Combat
         Emit(new TurnStarted(Turn, Energy));
 
         Intent next = CurrentIntent;
-        Emit(new IntentRevealed(EnemyId, next.Expression, next.Hidden ? null : next.ValueIn(Context())));
+        Emit(new IntentRevealed(EnemyId, next.Expression, next.Hidden ? null : next.TryValueIn(Context())));
     }
 
-    /// <summary>TIJDELIJK: de vijand valt meteen om, wat zijn type ook is.</summary>
+    /// <summary>Sneltoets W: de vijand valt meteen om, wat zijn type ook is. Blijft ook in playtests (beslist op 4 oktober 2026).</summary>
     private void HandleDebugWin()
     {
         double before = _enemy.Hp;
@@ -375,6 +437,7 @@ public sealed class Combat
             case SetAttackEffect s: AssignAttack(s.Value); break;
             case FlipEffect: FlipSolid(); break;
             case RemainderEffect r: TakeRemainder(r.Divisor); break;
+            case RegroupEffect: Regroup(); break;
             case ModifierEffect m: QueueModifier(m); break;
 
             case ComboEffect combo:
@@ -430,6 +493,44 @@ public sealed class Combat
         _assignedAttack = new Intent(Num(rest), rest);
         Emit(new IntentAssigned(EnemyId, expression, rest));
         Moment(CodexCatalog.Modulo, ("expression", expression), ("value", rest));
+    }
+
+    /// <summary>Move the Brackets: dezelfde getallen, andere haakjes, een andere uitkomst. Al gecontroleerd bij het spelen.</summary>
+    private void Regroup()
+    {
+        Intent before = CurrentIntent;
+        Intent after = before.Regrouped!;
+        _assignedAttack = after;
+        _regrouped = true;
+        Emit(new IntentRegrouped(EnemyId, before.Expression, after.Expression, after.Hidden ? null : after.TryValueIn(Context())));
+    }
+
+    /// <summary>Een Tighten-kaart: echte <c>++</c> op de teller van het gevecht.</summary>
+    private void Increment(IncrementEffect increment)
+    {
+        int before = _count;
+        int value = increment.Use(ref _count);
+        Emit(new VariableIncremented(PlayerId, increment.Expression, before, value, _count));
+        Moment(CodexCatalog.Increment, ("expression", increment.Expression), ("value", value), ("after", _count));
+    }
+
+    /// <summary>De naam waarmee The Nameless deze beurt aangesproken wordt. Leeg voor elke andere vijand.</summary>
+    private string? CurrentName => _setup.Enemy.Names is { Count: > 0 } names ? names[(Turn - 1) % names.Count] : null;
+
+    /// <summary>Waarom een kaart The Nameless nu niet kan raken, als sleutel in <c>en.json</c>; leeg als zijn naam klopt.</summary>
+    private string? NameRejection()
+    {
+        if (CurrentName is not { } name) return null;
+        string real = _setup.Enemy.RealName!;
+        string? reason = IdentifierRules.Check(name) switch
+        {
+            IdentifierProblem.StartsWithDigit => "reject.name-digit",
+            IdentifierProblem.Keyword => "reject.name-keyword",
+            IdentifierProblem.BadCharacter => "reject.name-character",
+            _ => IdentifierRules.SameName(name, real) ? null : "reject.name-unknown",
+        };
+        if (reason is not null) Moment(CodexCatalog.Identifiers, ("name", name), ("real", real));
+        return reason;
     }
 
     /// <summary>Toekenning: wat er stond, doet er niet meer toe.</summary>
@@ -771,7 +872,6 @@ public sealed class Combat
         catch (Exception e) when (e is FormatException or OverflowException)
         {
             Emit(new ExceptionThrown(e.GetType().Name, $"int.Parse(\"{text}\")"));
-            Moment(CodexCatalog.Exceptions, ("exception", e.GetType().Name), ("expression", $"int.Parse(\"{text}\")"));
             return false;
         }
 
@@ -822,7 +922,6 @@ public sealed class Combat
             catch (Exception e) when (e is FormatException or OverflowException)
             {
                 Emit(new ConversionCrashed(target.Id, to, 0));
-                Moment(CodexCatalog.Exceptions, ("exception", e.GetType().Name), ("expression", $"Convert.ToByte(\"{text}\")"));
                 if (target.IsEnemy) _enemyCrashed = true;
             }
             return;
@@ -831,7 +930,6 @@ public sealed class Combat
         if (CastRules.ConvertChecked(hpBefore, to) is not { } hp)
         {
             Emit(new ConversionCrashed(target.Id, to, hpBefore));
-            Moment(CodexCatalog.Exceptions, ("exception", "OverflowException"), ("expression", $"Convert.ToByte({Num(hpBefore)})"));
             if (target.IsEnemy) _enemyCrashed = true;
             return;
         }
@@ -909,13 +1007,25 @@ public sealed class Combat
     };
 
     /// <summary>De variabelen van een bewuste intent, zoals ze nu staan.</summary>
-    private IntentContext Context() => new((int)_player.Block, _cardsThisTurn, Energy, (int)_player.Hp, _enemySolid, Turn);
+    private IntentContext Context() => new((int)_player.Block, _cardsThisTurn, Energy, (int)_player.Hp, _enemySolid, Turn, _shots);
 
     private CombatantView View(Combatant c, Intent? intent, IntentContext context) => new(
         c.Id, c.Key, c.Kind, c.Hp, c.MaxHp, c.Block, c.IsEnemy,
-        intent is null ? null : new IntentView(intent.Expression, intent.Hidden ? null : intent.ValueIn(context), intent.IsLive ? intent.FilledIn(context) : null),
+        intent is null ? null : new IntentView(intent.Expression, intent.Hidden ? null : intent.TryValueIn(context), intent.IsLive ? intent.FilledIn(context) : null),
         c.Text,
         c.Text is not null && c.IsEnemy && _setup.Enemy.CrashLength > 0 ? _setup.Enemy.CrashLength : null,
-        c.IsEnemy && _setup.Enemy.Toggles ? (_enemySolid ? "isSolid = true" : "isSolid = false")
-            : c.IsEnemy && _setup.Enemy.OpenEvery > 0 ? $"cards % {_setup.Enemy.OpenEvery} == 0" : null);
+        c.IsEnemy ? EnemyRule() : null);
+
+    /// <summary>Wat onder de balk van de vijand staat: zijn bool, zijn ritme, zijn teller, zijn naam, of dat zijn aanval const is.</summary>
+    private string? EnemyRule()
+    {
+        EnemySetup enemy = _setup.Enemy;
+        List<string> parts = [];
+        if (enemy.Toggles) parts.Add(_enemySolid ? "isSolid = true" : "isSolid = false");
+        if (enemy.OpenEvery > 0) parts.Add($"cards % {enemy.OpenEvery} == 0");
+        if (enemy.Shots is not null) parts.Add($"shots = {_shots}");
+        if (CurrentName is { } name) parts.Add($"name: {name}");
+        if (enemy.ConstAttack) parts.Add("const attack");
+        return parts.Count == 0 ? null : string.Join(" · ", parts);
+    }
 }

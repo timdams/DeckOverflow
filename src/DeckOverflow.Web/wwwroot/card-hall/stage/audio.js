@@ -4,13 +4,16 @@
 import { juice } from './juice.js';
 
 let howl = null;
-let muted = false;
+// Geluid aan of uit is een keuze van dit toestel, over runs heen. Opslag kan falen (privévenster): dan staat het aan.
+const MUTED_KEY = 'deckoverflow.muted';
+let muted = (() => { try { return localStorage.getItem(MUTED_KEY) === '1'; } catch { return false; } })();
 
 export async function initAudio(base = './audio/') {
   try {
     const sprite = await (await fetch(`${base}sfx.json`)).json();
     howl = new Howl({ src: [`${base}sfx.wav`], sprite, volume: 1 });
     Howler.volume(0.7);
+    Howler.mute(muted);
     await new Promise((resolve) => {
       if (howl.state() === 'loaded') return resolve();
       howl.once('load', resolve);
@@ -30,7 +33,14 @@ export function sfx(name, { combo = 0, rate = 1, volume = 0.8 } = {}) {
 }
 
 export function toggleMute() {
-  muted = !muted;
-  Howler.mute(muted);
+  return setMuted(!muted);
+}
+
+export function setMuted(value) {
+  muted = value;
+  if (typeof Howler !== 'undefined') Howler.mute(muted);
+  try { localStorage.setItem(MUTED_KEY, muted ? '1' : '0'); } catch { }
   return muted;
 }
+
+export const isMuted = () => muted;

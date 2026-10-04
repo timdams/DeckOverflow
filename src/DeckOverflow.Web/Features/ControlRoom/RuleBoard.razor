@@ -1,0 +1,250 @@
+@using DeckOverflow.ControlRoom.Gambits
+@using DeckOverflow.ControlRoom.Levels
+@inject Strings S
+
+@* Een lijst regels, van boven naar onder bekeken. Bewerkbaar voor de speler, alleen-lezen voor de vijand.
+   Bewerken gaat met tegels uit de gereedschapsbak: slepen met een muis, of tikken op een tegel en dan op een vakje.
+   Tijdens en na een duel toont elke regel hoe vaak ze vuurde, of dat ze nooit bereikt werd. Geen spelregels hier. *@
+
+<ol class="rules @(Editable ? "editable" : "readonly")">
+    @for (int i = 0; i < Rules.Count; i++)
+    {
+        int index = i;
+        RuleDraft r = Rules[i];
+        <li class="rule @StateClass(index) @(_draggedRow == index ? "lifted" : "")" @key="r"
+            @ondragover:preventDefault="Editable" @ondrop="() => DropOnRow(index)">
+            <span class="num">@(index + 1)</span>
+            @if (Editable)
+            {
+                <span class="handle" draggable="true" title="@S.T("room.ui.drag-row")"
+                      @ondragstart="() => _draggedRow = index" @ondragend="() => _draggedRow = null">⠿</span>
+                <span class="kw">@S.T("room.rule.if-kw")</span>
+                <span class="slot cond @Hot("cond")" @onclick="() => Place(index, Slot.When)"
+                      @ondragover:preventDefault @ondrop="() => Place(index, Slot.When)" @ondrop:stopPropagation>
+                    @ConditionChip(r.When, v => r.When.Value = v)
+                </span>
+                @if (r.Second is { } second)
+                {
+                    <button class="join-chip" title="@S.T("room.ui.flip-join")" @onclick="() => Change(() => r.Join = r.Join == Join.And ? Join.Or : Join.And)"
+                            disabled="@(Joins.Count < 2)">@S.T(r.Join == Join.And ? "room.rule.and-kw" : "room.rule.or-kw")</button>
+                    <span class="slot cond @Hot("cond")" @onclick="() => Place(index, Slot.Second)"
+                          @ondragover:preventDefault @ondrop="() => Place(index, Slot.Second)" @ondrop:stopPropagation>
+                        @ConditionChip(second, v => second.Value = v)
+                        <button class="tiny" title="@S.T("room.ui.remove-second")" @onclick="() => Change(() => r.Second = null)" @onclick:stopPropagation>✕</button>
+                    </span>
+                }
+                else if (Joins.Count > 0 && _hand is { Kind: TileKind.Join })
+                {
+                    <span class="slot cond empty hot" @onclick="() => Place(index, Slot.Second)"
+                          @ondragover:preventDefault @ondrop="() => Place(index, Slot.Second)" @ondrop:stopPropagation>+</span>
+                }
+                <span class="arrow">→</span>
+                <span class="slot move @Hot("move")" @onclick="() => Place(index, Slot.Move)"
+                      @ondragover:preventDefault @ondrop="() => Place(index, Slot.Move)" @ondrop:stopPropagation>
+                    <span class="chip move-chip">@RuleText.Move(S, r.Then)</span>
+                </span>
+                <span class="tools">
+                    <button class="tiny" disabled="@(index == 0)" title="@S.T("room.ui.up")" @onclick="() => Swap(index, index - 1)">▲</button>
+                    <button class="tiny" disabled="@(index == Rules.Count - 1)" title="@S.T("room.ui.down")" @onclick="() => Swap(index, index + 1)">▼</button>
+                    <button class="tiny" title="@S.T("room.ui.remove-rule")" @onclick="() => Change(() => Rules.RemoveAt(index))">✕</button>
+                </span>
+            }
+            else
+            {
+                <span class="sentence">@RuleText.Sentence(S, r.ToRule())</span>
+            }
+            <span class="stat">@StatText(index)</span>
+        </li>
+    }
+    @if (Editable && Rules.Count < Slots)
+    {
+        <li class="rule new @Hot("new")" @onclick="AddRule" @ondragover:preventDefault @ondrop="AddRule">
+            <span class="num">@(Rules.Count + 1)</span>
+            <span class="hint">@S.T(_hand is null ? "room.ui.add-rule" : "room.ui.drop-new")</span>
+        </li>
+    }
+</ol>
+
+@if (Editable)
+{
+    @* De gereedschapsbak: alles wat je in dit gevecht mag gebruiken *@
+    <div class="toolbox" @onkeydown="OnKey">
+        <div class="tiles">
+            @foreach (var check in Checks)
+            {
+                var tile = new Tile(TileKind.Condition, check);
+                <button class="tile cond @Held(tile)" draggable="true" @ondragstart="() => _hand = tile" @onclick="() => Pick(tile)">@S.T($"room.pick.{check}")</button>
+            }
+            @if (AllowNot)
+            {
+                var tile = new Tile(TileKind.Not);
+                <button class="tile op @Held(tile)" draggable="true" @ondragstart="() => _hand = tile" @onclick="() => Pick(tile)">@S.T("room.rule.not-kw")</button>
+            }
+            @foreach (var join in Joins)
+            {
+                var tile = new Tile(TileKind.Join, Join: join);
+                <button class="tile op @Held(tile)" draggable="true" @ondragstart="() => _hand = tile" @onclick="() => Pick(tile)">@S.T(join == Join.And ? "room.rule.and-kw" : "room.rule.or-kw")</button>
+            }
+        </div>
+        <div class="tiles">
+            @foreach (var move in Moves)
+            {
+                var tile = new Tile(TileKind.Move, Move: move);
+                <button class="tile move @Held(tile)" draggable="true" @ondragstart="() => _hand = tile" @onclick="() => Pick(tile)"
+                        title="@S.T($"room.move-help.{move}")">@RuleText.Move(S, move)</button>
+            }
+        </div>
+        <p class="hint">@S.T(_hand is null ? "room.ui.toolbox-hint" : "room.ui.toolbox-holding")</p>
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public List<RuleDraft> Rules { get; set; } = [];
+    [Parameter] public bool Editable { get; set; }
+    /// <summary>Het gevecht, voor de getallen die je in een voorwaarde kan kiezen. Nodig als het bord bewerkbaar is.</summary>
+    [Parameter] public Level? Level { get; set; }
+    [Parameter] public int Slots { get; set; }
+    [Parameter] public IReadOnlyList<Check> Checks { get; set; } = [];
+    [Parameter] public IReadOnlyList<Move> Moves { get; set; } = [];
+    [Parameter] public IReadOnlyList<Join> Joins { get; set; } = [];
+    [Parameter] public bool AllowNot { get; set; }
+    /// <summary>Per regel: hoe vaak bekeken en hoe vaak gevuurd, tot de zet die nu in beeld is.</summary>
+    [Parameter] public int[]? Checked { get; set; }
+    [Parameter] public int[]? Fired { get; set; }
+    /// <summary>Is het duel voorbij? Dan krijgen regels die nooit vuurden hun label.</summary>
+    [Parameter] public bool Finished { get; set; }
+    /// <summary>De regel die bij de zet in beeld vuurde, of -1.</summary>
+    [Parameter] public int FlashIndex { get; set; } = -1;
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private enum TileKind { Condition, Move, Join, Not }
+    private enum Slot { When, Second, Move }
+    private sealed record Tile(TileKind Kind, Check Check = Check.Always, Move Move = Move.Whack, Join Join = Join.And);
+
+    /// <summary>De tegel die je vasthebt: gesleept, of aangetikt en nog niet gelegd.</summary>
+    private Tile? _hand;
+    private int? _draggedRow;
+
+    private RenderFragment ConditionChip(ConditionDraft c, Action<int> setValue) =>
+        @<span class="chip cond-chip @(c.Not ? "negated" : "")">
+            @if (c.Not)
+            {
+                <span class="not">@S.T("room.rule.not-kw")</span>
+            }
+            @S.T($"room.pick.{c.Check}")
+            @if (Condition.TakesValue(c.Check))
+            {
+                <select class="value" value="@c.Value" @onclick:stopPropagation
+                        @onchange="e => Change(() => setValue(int.Parse((string)e.Value!)))">
+                    @foreach (var v in Level!.ValuesFor(c.Check))
+                    {
+                        <option value="@v">@v</option>
+                    }
+                </select>
+                @if (c.Check == Check.EveryNthTurn)
+                {
+                    <span class="unit">@S.T("room.ui.unit-turns")</span>
+                }
+            }
+        </span>;
+
+    private string Held(Tile tile) => _hand == tile ? "held" : "";
+
+    /// <summary>Licht de vakjes op waar de tegel in je hand past.</summary>
+    private string Hot(string slot) => _hand switch
+    {
+        null => "",
+        { Kind: TileKind.Condition } => slot is "cond" or "new" ? "hot" : "",
+        { Kind: TileKind.Not } => slot == "cond" ? "hot" : "",
+        { Kind: TileKind.Join } => slot == "cond" ? "hot" : "",
+        { Kind: TileKind.Move } => slot is "move" or "new" ? "hot" : "",
+        _ => ""
+    };
+
+    private void Pick(Tile tile) => _hand = _hand == tile ? null : tile;
+
+    private void OnKey(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape") _hand = null;
+    }
+
+    private Task Place(int index, Slot slot)
+    {
+        if (_hand is not { } tile) return Task.CompletedTask;
+        RuleDraft r = Rules[index];
+        bool placed = (tile.Kind, slot) switch
+        {
+            (TileKind.Condition, Slot.When) => Set(() => r.When = ConditionDraft.Of(tile.Check, Level!)),
+            (TileKind.Condition, Slot.Second) when tile.Check != Check.Always => Set(() => r.Second = ConditionDraft.Of(tile.Check, Level!)),
+            (TileKind.Not, Slot.When) when r.When.Check != Check.Always => Set(() => r.When.Not = !r.When.Not),
+            (TileKind.Not, Slot.Second) when r.Second is not null => Set(() => r.Second.Not = !r.Second.Not),
+            (TileKind.Join, _) when r.When.Check != Check.Always => Set(() =>
+            {
+                r.Join = tile.Join;
+                r.Second ??= ConditionDraft.Of(Checks.First(c => c != Check.Always), Level!);
+            }),
+            (TileKind.Move, Slot.Move) => Set(() => r.Then = tile.Move),
+            _ => false
+        };
+        if (!placed) return Task.CompletedTask;
+        _hand = null;
+        return OnChanged.InvokeAsync();
+    }
+
+    private static bool Set(Action change)
+    {
+        change();
+        return true;
+    }
+
+    /// <summary>Een nieuwe regel: met de tegel in je hand, of "altijd → de eerste zet".</summary>
+    private Task AddRule()
+    {
+        if (Rules.Count >= Slots) return Task.CompletedTask;
+        var rule = new RuleDraft { Then = Moves[0] };
+        if (_hand is { Kind: TileKind.Condition } cond) rule.When = ConditionDraft.Of(cond.Check, Level!);
+        if (_hand is { Kind: TileKind.Move } move) rule.Then = move.Move;
+        Rules.Add(rule);
+        _hand = null;
+        return OnChanged.InvokeAsync();
+    }
+
+    private Task DropOnRow(int target)
+    {
+        if (_draggedRow is not { } from || from == target) return Task.CompletedTask;
+        var rule = Rules[from];
+        Rules.RemoveAt(from);
+        Rules.Insert(target, rule);
+        _draggedRow = null;
+        return OnChanged.InvokeAsync();
+    }
+
+    private string StateClass(int i)
+    {
+        if (Checked is null || Fired is null || i >= Checked.Length) return "";
+        string flash = i == FlashIndex ? " flash" : "";
+        if (Finished && Checked[i] == 0) return "dead" + flash;
+        if (Finished && Fired[i] == 0) return "idle" + flash;
+        return (Fired[i] > 0 ? "live" : "") + flash;
+    }
+
+    private string StatText(int i)
+    {
+        if (Checked is null || Fired is null || i >= Checked.Length) return "";
+        if (Fired[i] > 0) return S.T("room.ui.fired", ("n", Fired[i]));
+        if (!Finished) return "";
+        return Checked[i] == 0 ? S.T("room.ui.never-reached") : S.T("room.ui.never-true");
+    }
+
+    private Task Swap(int a, int b)
+    {
+        (Rules[a], Rules[b]) = (Rules[b], Rules[a]);
+        return OnChanged.InvokeAsync();
+    }
+
+    private Task Change(Action change)
+    {
+        change();
+        return OnChanged.InvokeAsync();
+    }
+}

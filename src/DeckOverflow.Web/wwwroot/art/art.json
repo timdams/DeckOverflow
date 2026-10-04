@@ -22,7 +22,12 @@
     "measure-twice": "items/measure-twice",
     "read-the-label": "items/read-the-label",
     "count-letters": "items/count-letters",
-    "letter-a": "items/letter-a"
+    "letter-a": "items/letter-a",
+    "flip": "items/flip",
+    "remainder": "items/remainder",
+    "hit-then-tighten": "items/hit-then-tighten",
+    "tighten-then-hit": "items/tighten-then-hit",
+    "brackets": "items/brackets"
   },
   "relics": {
     "counter": "items/relic-counter",
@@ -32,7 +37,12 @@
     "great-pot": "items/relic-great-pot",
     "ink-well": "items/relic-ink-well",
     "tally-counter": "items/relic-tally-counter",
-    "coin-mold": "items/relic-coin-mold"
+    "coin-mold": "items/relic-coin-mold",
+    "ternary-plate": "items/relic-ternary-plate",
+    "metronome": "items/relic-metronome",
+    "overflow-valve": "items/relic-overflow-valve",
+    "tryparse-glove": "items/relic-tryparse-glove",
+    "half-shim": "items/relic-half-shim"
   },
   "actors": {
     "player": "actors/hero-wrench",
@@ -58,7 +68,24 @@
     "type-block": "actors/type-block",
     "paper-golem": "actors/paper-golem",
     "typesetter": "actors/typesetter",
-    "stray": "actors/colossus"
+    "rhythm-turtle": "actors/rhythm-turtle",
+    "twin-shooters": "actors/twin-shooters",
+    "nameless": "actors/nameless",
+    "stamper": "actors/stamp-press",
+    "press": "actors/colossus",
+    "metronome": "actors/golem",
+    "mender": "actors/foreman",
+    "goto-fail": "actors/goto-fail",
+    "sentry": "actors/and-levers",
+    "contrarian": "actors/plate-stack",
+    "knight-capital": "actors/changelog",
+    "cutter": "actors/crate-stack",
+    "overload": "actors/level-256",
+    "telex": "actors/null-ghost",
+    "estimator": "actors/nesting-robot",
+    "day-248": "actors/mars-orbiter",
+    "giant": "actors/blueprint-twins",
+    "titan": "actors/flight-501"
   },
   "nodes": {
     "fight": "items/whack",
@@ -94,6 +121,8 @@
     "frozen-index": "panels/frozen-index",
     "caster-wraps": "panels/caster-wraps",
     "card-hall-cleared": "panels/card-hall-cleared",
-    "read-the-manual": "panels/read-the-manual"
+    "read-the-manual": "panels/read-the-manual",
+    "after-midnight": "panels/after-midnight",
+    "divide-by-zero": "panels/divide-by-zero"
   }
 }

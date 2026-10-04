@@ -109,6 +109,8 @@ Elk deck-archetype draait rond één C#-regel. Wie een archetype kiest, doorgron
 
 ## Exceptions en de call stack
 
+**In beeld heet het crashen** (beslist op 4 oktober 2026). Het boek gebruikt in H2 tot H4 het woord *crashen*; *exception* komt pas in het hoofdstuk over exception handling (H10 in de Codex). Dus tonen stage, log en panelen "crasht", nooit `FormatException` of `OverflowException`, en een crash opent de Codex-pagina *Exceptions* niet. Het gedrag blijft hetzelfde: een crash beëindigt je beurt. De namen in de tabel hieronder zijn voor de ontwikkelaars, en voor later, als try/catch er komt.
+
 Fouten zijn natuurwetten, geen straf van het spel: een exception treft wie ze veroorzaakt. De speler kan erin trappen, maar kan een vijand er ook in lokken.
 
 ### De beurt is een call stack

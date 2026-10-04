@@ -1,0 +1,79 @@
+@using DeckOverflow.Web.Backend
+@inject Strings S
+@inject IServiceProvider Services
+
+@* Feedback voor de maker: een hartje of "meh", en waar het past een kort bericht. Altijd optioneel,
+   nooit een poort en nooit een beloning. Elke afdeling kan het gebruiken; zonder backend toont het niets.
+   Geef het een @key per onderwerp, zodat een nieuw gevecht opnieuw begint. *@
+
+@if (Account is not null)
+{
+    <div class="feedback">
+        @if (_verdict is null)
+        {
+            <span class="feedback-question">@S.T(Question)</span>
+            <button class="feedback-like" @onclick="() => SendVerdictAsync(true)">@S.T("ui.feedback.like")</button>
+            <button class="feedback-meh" @onclick="() => SendVerdictAsync(false)">@S.T("ui.feedback.dislike")</button>
+        }
+        else
+        {
+            <span class="feedback-thanks">@S.T(_verdictError ? "ui.feedback.failed" : "ui.feedback.thanks")</span>
+        }
+
+        @if (AllowComment)
+        {
+            @if (_commentSent)
+            {
+                <span class="feedback-thanks">@S.T("ui.feedback.sent")</span>
+            }
+            else
+            {
+                <label class="feedback-comment">
+                    <span>@S.T("ui.feedback.comment")</span>
+                    <textarea maxlength="@Account.MaxFeedbackLength" rows="2" @bind="_comment" @bind:event="oninput"></textarea>
+                    <small>@S.T("ui.feedback.comment.hint")</small>
+                </label>
+                <button class="secondary small" disabled="@(_sending || string.IsNullOrWhiteSpace(_comment))" @onclick="SendCommentAsync">@S.T("ui.feedback.send")</button>
+                @if (_commentError)
+                {
+                    <small class="feedback-error">@S.T("ui.feedback.failed")</small>
+                }
+            }
+        }
+    </div>
+}
+
+@code {
+    /// <summary>De afdeling, bv. <c>card-hall</c>.</summary>
+    [Parameter, EditorRequired] public string Department { get; set; } = "";
+
+    /// <summary>Waarover het gaat, bv. <c>enemy:nameless</c> of <c>run</c>.</summary>
+    [Parameter, EditorRequired] public string Subject { get; set; } = "";
+
+    [Parameter, EditorRequired] public TextRef Question { get; set; } = TextRef.Of("ui.feedback.run");
+
+    /// <summary>Ook een veld voor een kort bericht, bv. op het eindscherm van een run.</summary>
+    [Parameter] public bool AllowComment { get; set; }
+
+    private Account? Account => Services.GetService<Account>();
+    private bool? _verdict;
+    private bool _verdictError;
+    private string? _comment;
+    private bool _sending;
+    private bool _commentSent;
+    private bool _commentError;
+
+    private async Task SendVerdictAsync(bool liked)
+    {
+        _verdict = liked;
+        _verdictError = await Account!.SendFeedbackAsync(Department, Subject, liked, null) != AccountError.None;
+    }
+
+    private async Task SendCommentAsync()
+    {
+        _sending = true;
+        _commentError = await Account!.SendFeedbackAsync(Department, Subject, null, _comment) != AccountError.None;
+        _commentSent = !_commentError;
+        _sending = false;
+    }
+}

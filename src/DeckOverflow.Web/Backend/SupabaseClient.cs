@@ -133,6 +133,16 @@ public sealed class SupabaseClient(HttpClient http, IJSRuntime js, string publis
         await ThrowIfFailedAsync(response);
     }
 
+    /// <summary>Rijen toevoegen zonder ze terug te lezen, voor tabellen waar je alleen mag schrijven (<c>feedback</c>).</summary>
+    public async Task InsertAsync<T>(string table, IReadOnlyList<T> rows)
+    {
+        if (rows.Count == 0) return;
+        var request = Request(HttpMethod.Post, $"rest/v1/{table}", rows);
+        request.Headers.Add("Prefer", "return=minimal");
+        using var response = await http.SendAsync(request);
+        await ThrowIfFailedAsync(response);
+    }
+
     /// <summary>Een databasefunctie aanroepen, bv. <c>join_class</c>.</summary>
     public async Task<T?> RpcAsync<T>(string function, object args)
     {

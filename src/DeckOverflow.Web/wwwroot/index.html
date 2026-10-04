@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 
 <head>
     <meta charset="utf-8" />
@@ -17,27 +17,38 @@
     <script type="importmap"></script>
     <link rel="stylesheet" href="css/app.css" />
     <link rel="stylesheet" href="css/run.css" />
+    <link rel="stylesheet" href="css/control-room.css" />
 </head>
 
 <body>
     <div id="app">
         <div class="overlay">
             <h1>Deck Overflow</h1>
-            <p>loading...</p>
+            <p>laden...</p>
         </div>
     </div>
 
     <div id="blazor-error-ui">
-        Something went wrong. <a href="." class="reload">Reload</a> <span class="dismiss">✕</span>
+        Er liep iets mis. <a href="." class="reload">Herladen</a> <span class="dismiss">✕</span>
     </div>
 
-    <!-- Meetpunt voor de laadtijd, en startpunten in de browser. Opslag kan leeg terugkomen of falen (privévenster): dan begin je gewoon in act 1. -->
+    <!-- Startpunten in de browser. Opslag kan leeg terugkomen of falen (privévenster): dan begin je gewoon in act 1. -->
     <script>
         window.deckOverflow = {
-            now: () => performance.now(),
             load: (key) => { try { return localStorage.getItem(key); } catch { return null; } },
             save: (key, value) => { try { localStorage.setItem(key, value); } catch { } },
+            // De taal van de spelteksten: één plek voor shell en stage, met de standaardtaal erbij.
+            languages: ['nl', 'en'],
+            lang: () => {
+                const stored = window.deckOverflow.load('deckoverflow.lang');
+                return window.deckOverflow.languages.includes(stored) ? stored : 'nl';
+            },
+            setLang: (lang) => {
+                window.deckOverflow.save('deckoverflow.lang', lang);
+                document.documentElement.lang = lang;
+            },
         };
+        document.documentElement.lang = window.deckOverflow.lang();
 
         // Op een aanraakscherm: bij een tik naar volledig scherm en liggend vastzetten, zodat de
         // browserbalken geen plaats innemen. Kan alleen na een tik van de speler. Een iPhone kent

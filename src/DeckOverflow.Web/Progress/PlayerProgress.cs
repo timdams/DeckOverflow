@@ -38,6 +38,9 @@ public sealed class PlayerProgress
     /// <summary>Onderdelen die nergens voor dienen, uit kisten (een tease, <see cref="CardHall.Runs.Trinkets"/>).</summary>
     public HashSet<string> Trinkets { get; init; } = [];
 
+    /// <summary>Per gevecht in de Controlekamer: je beste score en het bord waaraan je laatst werkte.</summary>
+    public Dictionary<string, ControlRoomRecord> ControlRoom { get; init; } = [];
+
     /// <summary>De hoogste act die je ooit bereikte: de startpunten.</summary>
     public int ReachedAct { get; set; } = 1;
 
@@ -60,4 +63,17 @@ public sealed class PlayerProgress
     /// <summary>Een afdeling ontgrendelen. De eerste manier blijft staan.</summary>
     public bool TryUnlock(string department, UnlockHow how, DateTimeOffset at) =>
         Unlocks.TryAdd(department, new Unlock(how, at));
+}
+
+/// <summary>
+/// Eén gevecht in de Controlekamer. Beurten en regels zijn aparte scores, zoals in Opus Magnum:
+/// je beste aantal beurten hoeft niet van hetzelfde bord te komen als je beste aantal regels.
+/// </summary>
+public sealed class ControlRoomRecord
+{
+    public int? BestTurns { get; set; }
+    public int? BestRules { get; set; }
+    public List<DeckOverflow.ControlRoom.Gambits.Rule> Board { get; set; } = [];
+
+    public bool Beaten => BestTurns is not null;
 }

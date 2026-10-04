@@ -1,5 +1,6 @@
 using System.Globalization;
 using DeckOverflow.CardHall.Cards;
+using DeckOverflow.Core.Codex;
 using DeckOverflow.Core.Text;
 using DeckOverflow.Core.Values;
 
@@ -131,6 +132,14 @@ public sealed class TallyCounterRelic : Relic
 {
     public override string Id => RelicCatalog.TallyCounter;
     public override int HealAfterWin(int combatsWon) => combatsWon;
+
+    /// <summary>Elke heling is <c>++count</c>: eerst optellen, dan helen met de nieuwe waarde.</summary>
+    public override CodexMoment MomentAfterWin(int combatsWon) => new(CodexCatalog.Increment, new Dictionary<string, string>
+    {
+        ["expression"] = "++count",
+        ["value"] = combatsWon.ToString(CultureInfo.InvariantCulture),
+        ["after"] = combatsWon.ToString(CultureInfo.InvariantCulture),
+    });
 }
 
 /// <summary>50% meer goud uit gevechten, afgerond met <c>Math.Round</c>: 22.5 wordt 22.</summary>

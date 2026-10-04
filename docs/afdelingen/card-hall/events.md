@@ -36,3 +36,8 @@ De events van de deckbuilder en wat de stage ermee doet. De algemene afspraak (t
 | `TextParsed` | targetId, method, text, value, to | `int.Parse("406") = 406`: de tekst wordt een getal, de balk toont weer HP |
 | `TextCrashed` | targetId, length, limit | De tekst werd te lang: "32/32", een glitch, en de vijand valt om (Effective Power) |
 | `ExceptionThrown` | exception, expression | Je getypeerde aanval crashte, bv. `int.Parse(2.5 + "1")`: de naam van de exception, en je beurt eindigt |
+| `VariableIncremented` | targetId, expression, before, value, after | Een teller met `++`: "3 → 4" boven de speler (Tighten-kaarten) of boven de Twin Shooters, wier regel `shots = …` oplicht |
+| `IntentRegrouped` | enemyId, expressionBefore, expression, value | Move the Brackets: "( )" boven de vijand, de intent wordt opnieuw uitgeschreven met de haakjes elders |
+| `AttackCrashed` | enemyId, exception, expression | De aanval van de vijand crashte, bv. `30 / 0 + 1`: de naam van de exception, de vijand schudt en valt niet aan |
+
+Run-events die de stage niet toont: `EnemyPatched` (enemyKey) wordt een melding in de shell, "Patch notes: …'s attack is const now".

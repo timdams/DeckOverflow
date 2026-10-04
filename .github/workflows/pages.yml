@@ -1,7 +1,7 @@
 name: pages
 
 # Publiceert het spel op de root van de Pages-site, en elke spike die we willen laten testen in een submap.
-# Zo heeft elke playtest een eigen link: /DeckOverflow/ en /DeckOverflow/spike-8/.
+# Zo heeft elke playtest een eigen link: /DeckOverflow/, /DeckOverflow/spike-8/ en /DeckOverflow/spike-9/.
 
 on:
   push:
@@ -28,26 +28,30 @@ jobs:
 
       - run: dotnet test tests/DeckOverflow.Core.Tests
       - run: dotnet test tests/DeckOverflow.CardHall.Tests
+      - run: dotnet test tests/DeckOverflow.ControlRoom.Tests
 
       - name: Publish
         run: |
           dotnet publish src/DeckOverflow.Web -c Release -o out/game
           dotnet publish spikes/08-controlekamer/src/DeckOverflow.Web -c Release -o out/spike-8
+          dotnet publish spikes/09-lopende-band/src/DeckOverflow.Web -c Release -o out/spike-9
 
       - name: Assemble site
         env:
           ROOT: /${{ github.event.repository.name }}/
         run: |
-          mkdir -p site/spike-8
+          mkdir -p site/spike-8 site/spike-9
           cp -r out/game/wwwroot/. site/
           cp -r out/spike-8/wwwroot/. site/spike-8/
+          cp -r out/spike-9/wwwroot/. site/spike-9/
           sed -i "s|<base href=\"/\" />|<base href=\"${ROOT}\" />|" site/index.html
           sed -i "s|<base href=\"/\" />|<base href=\"${ROOT}spike-8/\" />|" site/spike-8/index.html
+          sed -i "s|<base href=\"/\" />|<base href=\"${ROOT}spike-9/\" />|" site/spike-9/index.html
           # Pages gebruikt de voorgecomprimeerde kopieën niet, en na de sed kloppen ze niet meer.
-          rm -f site/index.html.br site/index.html.gz site/spike-8/index.html.br site/spike-8/index.html.gz
+          rm -f site/index.html.br site/index.html.gz site/spike-8/index.html.br site/spike-8/index.html.gz site/spike-9/index.html.br site/spike-9/index.html.gz
           # Zonder dit negeert Jekyll de map _framework/ en laadt er niets.
           touch site/.nojekyll
-          grep -H "base href" site/index.html site/spike-8/index.html
+          grep -H "base href" site/index.html site/spike-8/index.html site/spike-9/index.html
 
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -1,10 +1,10 @@
 # Deck Overflow
 
-Een roguelike deckbuilder in de browser waarin de wereld gehoorzaamt aan C#. Het spel is Engelstalig; ontwerp, code-commentaar en documentatie zijn in het Nederlands. Wie de regels doorheeft, wint. Bedoeld voor eerstejaars programmeren en gebaseerd op de leerlijn van *Zie Scherp Scherper*.
+Een roguelike deckbuilder in de browser waarin de wereld gehoorzaamt aan C#. Het spel is Nederlandstalig, met Engels als optie; ontwerp, code-commentaar en documentatie zijn in het Nederlands. Wie de regels doorheeft, wint. Bedoeld voor eerstejaars programmeren en gebaseerd op de leerlijn van *Zie Scherp Scherper*.
 
 Er staat geen code in beeld: types, overflow, integer deling en operatorvoorrang zijn de natuurwetten van het spel. Na een gevecht geeft de Codex het concept zijn naam en linkt naar het hoofdstuk in het boek.
 
-**Spelen:** [timdams.github.io/DeckOverflow](https://timdams.github.io/DeckOverflow/) (het spel) en [/spike-8/](https://timdams.github.io/DeckOverflow/spike-8/) (de Controlekamer). Elke push naar `main` publiceert opnieuw via [pages.yml](.github/workflows/pages.yml).
+**Spelen:** [timdams.github.io/DeckOverflow](https://timdams.github.io/DeckOverflow/) (het spel) en [/spike-8/](https://timdams.github.io/DeckOverflow/spike-8/) (de oude spike van de Controlekamer; de echte staat sinds 4 oktober 2026 in het spel) en [/spike-9/](https://timdams.github.io/DeckOverflow/spike-9/) (de Lopende Band). Elke push naar `main` publiceert opnieuw via [pages.yml](.github/workflows/pages.yml).
 
 ## Waar staan we
 
@@ -18,6 +18,7 @@ Er staat geen code in beeld: types, overflow, integer deling en operatorvoorrang
 | Spike 6 | De handleiding: het hele spel als montagehandleiding zonder woorden. Zwart op papier, kleur alleen voor types, een explosietekening als een vijand sterft | Gebouwd, nog niet met spelers getest, zie [spikes/06-handleiding](spikes/06-handleiding/) |
 | Spike 7 | Niet volgens de handleiding: een eigen thema. Kaarten zijn overtredingen van de handleiding, elites zijn echte bugs (Level 256, Flight 501) met hun verhaal in de Codex | Gebouwd, nog niet met spelers getest, zie [spikes/07-fabriek](spikes/07-fabriek/) |
 | Spike 8 | De Controlekamer (H5): regels opstellen voor een automaat en toekijken. De eerste afdeling die geen deckbuilder is, met vijf gevechten en goto fail als elite | Gebouwd, nog niet met spelers getest, zie [spikes/08-controlekamer](spikes/08-controlekamer/) |
+| Spike 9 | De Lopende Band (H6): band en machines op een rooster, een lus is een band die terugkomt. Tien puzzels met testgevallen, terugblik op H2 tot H5 en Zune als elite | Gebouwd op 4 oktober 2026, nog niet met spelers getest, zie [spikes/09-lopende-band](spikes/09-lopende-band/) |
 | MVP-demo | Een afgewerkte Act 1 (H2 en H3): runs over acts met startpunten, de patch, Codex-pagina's en een lichte backend zonder accounts | Gestart: `src/` en `tests/` op de root, overgenomen uit spike 7. Het plan staat in [de geschiedenis van de spikes](docs/geschiedenis/spikes.md#van-spikes-naar-src) |
 
 **Prioriteit nu:** de core game loop. Eerst moet vechten, een beloning kiezen en de map leuk zijn; geluid, definitieve art en polish komen daarna.
@@ -63,7 +64,8 @@ python tools/cut_sheets.py                       # tekeningen opnieuw uitsnijden
 │  ├─ 05-tekenstijlen/  elf tekenstijlen voor kaarten en relics, stijlmenu
 │  ├─ 06-handleiding/   het hele spel als montagehandleiding
 │  ├─ 07-fabriek/       niet volgens de handleiding: overtredingen en echte bugs
-│  └─ 08-controlekamer/ regels voor een automaat (H5): de eerste afdeling zonder kaarten
+│  ├─ 08-controlekamer/ regels voor een automaat (H5): de eerste afdeling zonder kaarten
+│  └─ 09-lopende-band/  band en machines op een rooster (H6): lussen die je ziet draaien
 └─ .github/workflows/   CI per onderdeel: game.yml voor het spel, spike-N.yml per spike
 ```
 

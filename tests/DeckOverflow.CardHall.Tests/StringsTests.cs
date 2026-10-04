@@ -10,8 +10,9 @@ using DeckOverflow.Core.Text;
 namespace DeckOverflow.Tests;
 
 /// <summary>
-/// Alle spelteksten staan in <c>wwwroot/text/en.json</c>. Deze tests vangen een sleutel
-/// die ontbreekt of een getal dat niet in de tekst geraakt, voor een speler het ziet.
+/// Alle spelteksten staan in <c>wwwroot/text/en.json</c>, met een vertaling per taal ernaast
+/// (<c>nl.json</c>). Deze tests vangen een sleutel die ontbreekt of een getal dat niet in de
+/// tekst geraakt, voor een speler het ziet.
 /// </summary>
 public partial class StringsTests
 {
@@ -103,6 +104,57 @@ public partial class StringsTests
         Assert.True(missing.Count == 0, "Ontbreekt in en.json: " + string.Join(", ", missing));
     }
 
+    /// <summary>
+    /// Elke taal heeft dezelfde sleutels als en.json: een nieuwe tekst schrijf je in alle talen,
+    /// en een sleutel die nergens meer gebruikt wordt, verdwijnt overal.
+    /// </summary>
+    [Theory]
+    [InlineData("nl")]
+    public void Elke_taal_heeft_dezelfde_sleutels_als_en_json(string language)
+    {
+        var other = LoadTexts(language);
+        var missing = Texts.Keys.Except(other.Keys).ToList();
+        var extra = other.Keys.Except(Texts.Keys).ToList();
+        Assert.True(missing.Count == 0, $"Ontbreekt in {language}.json: " + string.Join(", ", missing));
+        Assert.True(extra.Count == 0, $"Staat in {language}.json maar niet in en.json: " + string.Join(", ", extra));
+    }
+
+    /// <summary>Een vertaling die een plaatshouder verliest of verzint, toont een getal niet of een sleutel wel.</summary>
+    [Theory]
+    [InlineData("nl")]
+    public void Elke_vertaling_heeft_dezelfde_plaatshouders(string language)
+    {
+        var wrong = LoadTexts(language)
+            .Where(t => Texts.TryGetValue(t.Key, out string? en) && !Placeholders(en).SetEquals(Placeholders(t.Value)))
+            .Select(t => t.Key)
+            .ToList();
+        Assert.True(wrong.Count == 0, $"Andere plaatshouders in {language}.json: " + string.Join(", ", wrong));
+    }
+
+    /// <summary>
+    /// In H2 tot H5 heet het crashen, zoals in het boek; het woord exception komt pas in H10. Alleen de Codex-pagina
+    /// van dat hoofdstuk mag het noemen (beslist op 4 oktober 2026).
+    /// </summary>
+    [Theory]
+    [InlineData("nl")]
+    [InlineData("en")]
+    public void Geen_speltekst_noemt_een_exception_voor_H10(string language)
+    {
+        var texts = language == "en" ? Texts : LoadTexts(language);
+        var wrong = texts
+            .Where(t => !t.Key.StartsWith("codex.exceptions.") && t.Value.Contains("exception", StringComparison.OrdinalIgnoreCase))
+            .Select(t => t.Key)
+            .ToList();
+        Assert.True(wrong.Count == 0, $"Noemt een exception in {language}.json: " + string.Join(", ", wrong));
+    }
+
+    private static Dictionary<string, string> LoadTexts(string language) =>
+        JsonSerializer.Deserialize<Dictionary<string, string>>(
+            File.ReadAllText(Path.Combine(RepoRoot, "src", "DeckOverflow.Web", "wwwroot", "text", $"{language}.json")))!;
+
+    private static HashSet<string> Placeholders(string text) =>
+        Placeholder().Matches(text).Select(m => m.Value).ToHashSet();
+
     private static void AssertKey(string key) =>
         Assert.True(Texts.ContainsKey(key), $"Ontbreekt in en.json: {key}");
 
@@ -124,7 +176,7 @@ public partial class StringsTests
         return dir?.FullName ?? throw new InvalidOperationException("DeckOverflow.sln niet gevonden.");
     }
 
-    [GeneratedRegex("""["'](?<key>(?:card|effect|enemy|relic|node|event|rest|reject|ui|stage)\.[a-z0-9.\-]+)["']""")]
+    [GeneratedRegex("""["'](?<key>(?:card|effect|enemy|relic|node|event|rest|reject|ui|stage|room)\.[a-z0-9.\-]+)["']""")]
     private static partial Regex KeyLiteral();
 
     [GeneratedRegex(@"\{(?:(?:card|relic|enemy):)?(?<name>[a-zA-Z]+)\}")]

@@ -75,7 +75,15 @@
             <div class="dept-actions">
                 @if (sel.Key == Departments.CardHall)
                 {
-                    <button class="play-big" disabled="@Starting" @onclick="() => OnStart.InvokeAsync(1)">@S.T("ui.play")</button>
+                    @if (Paused is { } paused)
+                    {
+                        <button class="play-big continue" @onclick="OnContinue">@S.T("ui.continue-run")<small>@paused</small></button>
+                        <button class="title-button" disabled="@Starting" @onclick="() => OnStart.InvokeAsync(1)">@S.T("ui.new-run")</button>
+                    }
+                    else
+                    {
+                        <button class="play-big" disabled="@Starting" @onclick="() => OnStart.InvokeAsync(1)">@S.T("ui.play")</button>
+                    }
                     @for (int act = 2; act <= ReachedAct; act++)
                     {
                         int start = act;
@@ -84,7 +92,7 @@
                 }
                 else if (open && sel.Url is { } url)
                 {
-                    <a class="play-big as-link" href="@url">@S.T("ui.world.prototype")</a>
+                    <a class="play-big as-link" href="@url">@S.T("ui.world.enter")</a>
                 }
                 else if (sel.Key == Departments.ControlRoom)
                 {
@@ -102,6 +110,7 @@
         {
             <button class="title-button" @onclick="OnAccount">@S.T("ui.account.open")</button>
         }
+        <ZssLink />
     </nav>
 </div>
 
@@ -114,6 +123,9 @@
     [Parameter] public IReadOnlySet<string> Trinkets { get; set; } = new HashSet<string>();
     [Parameter] public int PanelCount { get; set; }
     [Parameter] public bool Starting { get; set; }
+    /// <summary>Een run die wacht (uit het optiescherm), als korte regel; leeg als er geen is.</summary>
+    [Parameter] public string? Paused { get; set; }
+    [Parameter] public EventCallback OnContinue { get; set; }
     [Parameter] public EventCallback<int> OnStart { get; set; }
     [Parameter] public EventCallback OnCodex { get; set; }
     [Parameter] public EventCallback OnXRegister { get; set; }

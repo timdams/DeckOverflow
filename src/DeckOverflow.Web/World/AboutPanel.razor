@@ -1,0 +1,19 @@
+@inject Strings S
+
+@* Over dit spel: waar de ideeën vandaan komen (de spellen alfabetisch, zonder te verraden in welke afdeling ze opduiken), hoe het gemaakt is, en welke data er bewaard wordt.
+   Op het hoofdscherm, altijd bereikbaar, ook voor wie nog nooit speelde. *@
+
+<div class="modal" @onclick="OnClose">
+    <div class="modal-body story-card about-card" @onclick:stopPropagation="true">
+        <h2>@S.T("ui.about.title")</h2>
+        <p>@S.T("ui.about.homage")</p>
+        <p class="about-games">@S.T("ui.about.games")</p>
+        <p>@S.T("ui.about.ai")</p>
+        <p>@S.T("ui.about.data")</p>
+        <button class="play-big" @onclick="OnClose">@S.T("ui.close")</button>
+    </div>
+</div>
+
+@code {
+    [Parameter] public EventCallback OnClose { get; set; }
+}

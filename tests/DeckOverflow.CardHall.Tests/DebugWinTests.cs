@@ -5,7 +5,7 @@ using DeckOverflow.CardHall.Runs;
 
 namespace DeckOverflow.Tests;
 
-/// <summary>TIJDELIJK: de sneltoets W om snel door gevechten te gaan. Weg voor een playtest.</summary>
+/// <summary>De sneltoets W om snel door gevechten te gaan. Blijft ook in playtests.</summary>
 public class DebugWinTests
 {
     [Theory]

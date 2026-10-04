@@ -2,18 +2,35 @@
 
 Wat bewust is uitgesteld voor de wereld (plattegrond, backend, Codex, ✗-register), met genoeg context om het later op te pakken. Nieuwste bovenaan. Wat af is, gaat eruit (de geschiedenis staat in git).
 
+## Taal
+
+Het spel is Nederlands sinds 4 oktober 2026, met Engels als optie (zie [architectuur.md](../architectuur.md) en de [woordenlijst](woordenlijst.md)).
+
+- **Kaart- en vijandnamen laten nalezen.** De woordspelingen ("Mep", "Erin wringen", "Restjeszakje", "De Caster") zijn een eerste versie; nalezen met iemand die de cursus geeft, en met studenten.
+- **Tekeningen met Engelse tekst erin.** Nog niet nagekeken; het titelscherm heeft er geen. Een tekening met tekst moet ofwel zonder tekst, ofwel per taal, en hoort dan in [art/todo.md](../../art/todo.md).
+- **Losse Engelse tekst in Razor of JS** vangt `StringsTests` niet; die controleert alleen sleutels. Een snelle zoektocht op 4 oktober 2026 vond niets, maar een test die zichtbare tekst zonder `S.T(` opspoort, ontbreekt.
+- **Een taalwissel bouwt de schermen opnieuw op** (`@key` op `lang-scope` in `RunPage.razor`): een open Codex-pagina of een half gekozen kaart in een venster springt terug naar het begin. Wisselen is zeldzaam; pas aanpakken als het stoort.
+- **Het accountpaneel** en latere afdelingen: nakijken of al hun tekst via `Strings` loopt. De Controlekamer doet dat sinds 4 oktober 2026.
+
+## Opties
+
+- **Een wachtende run overleeft geen herlaadbeurt.** "Main menu" houdt de run in het geheugen; herladen of de tab sluiten (op een telefoon gebeurt dat vaak vanzelf) en ze is weg. Kan met `Run.Replay`: de shell bewaart seed, startact en de lijst commands (die zijn al polymorf serialiseerbaar) en speelt ze bij het laden opnieuw af. Let op `?fight=`-runs (een eigen map) en op `DebugWin` in de lijst.
+- **Snelle modus in het optiescherm.** Bestaat nu alleen als toets F.
+- **Escape opent de opties** op een laptop.
+
 ## Mobiel
 
 Liggend spelen op een telefoon kwam erbij op 4 oktober 2026 (zie [architectuur.md](../architectuur.md#platform-en-techniek)). Getest in een desktopbrowser op 844×390 met nagebootste touch, nog niet op een echt toestel.
 
 - **Testen op een echte telefoon**, Android en iPhone: volledig scherm, de notch, slepen met de vinger, de toetsenbordpopup in het accountpaneel.
 - **Tekst in het gevecht is klein op een telefoon.** De stage schaalt 960×540 naar ongeveer 0,7: de uitleg op een kaart (11px) en het log worden zo'n 8px. Vasthouden vergroot een kaart, maar het log en de intents niet. Mogelijk: grotere letters in de stage zodra het scherm kort is, of het log achter een knop.
-- **Geen sneltoetsen op een telefoon.** F (snel), M (geluid) en W (debug) bestaan alleen op een toetsenbord. Snelle modus en geluid verdienen een knopje.
-- **Een echt app-icoon**: staat in [art/todo.md](../../art/todo.md).
+- **Snelle modus bestaat alleen als toets F.** Geluid staat nu in het optiescherm; snel nog niet (zie Opties).
 - **Tooltips (`title`) bestaan niet op een aanraakscherm.** Wat ertoe doet, staat al in beeld (relics openen een overzicht, een uitgeschakelde keuze toont waarom), maar de map-knopen en de Scrap-knop leunen op een tooltip.
 
 ## Backend
 
+- **Feedback in de Controlekamer.** `World/FeedbackHeart.razor` zit nu alleen in de Card Hall (na een gevecht en op het eindscherm). De Controlekamer kan ze na een puzzel tonen met onderwerp `level:<n>`.
+- **Testrijen in `feedback`.** Twee rijen van 4 oktober 2026 (`test:claude` en `enemy:slime`) zijn tests, geen echte spelers. Weggooien voor je telt: `delete from feedback where created_at < '2026-10-05';`
 - **De docent kan alleen nog een klascode maken** (beslist op 3 oktober 2026, zie [backend.md](backend.md)). Wat nu meer doet en eruit moet: afdelingen vrijgeven (`release_department` en `Account.ReleaseAsync`, de knoppen in `AccountPanel.razor`, de kolom `classes.released_departments`, `unlocks.how = teacher`) en de voortgang van de klas lezen (policies op `progress` en `unlocks`). Daarna [backend.md](backend.md) en [supabase.md](supabase.md) bijwerken. Een migratie op het echte project, dus eerst afstemmen met de sessie die de backend bouwde.
 - **Oude gastaccounts opruimen.** Elke nieuwe browser (of gewiste opslag) maakt een gast; wie stopt, laat er een achter. Supabase raadt aan om oude anonieme accounts geregeld te verwijderen. Kan mee in de nachtelijke Action van de scorecontrole, met de service-sleutel: anonieme accounts zonder activiteit sinds bv. 90 dagen. Er staat er nu al een: "Bright Spanner 74", van een test op 3 oktober 2026.
 - **Klassen beheren.** Een docent kan nu alleen afdelingen vrijgeven, niet terugtrekken, en geen leerling uit de klas halen (de database laat dat wel toe, het scherm nog niet). Een dashboard met de voortgang van de klas komt na de MVP.

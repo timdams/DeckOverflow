@@ -1,4 +1,5 @@
 using DeckOverflow.CardHall.Cards;
+using DeckOverflow.Core.Codex;
 using DeckOverflow.Core.Text;
 
 namespace DeckOverflow.CardHall.Relics;
@@ -31,6 +32,9 @@ public abstract class Relic
 
     /// <summary>HP terug na het zoveelste gewonnen gevecht van de run.</summary>
     public virtual int HealAfterWin(int combatsWon) => 0;
+
+    /// <summary>Een Codex-moment na het zoveelste gewonnen gevecht, als de relic dan een regel liet zien.</summary>
+    public virtual CodexMoment? MomentAfterWin(int combatsWon) => null;
 
     // ---------- Gevecht ----------
 

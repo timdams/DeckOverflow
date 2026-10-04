@@ -1072,6 +1072,34 @@ a.play-big.as-link { display: inline-block; text-decoration: none; font-size: 18
   .preview-cards .arrow { transform: rotate(90deg); }
 }
 
+/* ---------------------------------------------------------------- opties */
+
+/* De optieknop: altijd linksboven, in elke afdeling. Op een scherm vooraan in de bovenbalk, in een gevecht in de lege hoek. */
+button.options-button {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  font-size: 20px;
+  line-height: 1;
+}
+.options-button.in-combat { position: absolute; left: 14px; top: 14px; z-index: 5; }
+
+.options { min-width: min(380px, 88vw); align-items: stretch; }
+.options h2 { text-align: center; }
+.options p { margin: 0; text-align: center; }
+.options .choices.column { min-width: 0; align-self: stretch; }
+.options .choices.column button { align-self: stretch; margin: 0; }
+.options-confirm button { margin: 0; }
+.options > .play-big { align-self: center; }
+.options-confirm { display: flex; gap: 12px; justify-content: center; }
+.options button.danger { color: var(--white); background: #b3261e; }
+@media (hover: hover) { .options button.danger:hover:not(:disabled) { background: #c8342b; } }
+
+/* Verder spelen: de wachtende run staat in kleine letters onder de knop */
+button.play-big.continue { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; }
+button.play-big.continue small { font-size: 13px; font-weight: 700; opacity: 0.9; }
+
 /* ---------------------------------------------------------------- telefoon */
 
 /* Rechtop op een telefoon: eerst draaien. Een tablet rechtop is breed genoeg en speelt gewoon. */
@@ -1205,6 +1233,9 @@ a.play-big.as-link { display: inline-block; text-decoration: none; font-size: 18
   .department .dept-art, .department .dept-box { height: 80px; }
   .dept-panel { padding: 12px; gap: 6px; }
 
+  button.options-button { width: 34px; height: 34px; font-size: 17px; }
+  .options-button.in-combat { left: 8px; top: 8px; }
+
   /* Tijdens een gevecht: de knoppen onder elkaar in de hoek, naast de hand */
   .hud { right: 10px; bottom: 10px; flex-direction: column; align-items: flex-end; gap: 4px; }
   .hud .seed { font-size: 11px; }
@@ -1220,3 +1251,45 @@ a.play-big.as-link { display: inline-block; text-decoration: none; font-size: 18
   .xpanel-popup strong { font-size: 16px; }
   .xpanel-popup .badge { top: -12px; left: -12px; width: 28px; height: 28px; font-size: 16px; }
 }
+
+/* Taalknop: twee kleine knoppen tegen elkaar, de gekozen taal in inkt */
+.lang-toggle { display: inline-flex; gap: 0; }
+.lang-toggle button { padding: 4px 9px; font-size: 12px; box-shadow: 2px 2px 0 var(--ink); border-radius: 0; }
+.lang-toggle button:first-child { border-radius: 5px 0 0 5px; }
+.lang-toggle button:last-child { border-radius: 0 5px 5px 0; border-left-width: 0; }
+.lang-toggle button.active { background: var(--ink); color: var(--paper); }
+.lang-toggle.corner { position: absolute; right: 12px; top: 12px; z-index: 6; }
+.options .lang-toggle { align-self: center; }
+.lang-scope { display: contents; }
+
+/* De verwijzing naar het handboek: een klein kaartje in de kleur van Zie Scherp Scherper */
+.zss-link {
+  display: inline-flex; flex-direction: column; align-self: flex-start; gap: 1px;
+  padding: 6px 12px; border: 2px solid var(--zss); border-radius: 6px;
+  color: var(--ink); background: var(--white); text-decoration: none; font-size: 13px;
+  box-shadow: 2px 2px 0 var(--zss);
+}
+.zss-link .zss-ask { color: var(--muted); font-size: 12px; }
+.zss-link strong { color: var(--zss); }
+@media (hover: hover) { .zss-link:hover { background: var(--shade); } }
+.world-tools .zss-link { margin-left: auto; align-self: center; }
+
+/* Over dit spel: een bescheiden link onder de verwijzing naar het boek */
+.about-link {
+  align-self: flex-start; margin-top: 4px; padding: 2px 0; border: 0; background: none; box-shadow: none;
+  color: var(--muted); font-size: 12px; text-decoration: underline; cursor: pointer;
+}
+@media (hover: hover) { .about-link:hover { color: var(--ink); } }
+.about-card { max-width: 560px; }
+.about-card .about-games { font-weight: 700; }
+
+/* Feedback voor de maker: klein en onderaan, nooit in de weg van de keuze die ertoe doet */
+.feedback {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 14px; padding-top: 10px;
+  border-top: 1px dashed var(--muted); color: var(--muted); font-size: 13px;
+}
+.feedback button { padding: 4px 12px; font-size: 13px; }
+.feedback .feedback-like { color: var(--zss); }
+.feedback-comment { display: flex; flex-direction: column; gap: 4px; flex-basis: 100%; }
+.feedback-comment textarea { font: inherit; font-size: 14px; padding: 6px 8px; border: 2px solid var(--ink); border-radius: 4px; resize: vertical; background: #fff; color: var(--ink); }
+.feedback-error { color: var(--zss); }

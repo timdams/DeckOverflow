@@ -14,7 +14,7 @@ Deck Overflow wordt een website: spelen zonder installatie, op laptop, tablet en
 - **Spelers en accounts:** iedereen mag spelen, ook leerlingen uit het middelbaar. Je speelt meteen als gast en kan later een account met gebruikersnaam en wachtwoord maken om je fabriek te bewaren; e-mail is optioneel. In klassementen staat altijd een gegenereerde bijnaam, nooit wat de speler zelf typte. Geen analytics of tracking. De klascode is optioneel: een docent maakt er een klas mee, zodat klasgenoten elkaar in het klassement zien. Meer doet een docent niet: geen afdelingen vrijgeven, geen dashboard, geen instellingen (beslist op 3 oktober 2026). Details in [wereld/backend.md](wereld/backend.md).
 - **LMS-koppeling:** met Moodle-omgevingen zoals Digitap, als latere stap.
 
-**Taal.** Het spel is Engels. Alle spelteksten staan in één bestand per taal, zodat een Nederlandse versie één extra bestand is.
+**Taal.** Het spel is Nederlands, met Engels als optie via een taalknop (hoofdmenu en opties). Alle spelteksten staan in één bestand per taal (`wwwroot/text/nl.json`, `en.json`); `en.json` ligt eronder als vangnet. De keuze staat in `localStorage` (`deckoverflow.lang`), de standaard in `index.html`. Wisselen gebeurt live: `Strings.Changed` laat de shell opnieuw tekenen en de stage haar hand hertekenen. Het Nederlands volgt [de woordenlijst](wereld/woordenlijst.md) uit *Zie Scherp Scherper*; getallen staan altijd in codenotatie (`3.5`).
 
 ## Motor, shell en stage
 

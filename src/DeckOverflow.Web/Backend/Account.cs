@@ -80,6 +80,19 @@ public sealed partial class Account(SupabaseClient supabase, IProgressStore stor
         await store.ForgetAsync();
     });
 
+    /// <summary>
+    /// Feedback voor de maker: een hartje of niet (<paramref name="liked"/>), en/of een kort bericht.
+    /// Alleen schrijven: niemand leest het via de API, ook de speler zelf niet.
+    /// </summary>
+    public Task<AccountError> SendFeedbackAsync(string department, string subject, bool? liked, string? comment) => TryAsync(async () =>
+    {
+        await supabase.EnsureSessionAsync();
+        string? text = string.IsNullOrWhiteSpace(comment) ? null : comment.Trim()[..Math.Min(comment.Trim().Length, MaxFeedbackLength)];
+        await supabase.InsertAsync("feedback", [new FeedbackRow(department, subject, liked is null ? null : liked.Value ? "like" : "dislike", text)]);
+    });
+
+    public const int MaxFeedbackLength = 500;
+
     public Task<AccountError> JoinClassAsync(string code) => TryAsync(async () =>
     {
         await supabase.EnsureSessionAsync();
@@ -167,4 +180,6 @@ public sealed partial class Account(SupabaseClient supabase, IProgressStore stor
     private sealed record OwnedRow(string Id, string Code, string Name, IReadOnlyList<string> ReleasedDepartments, IReadOnlyList<CountRow> ClassMembers);
     private sealed record MembershipRow(ClassRow? Classes);
     private sealed record ClassRow(string Id, string Name, IReadOnlyList<string> ReleasedDepartments);
+
+    private sealed record FeedbackRow(string Department, string Subject, string? Verdict, string? Comment);
 }

@@ -19,6 +19,8 @@ public static class XRegister
     public const string FrozenIndex = "frozen-index";
     public const string DividedToNothing = "divided-to-nothing";
     public const string AfterMidnight = "after-midnight";
+    /// <summary>Een vijand zijn aanval laten delen door nul: Move the Brackets op <c>30 / (block + 1)</c>, zonder blok.</summary>
+    public const string DivideByZero = "divide-by-zero";
     /// <summary>De laatste baas van de Card Hall (de deckbuilder, H2 tot H4), niet van de hele fabriek.</summary>
     public const string CardHallCleared = "card-hall-cleared";
 
@@ -34,6 +36,7 @@ public static class XRegister
         new(BadText),
         new(AgainAriane),
         new(AfterMidnight),
+        new(DivideByZero),
         new(FrozenIndex, Hidden: true),
         new(CasterWraps, Hidden: true),
         new(CardHallCleared),
@@ -81,6 +84,10 @@ public static class XRegister
         if (died && enemy == Bestiary.Y2K
             && (events.OfType<TextAppended>().Any(t => t.Before.StartsWith("191")) || events.OfType<TextCounted>().Any(t => t.Text.StartsWith("191"))))
             yield return AfterMidnight;
+
+        // De vijand deelt zijn eigen aanval door nul
+        if (events.OfType<AttackCrashed>().Any(a => a.Exception == nameof(DivideByZeroException)))
+            yield return DivideByZero;
 
         // The Index groeit niet meer: het afkappen at de groei op
         if (events.OfType<ValueGrew>().Any(g => g.After == g.Before))

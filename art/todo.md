@@ -4,19 +4,29 @@ Tekeningen die het spel nog mist, over alle afdelingen heen, zodat ze samen in �
 
 **Een batch maken.** Kies tekeningen van dezelfde soort (zelfde vorm en grootte bij het uitsnijden), zet ze in een raster op één vel met het manualvel of een recent vel als stijlreferentie, en voeg het vel toe aan `SHEETS_SPEC` in `tools/cut_sheets.py`. Vijanden kijken naar links (of komen in `FLIP`). De imagen-skill vraagt altijd eerst bevestiging van de kosten.
 
+Open sinds 4 oktober 2026: de vijanden van de Controlekamer gebruiken reserves.
+
 | Sleutel | Soort (map in `art.json`) | Afdeling | Wat erop staat | Nu in het spel |
 | --- | --- | --- | --- | --- |
-| `rhythm-turtle` | vijand (`actors`) | Card Hall, act 1 | Een schildpad met een schild dat in drie segmenten opengaat, één segment open; een metronoom of ritmeteken als accent | de tekening van Level 256 (reserve) |
-| `flip` | kaart (`cards`) | Card Hall | Een hand die een tweestandenschakelaar omzet | geen tekening |
-| `remainder` | kaart (`cards`) | Card Hall | Een deling waarbij een klein restje uit de machine valt | geen tekening |
-| `after-midnight` | ✗-paneel (`panels`) | Card Hall | Het figuurtje dat wacht bij een klok die middernacht slaat, een kalender die van 99 naar 100 springt | geen tekening |
-| `ternary-plate` | relic (`relics`) | Card Hall | Een schildplaat met een vraagteken en twee pijlen die uit elkaar gaan (een splitsing) | een ◆ |
-| `metronome` | relic (`relics`) | Card Hall | Een metronoom waarvan de wijzer op elke derde tik een vonk geeft | een ◆ |
-| `overflow-valve` | relic (`relics`) | Card Hall | Een ventiel op een overlopend vat, met een bliksemschicht die eruit spuit | een ◆ |
-| `tryparse-glove` | relic (`relics`) | Card Hall | Een dikke werkhandschoen die een etiket met krabbels vasthoudt zonder dat het ontploft | een ◆ |
-| `half-shim` | relic (`relics`) | Card Hall | Een dun opvulplaatje (shim) met een half schroefje | een ◆ |
-| `app-icon` | app-icoon (`wwwroot/icon-192.png`, `icon-512.png`, geen `art.json`) | wereld | Een vierkant icoon voor het beginscherm van een telefoon: het figuurtje met een kaart, of een D/O-monogram, leesbaar op 48px. Vierkant, papierkleur tot in de hoeken (iOS rondt zelf af) | de held op papier, eenmalig met PIL gemaakt |
+| `press` | `actors` | Control Room | Een hydraulische pers die druk opbouwt: een zuiger, een manometer met de naald in het rood | `colossus` (oude tekening) |
+| `metronome` | `actors` | Control Room | Een metronoom op pootjes met een schild dat elke derde tik omhoog klapt | `golem` (oude tekening) |
+| `mender` | `actors` | Control Room | Een automaat met een lasbrander en pleisters, een tas met twee herstelsets | `foreman` |
+| `goto-fail` | `actors` | Control Room | Elite, echte bug: een slot met twee identieke hangsloten, waarvan één open hangt | tekening uit spike 8 |
+| `sentry` | `actors` | Control Room | Een wachter met twee schakelaars die allebei hetzelfde alarm aanzetten (OF) | `and-levers` |
+| `contrarian` | `actors` | Control Room | Een automaat met een pijl op zijn borst die altijd de andere kant op wijst (NIET) | `plate-stack` |
+| `cutter` | `actors` | Control Room | Een snoeischaar op wieltjes die elk getal na de komma afknipt; snippers op de grond | `crate-stack` |
+| `overload` | `actors` | Control Room | Een zware automaat met een kraan vol gewichten, een wijzer die tot 255 loopt | `level-256` (de byte-elite uit de Card Hall, als knipoog) |
+| `telex` | `actors` | Control Room | Een telexmachine waar een eindeloze papierstrook met cijfers uit rolt | `null-ghost` |
+| `estimator` | `actors` | Control Room | Een automaat met een weegschaal en een stempel "≈", die elk getal afrondt | `nesting-robot` |
+| `day-248` | `actors` | Control Room | Elite, echte bug: een vliegtuig met een tellerdisplay op de romp dat van 255 naar 0 springt, de lichten gaan uit | `mars-orbiter` |
+| `giant` | `actors` | Control Room | Een reus uit opgestapelde kisten, met een meetlat tot 600 die bij 256 een rode streep heeft | `blueprint-twins` |
+| `titan` | `actors` | Control Room | Een titaan met een veer op zijn rug die elke derde tel opgespannen wordt | `flight-501` (de Convert-elite uit de Card Hall, als knipoog) |
+| `knight-capital` | `actors` | Control Room | Elite, echte bug: een tickerbord dat op hol slaat, met een stoffige oude hendel 'Power Peg' bovenaan | `changelog` |
 
 ## Liggen klaar, nog niet gebruikt
 
 Uit het vel `extras` (`art/sheets/extras-*.png`), uitgesneden in `wwwroot/art/actors/`: `zune`, `heartbleed`, `mars-orbiter`, `loop-snake`, `crate-stack`, `null-ghost`, `foreman` (voor latere afdelingen), `hero-cheer`, `hero-down`, `hero-reading`, `punch-clock`, `pouch` (voor eindscherm, Codex, Prikklok en zakje).
+
+Uit het vel `future` (`art/sheets/future-*.png`), uitgesneden in `wwwroot/art/actors/`: `nesting-robot` (recursie, een stack overflow), `fencepost` (off-by-one), `hamster-wheel` (een oneindige lus), `lockers` (een array begint bij 0), `shelf-overrun` (voorbij het einde van een array), `stamp-press` (nu The Stamper in de Controlekamer; een methode die overal hetzelfde stempelt), `junction-box` (`switch`), `safety-net` (`catch`), `plate-stack` (de call stack), `and-levers` (`&&`: twee hendels tegelijk), `changelog` (de tease "Controlekamer: regels bijgewerkt"), `blueprint-twins` (twee objecten uit één klasse).
+
+Uit het vel `items2`, in `wwwroot/art/items/`: `catch` (een kaart met een catch), `relic-undo` (de relic Undo, als Scrap vaak nodig blijkt) en `relic-brackets` (een relic Haakjes).

@@ -1,0 +1,258 @@
+/* De Lopende Band in de stijl van de montagehandleiding: papier, zwarte lijnen, één letter.
+   Kleur is voorbehouden aan types: de kist kleurt naar wat erin zit (int, byte, double, string). */
+
+:root {
+  --paper: #f7f5ee;
+  --white: #ffffff;
+  --ink: #161616;
+  --muted: #8a877e;
+  --rule: #d9d5c9;
+  --shade: #ebe7dc;
+  --int: #2f6fe4;
+  --byte: #e8a800;
+  --double: #8a5cf0;
+  --string: #2e9d5b;
+  --zss: #e2790a;
+  --font: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --mono: Consolas, "Courier New", monospace;
+  --cell: 64px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 15px;
+}
+
+.overlay { display: grid; place-items: center; height: 100vh; text-align: center; }
+
+button {
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--white);
+  border: 2.5px solid var(--ink);
+  border-radius: 6px;
+  box-shadow: 3px 3px 0 var(--ink);
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: transform 60ms, box-shadow 60ms, background 60ms;
+}
+button:hover:not(:disabled) { background: var(--shade); }
+button:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+button:disabled { color: var(--muted); border-color: var(--muted); box-shadow: none; cursor: default; }
+button.primary { background: var(--ink); color: var(--white); }
+button.primary:hover:not(:disabled) { background: #333; }
+button.secondary { border-style: dashed; box-shadow: none; }
+button.tiny { padding: 2px 7px; font-size: 12px; border-width: 1.5px; box-shadow: 1.5px 1.5px 0 var(--ink); }
+button.tiny.on { background: var(--ink); color: var(--white); }
+
+select {
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 700;
+  border: 2px solid var(--ink);
+  border-radius: 5px;
+  background: var(--white);
+  padding: 3px 4px;
+}
+
+/* --- Indeling --- */
+
+.room { max-width: 1400px; margin: 0 auto; padding: 16px 22px 40px; }
+
+header { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap; border-bottom: 3px solid var(--ink); padding-bottom: 12px; }
+header h1 { margin: 0; font-size: 28px; letter-spacing: -0.01em; }
+header p { margin: 2px 0 0; color: var(--muted); }
+
+.steps { display: flex; gap: 6px; flex-wrap: wrap; }
+.steps .step { display: flex; align-items: center; gap: 6px; padding: 4px 10px 4px 4px; box-shadow: 2px 2px 0 var(--ink); font-size: 12px; }
+.steps .step .circle { display: grid; place-items: center; width: 24px; height: 24px; border: 2px solid currentColor; border-radius: 50%; font-size: 13px; }
+.steps .step.current { background: var(--ink); color: var(--white); }
+.steps .step.beaten .circle { background: var(--ink); color: var(--white); }
+.steps .step.current.beaten .circle { background: var(--white); color: var(--ink); }
+.steps .step.bug .label::after { content: " ✗"; color: var(--zss); }
+
+.floor { display: grid; grid-template-columns: minmax(230px, 0.8fr) auto minmax(260px, 1fr); gap: 22px; margin-top: 18px; align-items: start; }
+@media (max-width: 1150px) { .floor { grid-template-columns: 1fr; } }
+
+h2 { margin: 0 0 8px; font-size: 18px; }
+h2 .tag { color: var(--zss); font-size: 12px; }
+.hint { color: var(--muted); font-size: 12px; font-weight: 700; margin: 8px 0; }
+
+/* --- Gereedschapsbak en paneel --- */
+
+.tools { display: flex; flex-direction: column; gap: 6px; }
+.tool { display: flex; align-items: center; gap: 8px; text-align: left; padding: 6px 10px; box-shadow: 2px 2px 0 var(--ink); }
+.tool .glyph { display: inline-grid; place-items: center; min-width: 46px; padding: 2px 6px; border: 1.5px solid var(--ink); border-radius: 4px; font-family: var(--mono); font-size: 13px; background: var(--paper); }
+.tool small { margin-left: auto; color: var(--muted); }
+.tool.held { background: var(--ink); color: var(--white); }
+.tool.held .glyph { background: var(--white); color: var(--ink); }
+.tool.gate .glyph { border-radius: 12px; }
+.tool.counter .glyph { border-style: double; border-width: 3px; }
+
+.inspector { margin-top: 10px; padding: 10px; border: 2px solid var(--ink); border-radius: 6px; background: var(--white); display: flex; flex-direction: column; gap: 8px; }
+.inspector h3 { margin: 0; font-size: 15px; }
+.inspector .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13px; font-weight: 700; }
+.inspector .dirs { display: flex; gap: 3px; }
+.clear { margin-top: 10px; }
+
+/* --- Het rooster --- */
+
+.grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), var(--cell));
+  grid-template-rows: repeat(var(--rows), var(--cell));
+  border: 2px solid var(--ink);
+  background: var(--white);
+  width: max-content;
+}
+.cell {
+  position: relative;
+  border: 1px dashed var(--rule);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  user-select: none;
+  font-family: var(--mono);
+}
+.cell:hover { background: var(--shade); }
+.cell.belt { background: var(--paper); }
+.cell.belt .arrow { font-size: 28px; color: var(--muted); }
+.cell .stack { display: flex; flex-direction: column; align-items: center; line-height: 1.15; }
+.cell .stack b { font-size: 13px; }
+.cell .stack small { font-size: 11px; color: var(--muted); }
+.cell.machine { background: var(--white); border: 2px solid var(--ink); border-radius: 6px; margin: 3px; }
+.cell.gate { background: var(--white); border: 2px solid var(--ink); border-radius: 50%; margin: 2px; }
+.cell.gate .stack b { font-size: 11px; }
+.cell.counter { background: var(--white); border: 3px double var(--ink); border-radius: 6px; margin: 3px; }
+.cell.source, .cell.output { background: var(--ink); color: var(--white); }
+.cell.source small, .cell.output small { color: var(--rule); }
+.cell.fixed { cursor: default; }
+.cell.fixed.machine, .cell.fixed.gate { outline: 3px solid var(--muted); outline-offset: -6px; }
+.cell.selected { outline: 3px dashed var(--ink); outline-offset: -3px; }
+.cell.hot.gate, .cell.hot.counter, .cell.hot.machine { background: var(--shade); }
+
+/* De kist: kleurt naar haar type, en rijdt van vakje naar vakje */
+.crate {
+  position: absolute;
+  left: calc(var(--x) * var(--cell) + 10px);
+  top: calc(var(--y) * var(--cell) + 10px);
+  width: calc(var(--cell) - 20px);
+  height: calc(var(--cell) - 20px);
+  border: 2.5px solid var(--ink);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  transition: left var(--ms) linear, top var(--ms) linear;
+  box-shadow: 2px 2px 0 var(--ink);
+  background: var(--white);
+}
+.crate .value { font-family: var(--mono); font-weight: 700; font-size: 13px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.crate .kind { font-size: 9px; font-weight: 700; color: var(--white); padding: 0 4px; border-radius: 2px; }
+.crate.int { border-color: var(--int); } .crate.int .kind { background: var(--int); }
+.crate.byte { border-color: var(--byte); } .crate.byte .kind { background: var(--byte); }
+.crate.double { border-color: var(--double); } .crate.double .kind { background: var(--double); }
+.crate.string { border-color: var(--string); } .crate.string .kind { background: var(--string); }
+.crate.overflow { animation: jolt 300ms; }
+.crate.truncated .value::after { content: " ✂"; }
+.crate.fell { opacity: 0.35; transform: rotate(20deg) translateY(8px); }
+@keyframes jolt { 0%, 100% { transform: none; } 25% { transform: translateX(-4px) rotate(-6deg); } 75% { transform: translateX(4px) rotate(6deg); } }
+
+.controls { display: flex; align-items: center; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.controls .speed { margin-left: auto; display: flex; gap: 3px; }
+.timeline { display: flex; align-items: center; gap: 10px; margin-top: 8px; font-size: 12px; font-weight: 700; color: var(--muted); }
+.timeline input { flex: 1; accent-color: var(--ink); }
+.ending { margin: 8px 0 0; font-weight: 700; }
+.ending.forever, .ending.felloff, .ending.wrong { border-left: 4px solid var(--ink); padding-left: 8px; }
+
+/* --- Opdracht en testgevallen --- */
+
+.brief p { margin: 0 0 10px; }
+table.cases { border-collapse: collapse; width: 100%; font-family: var(--mono); font-size: 13px; }
+table.cases th { text-align: left; font-family: var(--font); font-size: 12px; color: var(--muted); border-bottom: 2px solid var(--ink); padding: 4px; }
+table.cases td { padding: 5px 4px; border-bottom: 1px solid var(--rule); }
+table.cases tr { cursor: pointer; }
+table.cases tr.current { background: var(--shade); }
+
+.result { margin-top: 14px; padding: 10px 12px; border: 2.5px solid var(--ink); border-radius: 6px; background: var(--white); box-shadow: 4px 4px 0 var(--ink); }
+.result h3 { margin: 0 0 6px; }
+.result p { margin: 0 0 6px; }
+.result .best { color: var(--muted); font-weight: 700; font-size: 13px; }
+.result .codex { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--rule); font-size: 13px; }
+.result .codex h4 { margin: 0 0 4px; color: var(--zss); }
+
+/* Liggend op een telefoon: kleinere vakjes */
+@media (max-height: 500px) { :root { --cell: 46px; } .room { padding: 8px 10px; } header h1 { font-size: 20px; } }
+
+#blazor-error-ui { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--white); padding: 10px 16px; border-top: 2px solid var(--ink); }
+#blazor-error-ui .dismiss { float: right; cursor: pointer; }
+
+/* --- Uitslag per testgeval: spanning tot de kist aankomt, dan vuurwerk of een rode stempel ---
+   Groen en rood zijn hier een bewuste uitzondering op "kleur is voorbehouden aan types" (spike 9, op vraag). */
+:root { --pass: #2e9d5b; --pass-bg: #e3f3e8; --fail: #d8432f; --fail-bg: #fbe5e1; }
+
+table.cases td.mark { position: relative; width: 42%; font-family: var(--font); font-weight: 900; }
+table.cases tr.pass td { background: var(--pass-bg); }
+table.cases tr.fail td { background: var(--fail-bg); }
+table.cases .ok { position: relative; display: inline-block; color: var(--pass); font-size: 22px; line-height: 1; }
+table.cases .wait { color: var(--muted); }
+table.cases .stamp {
+  display: inline-block; color: var(--fail); border: 3px solid var(--fail); border-radius: 4px;
+  padding: 0 6px; font-size: 14px; letter-spacing: 0.1em; transform: rotate(-8deg);
+}
+table.cases .why { color: var(--fail); font-family: var(--mono); font-size: 12px; }
+
+/* Gelukt: stoer trillen en vonken */
+table.cases tr.fresh.pass td { animation: brag 520ms ease-out; }
+table.cases tr.fresh.pass .ok { animation: bounce 520ms cubic-bezier(.2, 1.8, .4, 1); }
+.burst { position: absolute; left: 50%; top: 50%; width: 0; height: 0; pointer-events: none; }
+.burst i {
+  position: absolute; left: -3px; top: -3px; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--pass); transform: rotate(var(--a)) translateX(0);
+  animation: spark 750ms ease-out forwards;
+}
+.burst i:nth-child(3n) { background: var(--zss); }
+.burst i:nth-child(3n+1) { background: #e8a800; }
+@keyframes spark { 0% { opacity: 1; transform: rotate(var(--a)) translateX(0) scale(1.4); } 100% { opacity: 0; transform: rotate(var(--a)) translateX(var(--d)) scale(0.4); } }
+@keyframes bounce { 0% { transform: scale(0.2); } 100% { transform: scale(1); } }
+@keyframes brag {
+  0%, 100% { transform: none; }
+  20% { transform: translateX(-4px) rotate(-1deg); }
+  40% { transform: translateX(4px) rotate(1deg); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(2px); }
+}
+
+/* Mislukt: een dikke rode stempel die neerkomt, en een rij die schrikt */
+table.cases tr.fresh.fail .stamp { animation: stamp 380ms cubic-bezier(.2, 1.6, .4, 1); }
+table.cases tr.fresh.fail td { animation: thud 380ms ease-out; }
+@keyframes stamp { 0% { opacity: 0; transform: rotate(-8deg) scale(2.6); } 100% { opacity: 1; transform: rotate(-8deg) scale(1); } }
+@keyframes thud { 0% { transform: translateY(-3px); } 50% { transform: translateY(2px); } 100% { transform: none; } }
+
+/* Alles juist: het paneel springt op als een stempel */
+.result.won { border-color: var(--pass); box-shadow: 4px 4px 0 var(--pass); animation: pop 450ms cubic-bezier(.2, 1.6, .4, 1); }
+.result.won h3 { color: var(--pass); }
+.result.lost { border-color: var(--fail); box-shadow: 4px 4px 0 var(--fail); }
+.result.lost h3 { color: var(--fail); }
+@keyframes pop { 0% { transform: scale(0.6) rotate(-3deg); opacity: 0; } 100% { transform: none; opacity: 1; } }
+
+/* --- De stage: rooster, product en front in de verte --- */
+.stage-box { width: 100%; height: clamp(380px, 62vh, 640px); border: 2px solid var(--ink); border-radius: 6px; overflow: hidden; background: var(--paper); }
+.floor { grid-template-columns: minmax(220px, 0.7fr) minmax(480px, 2fr) minmax(250px, 0.9fr); }
+@media (max-width: 1150px) { .floor { grid-template-columns: 1fr; } }
+@media (max-height: 500px) { .stage-box { height: 70vh; } }
+
+/* De opdracht is een bestelbon van het front: papier met een perforatie bovenaan */
+.brief.order { background: var(--white); border: 2px solid var(--ink); padding: 12px 14px 14px; box-shadow: 3px 3px 0 var(--ink); background-image: radial-gradient(circle at 8px 0, var(--paper) 4px, transparent 5px); background-size: 16px 8px; background-repeat: repeat-x; }
+.brief.order .order-head { margin: 4px 0 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }

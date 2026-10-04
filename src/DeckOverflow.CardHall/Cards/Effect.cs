@@ -34,6 +34,29 @@ public sealed record FlipEffect : Effect;
 /// <summary>De aanval van de vijand wordt <c>aanval % Divisor</c>: altijd kleiner dan de deler.</summary>
 public sealed record RemainderEffect(int Divisor) : Effect;
 
+/// <summary>Verschuift de haakjes in de aanval van een vijand, als die er een andere groepering voor heeft (<see cref="Combat.Intent.Regrouped"/>).</summary>
+public sealed record RegroupEffect : Effect;
+
+/// <summary>
+/// Schade uit een teller die het hele gevecht meegaat, met echte <c>++</c>. Postfix (<c>count++</c>) slaat met
+/// de oude waarde en telt dan op; prefix (<c>++count</c>) telt eerst op en slaat dan met de nieuwe.
+/// Elke kaart met dit effect deelt dezelfde teller, die bij <see cref="Start"/> begint.
+/// </summary>
+public sealed record IncrementEffect(bool Prefix, int Factor = 1, int Bonus = 0) : Effect
+{
+    public const int Start = 3;
+
+    /// <summary>Speelt de kaart: de teller gaat één omhoog, en de schade is wat de expressie oplevert.</summary>
+    public int Use(ref int count) => Prefix ? ++count * Factor + Bonus : count++ * Factor + Bonus;
+
+    /// <summary>Wat de kaart nu zou slaan, zonder de teller te veranderen.</summary>
+    public int Peek(int count) => Use(ref count);
+
+    /// <summary>De expressie voor log en Codex: <c>count++</c>, <c>++count * 2</c> of <c>count++ + 3</c>.</summary>
+    public string Expression =>
+        (Prefix ? "++count" : "count++") + (Factor != 1 ? $" * {Factor}" : "") + (Bonus != 0 ? $" + {Bonus}" : "");
+}
+
 /// <summary>
 /// Verandert de waarde van je volgende kaart, met echte C#-operatoren op een waarde met een type.
 /// De volgorde van modifiers telt. <paramref name="DoubleHits"/>: de kaart slaat twee keer zo vaak (Split).

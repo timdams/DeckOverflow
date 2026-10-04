@@ -77,6 +77,12 @@ function describe(S, e) {
       return [t('stage.log.passed-through', { target: who(e.targetId) }), COLORS.ink];
     case 'HitBounced':
       return [t('stage.log.bounced', { target: who(e.targetId), expression: e.expression, value: e.value }), COLORS.ink];
+    case 'VariableIncremented':
+      return [t('stage.log.incremented', { target: who(e.targetId), expression: e.expression, value: num(e.value), after: e.after }), COLORS.ink];
+    case 'IntentRegrouped':
+      return [t('stage.log.regrouped', { enemy: who(e.enemyId), before: e.expressionBefore, expression: e.expression }), COLORS.ink];
+    case 'AttackCrashed':
+      return [t('stage.log.attack-crashed', { source: who(e.enemyId), expression: e.expression, exception: e.exception }), COLORS.ink];
     case 'ModifiersScrapped':
       return [t('stage.log.scrapped', { pending: e.pending }), COLORS.ink];
     case 'ModifiersApplied':
@@ -134,9 +140,15 @@ function describe(S, e) {
   }
 }
 
-/** "Floating Ghost" wordt "Ghost": genoeg om te herkennen, kort genoeg voor het paneel. */
+/**
+ * Kort genoeg voor het paneel, maar nog te herkennen: "The Splitter" wordt "Splitter", een korte naam
+ * blijft heel ("Bool Ghost"), en een lange houdt zijn laatste woord ("Floating Ghost" wordt "Ghost").
+ */
+const SHORT = 12;
 function shortName(name) {
   if (!name) return '?';
-  const parts = name.split(' ');
+  const bare = name.replace(/^The /, '');
+  if (bare.length <= SHORT) return bare;
+  const parts = bare.split(' ');
   return parts[parts.length - 1];
 }

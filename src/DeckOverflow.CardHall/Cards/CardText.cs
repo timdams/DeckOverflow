@@ -10,8 +10,14 @@ public static class CardText
 {
     public static TextRef Of(CardDefinition card) => Of(card.Effect);
 
-    public static TextRef Of(Effect effect) => effect switch
+    /// <summary>In een gevecht: een kaart met een teller toont wat ze nu zou slaan.</summary>
+    public static TextRef Of(CardDefinition card, int count) => Of(card.Effect, count);
+
+    public static TextRef Of(Effect effect, int count = IncrementEffect.Start) => effect switch
     {
+        IncrementEffect { Prefix: false } i => TextRef.Of("effect.tighten-after", ("amount", i.Peek(count))),
+        IncrementEffect i => TextRef.Of("effect.tighten-first", ("amount", i.Peek(count))),
+        RegroupEffect => TextRef.Of("effect.regroup"),
         DamageEffect { Hits: 1 } d => TextRef.Of("effect.damage", ("amount", d.Amount)),
         DamageEffect d => TextRef.Of("effect.damage-hits", ("amount", d.Amount), ("hits", d.Hits)),
         BlockEffect b => TextRef.Of("effect.block", ("amount", b.Amount)),

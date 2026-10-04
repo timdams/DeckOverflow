@@ -16,12 +16,15 @@ Wie een pagina leest, krijgt niets extra. De beloning zit in de volgende run: je
 | Pagina | Hoofdstuk | Gaat open bij |
 | --- | --- | --- |
 | Variables | H2 | een bewuste intent die met jouw blok, kaarten of energie rekent |
+| Identifiers | H2 | een kaart op The Nameless die weigert omdat zijn naam niet klopt (`Shadow`, `2shadow`, `sha-dow`) |
 | Integer truncation | H2 | schade met decimalen op een `int` |
 | Integer division | H2 | Split, of een bewuste intent met `/` |
 | Modulo | H2 | een treffer op de Rhythm Turtle, of Remainder |
+| ++ and -- | H2 | een Tighten-kaart, de aanval van de Twin Shooters, of de heling van de Tally Counter |
 | Booleans | H2 | de Bool Ghost omdraaien, met een treffer of Flip |
 | Integer overflow | H2 | helen tot een `byte` omklapt |
-| Operator precedence | H2 | de Rekenmeester verslaan |
+| Operator precedence | H2 | de Rekenmeester verslaan, of een aanval die Move the Brackets omschreef |
+| Constants | H2 | Wrong Label of Remainder op een vijand wiens aanval `const` werd |
 | String concatenation | H3 | Ink, een treffer op The Label of Effective Power, of Y2K die `"19" + 100` schrijft |
 | String length | H3 | Effective Power, Y2K of de Typesetter laten crashen, of Count Letters |
 | A char is a number | H3 | schade op Type Block, of Letter A |
@@ -29,7 +32,11 @@ Wie een pagina leest, krijgt niets extra. De beloning zit in de volgende run: je
 | Convert | H4, vanaf act 3 | Measure Twice |
 | Math.Round | H4, vanaf act 3 | de Rounder |
 | Parsing | H4, vanaf act 3 | Read of Read the Label |
-| Exceptions | H10 | een `FormatException` of `OverflowException` |
+| (Card Hall-pagina's) | H2 tot H4 | ook in de Controlekamer: afkappen (De Snoeier), overflow (De Overbelaster, Dag 248), samenvoegen en lengte (De Telex), Math.Round (De Schatter), casting (De Reus), Convert (De Titaan, alleen een geslaagde conversie). Exceptions niet: in H4 heet het crashen |
+| If - else if | H5 | Controlekamer: een regel van jou vuurt terwijl een regel eronder ook klopte |
+| Relational operators | H5 | Controlekamer: een regel van jou met `<` of `==` vuurt |
+| Logical operators | H5 | Controlekamer: een regel van jou met EN, OF of NIET vuurt |
+| Exceptions | H10 | nog nergens: in H2 tot H4 heet het crashen, zoals in het boek, en een crash opent deze pagina niet (beslist op 4 oktober 2026). Ze wacht op een afdeling voor H10 |
 
 De laatste laag linkt naar de juiste pagina in de [online versie van het boek](https://timdams.github.io/ziescherpscherper/content/README.html), waar het kan met een anker (bv. `#conversie`).
 

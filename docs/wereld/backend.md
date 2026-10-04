@@ -35,6 +35,14 @@ De game is een statische site (Blazor WebAssembly), dus een server is niet nodig
 
 Bij een brede uitrol laten we dit nalezen door iemand van privacy bij de instelling. Een koppeling met Moodle (LTI) is een latere stap, als instellingen dat vragen.
 
+## Feedback in het spel
+
+Gebouwd op 4 oktober 2026. Een speler kan de maker laten weten wat hij leuk vond, altijd optioneel en zonder beloning: een hartje of "meh" na een gewonnen gevecht (onderwerp `enemy:<key>`), en op het eindscherm van een run een hartje plus een kort bericht (onderwerp `run`, hooguit 500 tekens, met de vraag er geen naam of school in te zetten). De component `World/FeedbackHeart.razor` kan elke afdeling gebruiken; zonder backend toont ze niets.
+
+- **Alleen schrijven.** De tabel `feedback` heeft geen leesregel: spelers, klasgenoten en docenten lezen niets, ook hun eigen rijen niet. Tim leest in het dashboard of met de service-sleutel.
+- **Geen tracking.** Er wordt niets ongevraagd bijgehouden: alleen wat de speler zelf aanklikt of typt. De disclaimer op het hoofdscherm ("Over dit spel") zegt dat zo.
+- **Lezen**, bv. per vijand: `select subject, count(*) filter (where verdict = 'like') as fun, count(*) filter (where verdict = 'dislike') as meh, count(distinct user_id) as players from feedback group by subject order by subject;` en de berichten met `select created_at, subject, comment from feedback where comment is not null order by created_at desc;`.
+
 ## Data: Supabase
 
 Postgres in de EU-regio (Frankfurt), met de beveiliging per rij (row level security) en databasefuncties van Supabase. Er is geen eigen API-server: de shell praat met `HttpClient` tegen de REST-API. `DeckOverflow.Api` uit de MVP-tabel vervalt daarmee.

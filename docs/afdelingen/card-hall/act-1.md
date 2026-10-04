@@ -13,12 +13,14 @@ Beslist op 3 oktober 2026: de deckbuilder, voortaan **The Card Hall**, heeft dri
 | Gewoon | The Stray Automaton | Een tease uit de Controlekamer, intent `block > 0 ? 16 : 8` |
 | Gewoon | Bool Ghost | Een `bool` die elke treffer omdraait; intent `isSolid ? 6 : 14` |
 | Gewoon | Rhythm Turtle | Schild open als `cards % 3 == 0`; intent `turn % 2 == 0 ? 16 : 4` |
+| Gewoon | Twin Shooters | Eén teller, twee schutters: intent `shots++ + ++shots`, elke beurt 4 harder |
 | Vroeg event | Bottomless Jug | Een `byte` die zich heelt tot hij omklapt: het wondermoment van act 1 |
 | Elite | Level 256 | Heelt zichzelf tot hij omklapt |
 | Elite | The Counter | 30 onder `int.MaxValue`, telt op tot hij unchecked omklapt |
+| Elite | The Nameless | Alleen te raken als zijn naam klopt: `shadow` wel, `Shadow`, `2shadow` en `sha-dow` niet |
 | Baas | The Reckoner | Toont zijn totaal niet: rekenen is hier de kern |
 
-De concepttabel hieronder is het oorspronkelijke ontwerp. De rijen voor H3 en H4 zijn verhuisd naar act 2 en 3. Wat niet gebouwd is (de Bool-schim, De Naamloze, de Ritmeschildpad, de Tweelingschutters, `const` via de patch), staat in [ideeen.md](ideeen.md); de Bool-schim en de Ritmeschildpad zijn intussen gebouwd, zie hieronder.
+De concepttabel hieronder is het oorspronkelijke ontwerp. De rijen voor H3 en H4 zijn verhuisd naar act 2 en 3. Intussen is alles uit die tabel gebouwd (zie hieronder), behalve de Etiketkamer: die is geschrapt, want een etiket kiezen om een vat te openen is een vraag als poort.
 
 Act 1 dekt hoofdstuk 2 van Zie Scherp Scherper: variabelen, datatypes, identifiers, operatoren, expressies en constanten. Het thema maakt die concepten tastbaar: in de Vatenvallei is alles een waarde in een vat, en elk vat heeft een vorm (type) en een etiket (naam).
 
@@ -82,7 +84,7 @@ Gebouwd op 3 oktober 2026, in het spel **Bool Ghost**, 30 HP, met de tekening va
 
 ### Gebouwd: de Ritmeschildpad (act 1)
 
-Gebouwd op 3 oktober 2026, in het spel **Rhythm Turtle**, 30 HP, nog zonder tekening. Een schildpad met een schild dat alleen open is in het ritme van jouw beurt. De voorwaarde staat op zijn schild, zoals een intent: `cards % 3 == 0`.
+Gebouwd op 3 oktober 2026, in het spel **Rhythm Turtle**, 30 HP. Een schildpad met een schild dat alleen open is in het ritme van jouw beurt. De voorwaarde staat op zijn schild, zoals een intent: `cards % 3 == 0`.
 
 - **Zijn schild is dicht, behalve bij elke derde kaart** die je deze beurt speelt. Een treffer op een dicht schild ketst af (0 schade). Je derde en zesde kaart raken.
 - **Dus speel je eerst twee goedkope kaarten** (Spare Screw, Split, Floating Point: die kosten 0) en dan je zware slag. De Counter-relic (elke derde kaart kost 0) wordt hier ineens goud waard.
@@ -91,6 +93,42 @@ Gebouwd op 3 oktober 2026, in het spel **Rhythm Turtle**, 30 HP, nog zonder teke
 - **Wat je ontdekt:** `%` geeft de rest, en "elke derde" is `% 3 == 0`.
 - **Codex:** een pagina **Modulo** (H2), met jouw moment: een treffer op zijn schild (`2 % 3` is 2) of Remainder (`16 % 5` is 1). Onder zijn balk staat `cards % 3 == 0`.
 - **Andere manier om te winnen:** Force Fit naar `byte` en helen, zoals bij Level 256; zijn schild houdt schade tegen, geen heling.
+
+### Gebouwd: de Tweelingschutters (act 1)
+
+Gebouwd op 4 oktober 2026, in het spel **Twin Shooters**, 34 HP. Twee schutters met één teller, `shots`, die onder hun balk staat.
+
+- **Hun intent is `shots++ + ++shots`**, echt uitgerekend door C#. De linkse slaat met de oude waarde, de rechtse telt eerst op. Met `shots = 1` is dat `1 + 3` = 4, en daarna is `shots` 3. Elke beurt slaan ze dus 4 harder: 4, 8, 12, 16.
+- **Wrong Label of Remainder** overschrijft hun aanval, en dan telt hun teller die beurt niet mee: de expressie liep niet.
+- **Twee nieuwe kaarten met een gedeelde teller** (`count`, begint elk gevecht op 3): **Hit, Then Tighten** (0 energie, `count++`: slaat 3 en draait de teller verder) en **Tighten, Then Hit** (1 energie, `++count * 2`: eerst verder, dan slaan met de nieuwe waarde, dus 8). De kaart toont altijd wat ze nu zou slaan. Het ontwerp "postfix vroeg in de beurt, prefix als afmaker" volgt vanzelf: elke goedkope Hit, Then Tighten maakt de afmaker 2 zwaarder. Op de kaarten staat geen code, alleen woorden; het log toont `count++`.
+- **Codex:** de pagina **++ and --** (H2). Ze gaat ook open bij de Tally Counter, die na elke winst `++count` heelt.
+- **Andere manier om te winnen:** snel slaan voor ze op toeren komen, of blokken en Remainder op hun zware beurten.
+
+### Gebouwd: De Naamloze (elite, act 1)
+
+Gebouwd op 4 oktober 2026, in het spel **The Nameless**, 44 HP, nog zonder echte bug (de andere elites hebben er een). Zijn variabele heet `shadow`, maar elke beurt wordt hij anders aangesproken, in een vaste kring: `shadow`, `Shadow`, `shadow`, `2shadow`, `shadow`, `sha-dow`. De naam van deze beurt staat onder zijn balk.
+
+- **Klopt de naam niet, dan weigert elke kaart die hem viseert**, met de echte reden: `Shadow` is een andere naam (hoofdletters tellen), `2shadow` begint met een cijfer, `sha-dow` heeft een teken dat niet mag. Een gereserveerd woord (`class`) zou ook weigeren. Dat is de compilefout uit de visie: een ongeldige zet weigert.
+- **Op die beurten slaat hij hard** (14, 15, 16), op de andere licht (9, 9, 10). Je blokt dus op de verkeerde namen en zet modifiers klaar (Spare Screw, Second Pair of Hands): die wachten tot de naam weer klopt.
+- **Codex:** de pagina **Identifiers** (H2), met jouw moment: welke naam je probeerde en hoe hij echt heet.
+- **Geschrapt:** de Etiketmaker (een relic die zijn volgende naam toont; de naam staat al in beeld) en het event De Etiketkamer (een vraag als poort).
+
+### Gebouwd: de patch met `const` (act 1 en verder)
+
+Gebouwd op 4 oktober 2026. Overschrijf je de aanval van dezelfde soort vijand drie keer in een run (Wrong Label of Remainder), dan komt er tussen twee gevechten een revisie: de melding "Patch notes: …'s attack is const now". Vanaf dan staat `const attack` onder zijn balk, en weigeren Wrong Label en Remainder op hem: `attack = 1` compileert niet meer. De Codex-pagina **Constants** (H2) opent bij die eerste weigering. Wie op één truc leunt, moet een tweede vinden.
+
+### Gebouwd: Move the Brackets (act 1)
+
+Gebouwd op 4 oktober 2026, de kaart Haakjes uit het ontwerp. **Move the Brackets** (1 energie, verbeterd 0) verschuift de haakjes in de aanval van een vijand, voor deze beurt. Niet elke aanval heeft haakjes om te verschuiven; waar het kan, rekent C# de nieuwe groepering zelf uit:
+
+| Vijand | Aanval | Met de haakjes elders |
+| --- | --- | --- |
+| The Reckoner | `(3 + 2) * 4` = 20 | `3 + 2 * 4` = 11 |
+| The Reckoner | `17 / 5 + 17 % 5` = 5 | `17 / (5 + 17) % 5` = 0 |
+| The Splitter | `30 / (block + 1)` | `30 / block + 1`: met 5 blok 7, zonder blok een `DivideByZeroException` en geen aanval |
+| Dripper | `energy * 4 + 2.5` | `energy * (4 + 2.5)`: zonder energie 0, maar elke energie die je overhoudt kost 6.5 |
+
+Zo wordt de tablet van de Rekenmeester jouw wapen, zoals het ontwerp van fase 3 vroeg. De Codex-pagina Operator precedence opent ook bij een omgeschreven aanval; de Splitter door nul laten delen geeft het ✗-paneel *Do not divide by zero*. Operatorvoorrang in je eigen aanval (modifiers met voorrang in plaats van van links naar rechts) is niet gebouwd: zie [ideeen.md](ideeen.md).
 
 ## Elites en baas
 

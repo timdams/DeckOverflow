@@ -1,12 +1,16 @@
-// strings.js - spelteksten uit text/en.json, met dezelfde regels als Strings.cs in de shell:
+// strings.js - spelteksten uit text/<taal>.json, met dezelfde regels als Strings.cs in de shell:
 // {amount} is de waarde zelf, {card:from} de naam van de kaart met die id, idem relic: en enemy:.
+// en.json ligt eronder, zodat een tekst die nog niet vertaald is in het Engels verschijnt.
 // Een ontbrekende sleutel toont zichzelf, zodat je hem meteen ziet staan.
 
 let texts = {};
 
-export async function loadStrings() {
-  const response = await fetch('text/en.json');
-  texts = await response.json();
+const fetchTexts = (lang) => fetch(`text/${lang}.json`).then((r) => (r.ok ? r.json() : {})).catch(() => ({}));
+
+/** De taal komt van de shell (index.html), die ze ook bewaart. */
+export async function loadStrings(lang = window.deckOverflow?.lang?.() ?? 'en') {
+  const base = await fetchTexts('en');
+  texts = lang === 'en' ? base : { ...base, ...(await fetchTexts(lang)) };
 }
 
 const raw = (key) => texts[key] ?? key;
