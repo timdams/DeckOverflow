@@ -974,7 +974,10 @@ button.dept-node:active:not(:disabled) { transform: none; box-shadow: none; }
 /* Het naambordje staat voor de band: papier met een dunne rand, op één regel */
 .dept-node .name-plate { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 0.15em 0.5em 0.2em; white-space: nowrap; background: var(--paper); border-radius: 6px; }
 .dept-node .dept-name { font-size: 1.2em; font-weight: 900; letter-spacing: -0.02em; line-height: 1.05; }
-.dept-node small { font-size: 0.78em; font-weight: 700; color: var(--muted); }
+/* De ondertitel blijft binnen de breedte van de afdeling, anders schuift ze over de buren */
+.dept-node small { max-width: 100%; font-size: 0.78em; font-weight: 700; color: var(--muted); white-space: normal; text-wrap: balance; }
+/* Een afdeling met een sticker komt boven haar buren te liggen, zodat niets de sticker afdekt */
+button.dept-node:has(.sticker) { z-index: 3; }
 .dept-node.boxed .dept-name { color: var(--muted); }
 .dept-node.soon small { color: var(--ink); text-transform: uppercase; letter-spacing: 0.06em; }
 .dept-node .sticker {
