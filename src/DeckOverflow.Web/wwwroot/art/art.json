@@ -86,6 +86,8 @@
     "day-248": "actors/day-248",
     "giant": "actors/giant",
     "titan": "actors/titan",
+    "typographer": "actors/typesetter",
+    "receipt": "actors/changelog",
     "zune": "actors/zune"
   },
   "nodes": {

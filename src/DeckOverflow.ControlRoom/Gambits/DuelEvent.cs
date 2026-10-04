@@ -33,6 +33,8 @@ public enum Outcome { PlayerWon, EnemyWon, ShiftOver }
 [JsonDerivedType(typeof(TypeUnchanged), nameof(TypeUnchanged))]
 [JsonDerivedType(typeof(ConversionCrashed), nameof(ConversionCrashed))]
 [JsonDerivedType(typeof(MoveSkipped), nameof(MoveSkipped))]
+[JsonDerivedType(typeof(TextParsed), nameof(TextParsed))]
+[JsonDerivedType(typeof(ParseCrashed), nameof(ParseCrashed))]
 [JsonDerivedType(typeof(DuelEnded), nameof(DuelEnded))]
 public abstract record DuelEvent;
 
@@ -71,4 +73,11 @@ public sealed record TypeUnchanged(Side Target, ValueKind Kind) : DuelEvent;
 public sealed record ConversionCrashed(Side Target, int Value) : DuelEvent;
 /// <summary>Deze zet viel weg, omdat een conversie crashte.</summary>
 public sealed record MoveSkipped(Side Side) : DuelEvent;
+/// <summary><c>int.Parse</c> lukte: de tekst van het doelwit is nu het getal <paramref name="Value"/>, een <c>int</c>.</summary>
+public sealed record TextParsed(Side Target, string Text, int Value) : DuelEvent;
+/// <summary>
+/// <c>int.Parse</c> op tekst die geen geheel getal is (<c>"605.5"</c>): de lezer crasht, en zijn volgende zet valt weg.
+/// In beeld heet dat crashen, niet <c>FormatException</c> (dat woord hoort bij H10).
+/// </summary>
+public sealed record ParseCrashed(Side Side, string Text) : DuelEvent;
 public sealed record DuelEnded(Outcome Outcome, int Turn) : DuelEvent;

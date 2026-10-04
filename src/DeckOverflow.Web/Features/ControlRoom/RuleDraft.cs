@@ -10,13 +10,16 @@ public sealed class ConditionDraft
     public int Value { get; set; }
     public bool Not { get; set; }
 
-    public Condition ToCondition() => new(Check, Value, Not);
+    /// <summary>De grens is een char (<c>'a'</c>), zoals tegen een vijand met een char als HP.</summary>
+    public bool Char { get; set; }
 
-    public static ConditionDraft From(Condition c) => new() { Check = c.Check, Value = c.Value, Not = c.Not };
+    public Condition ToCondition() => new(Check, Value, Not, Char);
+
+    public static ConditionDraft From(Condition c) => new() { Check = c.Check, Value = c.Value, Not = c.Not, Char = c.Char };
 
     /// <summary>Een nieuwe voorwaarde met meteen een geldig getal erbij.</summary>
     public static ConditionDraft Of(Check check, Level level) =>
-        new() { Check = check, Value = Condition.TakesValue(check) ? level.ValuesFor(check)[0] : 0 };
+        new() { Check = check, Value = Condition.TakesValue(check) ? level.ValuesFor(check)[0] : 0, Char = level.IsChar(check) };
 }
 
 /// <summary>

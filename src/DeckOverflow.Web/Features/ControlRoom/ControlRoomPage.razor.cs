@@ -128,6 +128,14 @@ public partial class ControlRoomPage : IAsyncDisposable
         await Stage.ShowAsync(Fresh());
     }
 
+    /// <summary>Wat de vijand nog had: zijn HP, als letter bij een char, of hoe lang zijn tekst al was.</summary>
+    private string LostDetail(BotState enemy) => enemy.Kind switch
+    {
+        Core.Values.ValueKind.String => S.T("room.ui.lost-detail-text", ("length", enemy.Text?.Length ?? 0), ("limit", enemy.CrashLength)),
+        Core.Values.ValueKind.Char => S.T("room.ui.lost-detail", ("hp", $"{Condition.CharLiteral(enemy.Hp)} ({enemy.Hp})")),
+        _ => S.T("room.ui.lost-detail", ("hp", enemy.Hp)),
+    };
+
     private void OnLanguageChanged() => _ = InvokeAsync(async () =>
     {
         await Stage.SetLanguageAsync(S.Language);
@@ -387,6 +395,8 @@ public partial class ControlRoomPage : IAsyncDisposable
         TypeUnchanged u => new(S.T("room.log.unchanged", ("kind", u.Kind.ToString().ToLowerInvariant())), Who(u.Target == Side.Player ? Side.Enemy : Side.Player) + " wasted"),
         ConversionCrashed x => new(S.T("room.log.convert-crash", ("value", x.Value)), Who(x.Target == Side.Player ? Side.Enemy : Side.Player)),
         MoveSkipped k => new(S.T($"room.log.{Who(k.Side)}.skipped"), Who(k.Side) + " wasted"),
+        TextParsed p => new(S.T("room.log.parsed", ("text", p.Text), ("value", p.Value)), Who(p.Target == Side.Player ? Side.Enemy : Side.Player)),
+        ParseCrashed x => new(S.T("room.log.parse-crash", ("text", x.Text)), Who(x.Side) + " wasted"),
         WoundUp u => new(S.T(u.WasCharged ? $"room.log.{Who(u.Side)}.wind-up-again" : $"room.log.{Who(u.Side)}.wind-up"), Who(u.Side) + (u.WasCharged ? " wasted" : "")),
         _ => null
     };

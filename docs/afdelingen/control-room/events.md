@@ -19,6 +19,8 @@ Anders dan in de Card Hall rekent de shell het hele duel vooraf uit (`DuelRecord
 | `TypeUnchanged` | target, kind | Grijs "al een byte": de regel vuurde, er verandert niets |
 | `ConversionCrashed` | target, value | Glitch, schudden, "crasht!" (geen "exception": dat woord komt pas in H10) |
 | `MoveSkipped` | side | Grijs "zet valt weg", een wankel knikje |
+| `TextParsed` | target, text, value | "int.Parse(\"20\") → 20" zweeft op; de tekst wordt een `int`: nieuwe badge, tint en een gewone HP-balk |
+| `ParseCrashed` | side, text | De lezer schudt, glitch, "geen getal: crasht!"; zijn volgende zet valt weg (`MoveSkipped`) |
 | `BlockExpired` | side, amount | De beschermplaat vervaagt |
 | `Whacked` | side, damage (kan een kommagetal zijn), absorbed, dealt, hpAfter, wasCharged | Aanloop en klap; geblokt deel als grijs getal, de rest als schade met shake en hit pause. Opgeladen: ster en snelheidslijnen |
 | `Braced` | side, amount, total | Beschermplaat springt op, "+n blok" |
@@ -27,4 +29,4 @@ Anders dan in de Card Hall rekent de shell het hele duel vooraf uit (`DuelRecord
 | `WoundUp` | side, wasCharged | Indrukken als een veer, ×2 boven het hoofd; al opgeladen: grijs "al opgeladen" |
 | `DuelEnded` | outcome, turn | De verliezer valt om, een stempel: geslaagd, stilgevallen of shift voorbij |
 
-`DuelSnapshot`: turn, player en enemy (`BotState`: key, hp, maxHp, block, charged, repairsLeft, repairs, kind, text, crashLength, counter, dead), de tellers per regel (`playerChecked`, `playerFired`, `enemyChecked`, `enemyFired`) en outcome.
+`DuelSnapshot`: turn, player en enemy (`BotState`: key, hp, maxHp (na Lezen het gelezen getal), kind (bij `Char` toont de stage de HP als letter met het getal erbij), block, charged, repairsLeft, repairs, kind, text, crashLength, counter, dead), de tellers per regel (`playerChecked`, `playerFired`, `enemyChecked`, `enemyFired`) en outcome.

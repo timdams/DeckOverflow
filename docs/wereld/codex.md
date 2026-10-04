@@ -32,7 +32,7 @@ Wie een pagina leest, krijgt niets extra. De beloning zit in de volgende run: je
 | Convert | H4, vanaf act 3 | Measure Twice |
 | Math.Round | H4, vanaf act 3 | de Rounder |
 | Parsing | H4, vanaf act 3 | Read of Read the Label |
-| (Card Hall-pagina's) | H2 tot H4 | ook in de Controlekamer: afkappen (De Snoeier), overflow (De Overbelaster, Dag 248), samenvoegen en lengte (De Telex), Math.Round (De Schatter), casting (De Reus), Convert (De Titaan, alleen een geslaagde conversie). Exceptions niet: in H4 heet het crashen |
+| (Card Hall-pagina's) | H2 tot H4 | ook in de Controlekamer: afkappen (De Snoeier), overflow (De Overbelaster, Dag 248), samenvoegen en lengte (De Telex), een char is een getal (De Typograaf), Math.Round (De Schatter), casting (De Reus), Convert (De Titaan, alleen een geslaagde conversie), parsen (De Kassabon, alleen als lezen lukt). Exceptions niet: in H4 heet het crashen |
 | If - else if | H5 | Controlekamer: een regel van jou vuurt terwijl een regel eronder ook klopte |
 | Relational operators | H5 | Controlekamer: een regel van jou met `<` of `==` vuurt |
 | Logical operators | H5 | Controlekamer: een regel van jou met EN, OF of NIET vuurt |

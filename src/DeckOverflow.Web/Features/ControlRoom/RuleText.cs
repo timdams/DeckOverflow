@@ -8,7 +8,7 @@ public static class RuleText
 {
     public static string Condition(Strings s, Condition c)
     {
-        string text = s.T($"room.check.{c.Check}", ("n", c.Value));
+        string text = s.T($"room.check.{c.Check}", ("n", c.Literal));
         return c.Not ? s.T("room.rule.not", ("cond", text)) : text;
     }
 

@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using DeckOverflow.Core.Values;
 
 namespace DeckOverflow.ControlRoom.Gambits;
 
@@ -11,6 +12,11 @@ public enum Move
     CastToByte,
     /// <summary><c>Convert.ToByte</c> op de HP van de vijand: te groot, en hij crasht.</summary>
     ConvertToByte,
+    /// <summary>
+    /// Lezen: <c>int.Parse</c> op de tekst van de vijand. <c>"60"</c> wordt het getal 60; tekst die geen geheel getal
+    /// is (<c>"605.5"</c>), laat de lezer crashen.
+    /// </summary>
+    Parse,
 }
 
 /// <summary>Waar een voorwaarde naar kijkt. "Ik" is de automaat die de regel heeft, "vijand" de andere.</summary>
@@ -30,7 +36,8 @@ public enum Join { And, Or }
 /// Eén voorwaarde, eventueel omgedraaid met NIET (<c>!</c>). Altijd kan niet omgedraaid worden:
 /// <c>!true</c> is nooit, en een regel die nooit klopt, heeft geen zin.
 /// </summary>
-public sealed record Condition(Check Check, int Value = 0, bool Not = false)
+/// <param name="Char">De grens is een <c>char</c>: 97 staat er als <c>'a'</c>, zoals tegen een automaat met een char als HP.</param>
+public sealed record Condition(Check Check, int Value = 0, bool Not = false, bool Char = false)
 {
     public static Condition Always { get; } = new(Check.Always);
 
@@ -39,8 +46,9 @@ public sealed record Condition(Check Check, int Value = 0, bool Not = false)
     private bool Raw(Bot me, Bot foe, int turn) => Check switch
     {
         Check.Always => true,
-        Check.MyHpBelow => me.Hp < Value,
-        Check.FoeHpBelow => foe.Hp < Value,
+        // Tekst is geen getal: zolang een automaat tekst is, klopt een vergelijking met zijn HP nooit
+        Check.MyHpBelow => me.Kind != ValueKind.String && me.Hp < Value,
+        Check.FoeHpBelow => foe.Kind != ValueKind.String && foe.Hp < Value,
         Check.IAmCharged => me.Charged,
         Check.FoeCharged => foe.Charged,
         Check.FoeBlocking => foe.Block > 0,
@@ -62,8 +70,8 @@ public sealed record Condition(Check Check, int Value = 0, bool Not = false)
         string raw = Check switch
         {
             Check.Always => "true",
-            Check.MyHpBelow => $"me.Hp < {Value}",
-            Check.FoeHpBelow => $"foe.Hp < {Value}",
+            Check.MyHpBelow => $"me.Hp < {Literal}",
+            Check.FoeHpBelow => $"foe.Hp < {Literal}",
             Check.IAmCharged => "me.IsCharged",
             Check.FoeCharged => "foe.IsCharged",
             Check.FoeBlocking => "foe.Block > 0",
@@ -80,8 +88,8 @@ public sealed record Condition(Check Check, int Value = 0, bool Not = false)
     {
         string raw = Check switch
         {
-            Check.MyHpBelow => $"{me.Hp} < {Value}",
-            Check.FoeHpBelow => $"{foe.Hp} < {Value}",
+            Check.MyHpBelow => $"{Shown(me)} < {Literal}",
+            Check.FoeHpBelow => $"{Shown(foe)} < {Literal}",
             Check.EveryNthTurn => $"{turn} % {Value} == 0",
             Check.FoeBlocking => $"{foe.Block} > 0",
             Check.MyCounterBelow => $"{me.Counter} < {Value}",
@@ -92,6 +100,19 @@ public sealed record Condition(Check Check, int Value = 0, bool Not = false)
     }
 
     internal static string Bool(bool value) => value ? "true" : "false";
+
+    /// <summary>De grens zoals ze in C# staat: een getal, of een char tussen enkele aanhalingstekens.</summary>
+    public string Literal => Char ? CharLiteral(Value) : Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+    public static string CharLiteral(int value) => $"'{(char)value}'";
+
+    /// <summary>De HP van een automaat zoals C# ze toont: een char als letter, tekst tussen aanhalingstekens.</summary>
+    private static string Shown(Bot bot) => bot.Kind switch
+    {
+        ValueKind.Char => CharLiteral(bot.Hp),
+        ValueKind.String => $"\"{bot.Text}\"",
+        _ => bot.Hp.ToString(System.Globalization.CultureInfo.InvariantCulture),
+    };
 }
 
 /// <summary>

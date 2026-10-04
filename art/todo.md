@@ -8,6 +8,8 @@ Open sinds 4 oktober 2026: de machines van de Lopende Band zijn getekend met vor
 
 | Sleutel | Soort (map in `art.json`) | Afdeling | Wat erop staat | Nu in het spel |
 | --- | --- | --- | --- | --- |
+| `typographer` | `actors` | Control Room | Een typograaf-automaat met een letterkast op zijn buik en een grote loden letter in de hand; half kleine letter, half hoofdletter | `typesetter` (de zetter uit de Card Hall) |
+| `receipt` | `actors` | Control Room | Een lange kassabon op pootjes met een getal bovenaan, waar steeds meer cijfers aan vastgeschreven worden | `changelog` |
 | `belt-machine` | nieuw (tegels) | Conveyor Belt | Een werkbank boven een stuk band, met een pers of lasser; plaats voor het label (`+4`, `×2`) | vorm in Pixi |
 | `belt-saw` | nieuw (tegels) | Conveyor Belt | Een zaag die een product doormidden deelt, zaagsel ernaast (deling) | vorm in Pixi |
 | `belt-gate` | nieuw (tegels) | Conveyor Belt | Een wissel met een keurder en twee uitgangen | vorm in Pixi |

@@ -33,6 +33,15 @@ public sealed record Level(
     /// <summary>De automaat van de speler in dit gevecht.</summary>
     public BotSpec PlayerBot => Player ?? LevelCatalog.Player;
 
+    /// <summary>
+    /// Is de grens van deze check een <c>char</c>? Zo ja tegen een vijand met een char als HP: dan kies je
+    /// <c>'a'</c> en niet 97, want zo staat het in C#.
+    /// </summary>
+    public bool IsChar(Check check) => check == Check.FoeHpBelow && Enemy.Kind == ValueKind.Char;
+
+    /// <summary>Een voorwaarde zoals de speler ze op dit bord kan leggen.</summary>
+    public Condition Condition(Check check, int value = 0, bool not = false) => new(check, value, not, IsChar(check));
+
     /// <summary>De getallen die een speler in een check kan kiezen.</summary>
     public IReadOnlyList<int> ValuesFor(Check check) => check switch
     {
@@ -194,7 +203,24 @@ public static class LevelCatalog
             [Rule.Otherwise(Move.Whack)],
             Player: Player with { WhackDamage = 5.5 }),
 
-        // 12. Afronden (H4). Hij rondt elke klap af met Math.Round: 3.5 wordt 4, meer dan afkappen. Maar elke tweede
+        // 12. Een char is een getal (H3). Zijn HP is een char: 'z', dat is 122. Een klap trekt er gewoon van af: 'z' - 10
+        // is 'p'. Zolang hij een hoofdletter is, zet hij zich schrap: 'a' is 97 en 'A' is 65, dus elke hoofdletter is kleiner
+        // dan 'a' maar niet kleiner dan 'A' (en de zes tekens tussen 'Z' en 'a' tellen mee). Zijn schild vangt precies een
+        // gewone Mep op: wie alleen mept, blijft op '\' (92) steken tot de shift voorbij is. Opgeladen kom je erdoor.
+        new("typographer",
+            new BotSpec("typographer", MaxHp: 'z', WhackDamage: 3, BlockAmount: 10, RepairAmount: 0, Repairs: 0, ValueKind.Char),
+            [new Rule(new Condition(Check.MyHpBelow, 'a', Char: true), Move.HoldFirmly,
+                 new Condition(Check.MyHpBelow, 'A', Not: true, Char: true), Join.And),
+             Rule.Otherwise(Move.Whack)],
+            Slots: 3,
+            AllChecks,
+            AllMoves,
+            Joins: [Join.And, Join.Or], AllowNot: true,
+            [Rule.Otherwise(Move.Whack)],
+            Player: Player with { WhackDamage = 10 },
+            FoeHpValues: ['0', 'A', 'Z', 'a', 'n']),
+
+        // 13. Afronden (H4). Hij rondt elke klap af met Math.Round: 3.5 wordt 4, meer dan afkappen. Maar elke tweede
         // beurt zet hij een dun schild van 1, en dan blijft er 2.5 over: dat wordt 2, naar het dichtste even getal.
         new("estimator",
             new BotSpec("estimator", MaxHp: 38, WhackDamage: 7, BlockAmount: 1, RepairAmount: 0, Repairs: 0, Damage: DamageRule.Round),
@@ -206,7 +232,7 @@ public static class LevelCatalog
             [Rule.Otherwise(Move.Whack)],
             Player: Player with { WhackDamage = 3.5 }),
 
-        // 13. Casting (H4) en modulo (H2). 600 HP, een int: wegmeppen haal je niet. Omgieten naar byte kan: (byte)hp
+        // 14. Casting (H4) en modulo (H2). 600 HP, een int: wegmeppen haal je niet. Omgieten naar byte kan: (byte)hp
         // controleert nooit en houdt hp % 256 over. Meteen omgieten maakt 600 tot 88; wacht je tot onder 500, dan wordt
         // het 244. En een regel "altijd → omgieten" blijft vuren als hij al een byte is: zet er een regel boven die dan wint.
         new("giant",
@@ -220,7 +246,7 @@ public static class LevelCatalog
             Player: Player with { WhackDamage = 10 },
             FoeHpValues: [100, 200, 300, 400, 500]),
 
-        // 14. Convert (H4). Elke derde beurt laadt hij op voor een dubbele klap. Convert.ToByte controleert wel:
+        // 15. Convert (H4). Elke derde beurt laadt hij op voor een dubbele klap. Convert.ToByte controleert wel:
         // zolang hij boven 255 staat, crasht de conversie en valt zijn volgende zet weg. Onder 256 lukt ze gewoon,
         // en dan helpt alleen omgieten nog.
         new("titan",
@@ -234,7 +260,23 @@ public static class LevelCatalog
             Player: Player with { WhackDamage = 20 },
             FoeHpValues: [260, 280, 300, 400]),
 
-        // 15. Elite: Dag 248 (Boeing 787, 2015). Een teller van het type byte telt elke beurt op, vanaf 240.
+        // 16. Parsen (H4). Zijn HP is de tekst "20". Een klap plakt (zoals bij de Telex), en pas bij 30 tekens crasht
+        // hij. Lezen (int.Parse) maakt van "20" het getal 20, en dat is snel weg. Maar lees je na een klap, dan staat er
+        // "205.5": geen geheel getal, en jouw automaat crasht. Na een opgeladen klap staat er "2011", en dat is 2011 HP.
+        // Lees dus voor je slaat. Een regel "vijand HP < x" klopt pas als hij een getal is: tekst vergelijk je niet.
+        new("receipt",
+            new BotSpec("receipt", MaxHp: 0, WhackDamage: 5, BlockAmount: 0, RepairAmount: 0, Repairs: 0,
+                ValueKind.String, StartText: "20", CrashLength: 30),
+            [Rule.Otherwise(Move.Whack)],
+            Slots: 3,
+            AllChecks,
+            [.. AllMoves, Move.Parse],
+            Joins: [Join.And, Join.Or], AllowNot: true,
+            [Rule.Otherwise(Move.Whack)],
+            Player: Player with { WhackDamage = 5.5 },
+            FoeHpValues: [10, 20, 30, 100]),
+
+        // 17. Elite: Dag 248 (Boeing 787, 2015). Een teller van het type byte telt elke beurt op, vanaf 240.
         // Zijn enige regel: NIET teller < 240 → Mep. Na 16 beurten loopt de teller over naar 0, en dan klopt er
         // niets meer: hij valt stil, zoals de generatoren van de 787. Wie zijn regel leest, houdt het tot dan uit.
         new("day-248",

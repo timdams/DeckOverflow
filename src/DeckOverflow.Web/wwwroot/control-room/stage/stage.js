@@ -235,7 +235,8 @@ function createActor(side, state) {
 
 function drawHp(a, hp) {
   a.hp = hp;
-  a.hpText.text = `${Math.round(hp)}/${a.maxHp}`;
+  // Een char is een getal dat als letter getoond wordt: 'p' (112)
+  a.hpText.text = a.kind === 'Char' ? `'${String.fromCharCode(Math.round(hp))}' (${Math.round(hp)})` : `${Math.round(hp)}/${a.maxHp}`;
   // Een byte kan boven zijn startwaarde opgelapt worden (tot 255): de balk loopt dan vol
   const w = Math.max(0, Math.min(BAR_W - 2, (BAR_W - 2) * hp / a.maxHp));
   a.barFill.clear().rect(1, 1, w, 16).fill(a.tint);   // getint in de kleur van het type, zoals in de Card Hall
@@ -438,6 +439,29 @@ const HANDLERS = {
     sfx('glitch');
     shake(a.body, juice.shakePx.large);
     floatText(S.layers.fx, t('room.stage.convert-crash'), a.container.x, a.container.y - ACTOR_H - 10, { size: 22 });
+    await hitPause(juice.hitPauseMs.medium);
+    await wait(350);
+  },
+
+  // Lezen lukte: de tekst is nu een int, met het getal dat erin stond als HP
+  TextParsed: async (e) => {
+    const a = S.actors[e.target];
+    const p = head(a);
+    sfx('click');
+    a.extra.text = '';
+    setKind(a, 'Int');
+    a.maxHp = Math.max(e.value, 1);
+    drawHp(a, e.value);
+    floatText(S.layers.fx, t('room.stage.parsed', { text: e.text, value: e.value }), p.x, p.y - 30, { size: 22 });
+    await wait(450);
+  },
+
+  // Lezen crasht op tekst die geen geheel getal is: de lezer schudt, zijn volgende zet valt weg
+  ParseCrashed: async (e) => {
+    const a = S.actors[e.side];
+    sfx('glitch');
+    shake(a.body, juice.shakePx.large);
+    floatText(S.layers.fx, t('room.stage.parse-crash'), a.container.x, a.container.y - ACTOR_H - 10, { size: 22 });
     await hitPause(juice.hitPauseMs.medium);
     await wait(350);
   },

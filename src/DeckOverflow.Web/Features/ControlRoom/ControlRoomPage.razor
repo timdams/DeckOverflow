@@ -162,7 +162,7 @@
                                 break;
                             case Outcome.EnemyWon:
                                 <h3 class="heavy">@S.T("room.ui.lost")</h3>
-                                <p>@S.T("room.ui.lost-detail", ("hp", done.Frames[^1].Snapshot.Enemy.Hp))</p>
+                                <p>@LostDetail(done.Frames[^1].Snapshot.Enemy)</p>
                                 break;
                             default:
                                 <h3 class="heavy">@S.T("room.ui.shift-over")</h3>

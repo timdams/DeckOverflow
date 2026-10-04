@@ -239,8 +239,15 @@ public sealed class Duel
                 }
 
                 // Spelregel, zoals in de Card Hall: schade stopt op 0
+                int hpBefore = foe.Hp;
                 foe.Hp = Math.Max(0, foe.Hp - dealt);
                 events.Add(new Whacked(side, raw, absorbed, dealt, foe.Hp, charged));
+                if (foe.Kind == ValueKind.Char && dealt > 0)
+                {
+                    // Een char is een getal: 'z' - 6 is 't'
+                    Remember(CodexCatalog.CharIsNumber, ("expression", $"{Condition.CharLiteral(hpBefore)} - {Num(dealt)}"),
+                        ("value", $"{Condition.CharLiteral(foe.Hp)} ({Num(foe.Hp)})"));
+                }
                 break;
             }
             case Move.HoldFirmly:
@@ -272,7 +279,7 @@ public sealed class Duel
                     }
                     break;
                 }
-                int healed = Math.Min(me.Spec.RepairAmount, me.Spec.MaxHp - me.Hp);
+                int healed = Math.Min(me.Spec.RepairAmount, me.MaxHp - me.Hp);
                 me.Hp += healed;
                 events.Add(new Repaired(side, healed, me.Hp, me.RepairsLeft));
                 break;
@@ -285,6 +292,9 @@ public sealed class Duel
                 break;
             case Move.ConvertToByte:
                 ConvertToByte(foe, events);
+                break;
+            case Move.Parse:
+                Parse(me, foe, events);
                 break;
         }
     }
@@ -358,6 +368,40 @@ public sealed class Duel
         target.Kind = ValueKind.Byte;
         events.Add(new TypeChanged(side, ValueKind.Int, ValueKind.Byte, before, target.Hp, false, "convert"));
         Remember(CodexCatalog.Convert, ("expression", $"Convert.ToByte({Num(before)})"), ("value", Num(target.Hp)));
+    }
+
+    /// <summary>
+    /// Lezen: <c>int.Parse(foe.Hp)</c>, zoals de kaart Read in de Card Hall. Op tekst die een geheel getal is, wordt de
+    /// vijand een <c>int</c> met dat getal als HP. Op <c>"605.5"</c> of <c>"60x"</c> crasht de lezer: zijn volgende zet
+    /// valt weg. Op een vijand die al een getal is, verandert er niets; de regel klopte toch, dus de zet is weg.
+    /// </summary>
+    private void Parse(Bot reader, Bot target, List<DuelEvent> events)
+    {
+        Side side = SideOf(target);
+        if (target.Kind != ValueKind.String)
+        {
+            events.Add(new TypeUnchanged(side, target.Kind));
+            return;
+        }
+        string text = target.Text ?? "";
+        int value;
+        try
+        {
+            value = (int)TypedValue.String(text).Parse().Number;
+        }
+        catch (Exception e) when (e is FormatException or OverflowException)
+        {
+            reader.Stunned = true;
+            events.Add(new ParseCrashed(SideOf(reader), text));
+            return;
+        }
+        target.Kind = ValueKind.Int;
+        target.Text = null;
+        target.Hp = value;
+        target.MaxHp = Math.Max(value, 1);
+        events.Add(new TextParsed(side, text, value));
+        if (SideOf(reader) == Side.Player)
+            Remember(CodexCatalog.Parse, ("text", $"int.Parse(\"{text}\")"), ("value", Num(value)));
     }
 
     private Side SideOf(Bot bot) => bot == Bot(Side.Player) ? Side.Player : Side.Enemy;

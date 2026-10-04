@@ -146,7 +146,7 @@
                         @onchange="e => Change(() => setValue(int.Parse((string)e.Value!)))">
                     @foreach (var v in Level!.ValuesFor(c.Check))
                     {
-                        <option value="@v">@v</option>
+                        <option value="@v">@(Level.IsChar(c.Check) ? Condition.CharLiteral(v) : v.ToString())</option>
                     }
                 </select>
                 @if (c.Check == Check.EveryNthTurn)

@@ -21,11 +21,12 @@ public class LevelTests
 
     public static TheoryData<string> Keys => new(LevelCatalog.All.Select(l => l.Key));
 
+    /// <summary>Verliezen of de shift laten aflopen: allebei geen overwinning (zie De Typograaf).</summary>
     [Theory, MemberData(nameof(Keys))]
-    public void Alleen_slaan_verliest_overal(string key)
+    public void Alleen_slaan_wint_nergens(string key)
     {
         var level = LevelCatalog.Get(key);
-        Assert.Equal(Outcome.EnemyWon, Play(key, [.. level.StartRules]).Outcome);
+        Assert.NotEqual(Outcome.PlayerWon, Play(key, [.. level.StartRules]).Outcome);
     }
 
     [Theory, MemberData(nameof(Keys))]
@@ -382,5 +383,98 @@ public class LevelTests
     public void Titaan_is_te_winnen_met_Convert()
     {
         Assert.Contains(Solver.Wins(LevelCatalog.Get("titan"), 3), w => w.Rules.Any(r => r.Then == Move.ConvertToByte));
+    }
+
+    // ---------- 12. De Typograaf: een char is een getal ----------
+
+    [Fact]
+    public void Typograaf_wie_alleen_mept_blijft_steken_op_een_hoofdletter()
+    {
+        var duel = Play("typographer", Rule.Otherwise(Move.Whack));
+
+        Assert.Equal(Outcome.ShiftOver, duel.Outcome);
+        // Hij staat tussen 'A' en 'a': daar vangt zijn schild elke gewone klap op
+        int hp = duel.Bot(Side.Enemy).Hp;
+        Assert.InRange(hp, 'A', 'a' - 1);
+        Assert.Equal(Core.Values.ValueKind.Char, duel.Bot(Side.Enemy).Kind);
+    }
+
+    [Fact]
+    public void Typograaf_opgeladen_kom_je_door_zijn_hoofdletters()
+    {
+        var duel = Play("typographer", new Rule(C(Check.IAmCharged), Move.Whack), new Rule(C(Check.FoeBlocking), Move.WindUp), Rule.Otherwise(Move.Whack));
+        Assert.Equal(Outcome.PlayerWon, duel.Outcome);
+    }
+
+    [Fact]
+    public void Typograaf_een_klap_op_een_char_opent_de_pagina_met_letters()
+    {
+        var level = LevelCatalog.Get("typographer");
+        var duel = LevelCatalog.Start(level, [Rule.Otherwise(Move.Whack)]);
+        duel.Step();
+
+        var moment = Assert.Single(duel.Moments, m => m.Key == Core.Codex.CodexCatalog.CharIsNumber);
+        Assert.Equal("'z' - 10", moment.Values["expression"]);
+        Assert.Equal("'p' (112)", moment.Values["value"]);
+    }
+
+    [Fact]
+    public void Typograaf_zijn_regel_staat_in_C_sharp_met_letters()
+    {
+        var caps = LevelCatalog.Get("typographer").EnemyRules[0];
+        Assert.Equal("me.Hp < 'a' && !(me.Hp < 'A')", caps.Expression());
+        Assert.True(LevelCatalog.Get("typographer").Condition(Check.FoeHpBelow, 'a').Char);
+        Assert.False(LevelCatalog.Get("typographer").Condition(Check.MyHpBelow, 20).Char);
+    }
+
+    // ---------- 16. De Kassabon: parsen ----------
+
+    [Fact]
+    public void Kassabon_eerst_lezen_wint_snel()
+    {
+        var duel = Play("receipt", new Rule(C(Check.FoeHpBelow, 30), Move.Whack), Rule.Otherwise(Move.Parse));
+
+        Assert.Equal(Outcome.PlayerWon, duel.Outcome);
+        Assert.True(duel.Turn <= 6, $"{duel.Turn} beurten");
+        Assert.Contains(duel.Moments, m => m.Key == Core.Codex.CodexCatalog.Parse && m.Values["value"] == "20");
+    }
+
+    [Fact]
+    public void Kassabon_lezen_na_een_klap_crasht_en_je_volgende_zet_valt_weg()
+    {
+        var level = LevelCatalog.Get("receipt");
+        var duel = LevelCatalog.Start(level, [new Rule(C(Check.EveryNthTurn, 2), Move.Parse), Rule.Otherwise(Move.Whack)]);
+        duel.Step(); duel.Step();   // beurt 1: "20" + 5.5
+
+        Assert.Contains(new ParseCrashed(Side.Player, "205.5"), duel.Step());
+        duel.Step();
+        Assert.Contains(new MoveSkipped(Side.Player), duel.Step());
+        // Je voelt de crash, maar de naam (exception) komt pas in H10
+        Assert.DoesNotContain(duel.Moments, m => m.Key == Core.Codex.CodexCatalog.Exceptions);
+    }
+
+    [Fact]
+    public void Kassabon_lezen_na_een_opgeladen_klap_maakt_er_een_groot_getal_van()
+    {
+        var level = LevelCatalog.Get("receipt");
+        var duel = LevelCatalog.Start(level, [new Rule(C(Check.IAmCharged), Move.Whack), new Rule(C(Check.EveryNthTurn, 3), Move.Parse), Rule.Otherwise(Move.WindUp)]);
+        var events = Enumerable.Range(0, 6).SelectMany(_ => duel.Step()).ToList();
+
+        Assert.Contains(new TextParsed(Side.Enemy, "2011", 2011), events);
+        Assert.Equal(2011, duel.Bot(Side.Enemy).Hp);
+    }
+
+    [Fact]
+    public void Kassabon_tekst_vergelijk_je_niet_met_een_getal()
+    {
+        var level = LevelCatalog.Get("receipt");
+        var duel = LevelCatalog.Start(level, [new Rule(C(Check.FoeHpBelow, 100), Move.WindUp), Rule.Otherwise(Move.Whack)]);
+        Assert.DoesNotContain(duel.Step(), e => e is WoundUp);
+    }
+
+    [Fact]
+    public void Kassabon_is_ook_te_winnen_zonder_lezen()
+    {
+        Assert.Contains(Solver.Wins(LevelCatalog.Get("receipt"), 2), w => w.Rules.All(r => r.Then != Move.Parse));
     }
 }

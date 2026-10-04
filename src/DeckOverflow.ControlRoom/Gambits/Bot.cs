@@ -17,8 +17,9 @@ public enum DamageRule
 /// <param name="WhackDamage">Een kommagetal mag: op een geheel type wordt het afgekapt of afgerond, zoals in de Card Hall.</param>
 /// <param name="Repairs">Hoe vaak Patch Up werkt. Daarna doet de zet niets meer, maar de regel klopt nog wel.</param>
 /// <param name="Kind">
-/// Het type van zijn HP: <c>int</c> (herstel stopt bij het maximum), <c>byte</c> (herstel loopt over voorbij 255)
-/// of <c>string</c> (een klap plakt het getal erachter; te lang, en hij crasht).
+/// Het type van zijn HP: <c>int</c> (herstel stopt bij het maximum), <c>byte</c> (herstel loopt over voorbij 255),
+/// <c>char</c> (een getal dat als letter getoond wordt: 'z' is 122) of <c>string</c> (een klap plakt het getal erachter;
+/// te lang, en hij crasht).
 /// </param>
 /// <param name="Damage">Hoe hij een kommagetal aan schade ontvangt: afkappen of afronden.</param>
 /// <param name="StartText">De tekst van een automaat van het type <c>string</c>.</param>
@@ -48,7 +49,11 @@ public sealed class Bot
         Text = spec.Kind == ValueKind.String ? spec.StartText ?? "" : null;
         Counter = spec.CounterStart;
         Kind = spec.Kind;
+        MaxHp = spec.MaxHp;
     }
+
+    /// <summary>Het maximum van zijn HP. Tekst die gelezen wordt, krijgt het getal dat erin stond als maximum.</summary>
+    public int MaxHp { get; internal set; }
 
     /// <summary>Het type van zijn HP nu: omgieten of converteren kan het veranderen.</summary>
     public ValueKind Kind { get; internal set; }
@@ -73,7 +78,7 @@ public sealed class Bot
     /// <summary>Een tekst valt om als ze crasht; een getal als het op 0 staat.</summary>
     public bool Dead => Kind == ValueKind.String ? Crashed : Hp <= 0;
 
-    public BotState State() => new(Spec.Key, Hp, Spec.MaxHp, Block, Charged, RepairsLeft, Spec.Repairs, Kind,
+    public BotState State() => new(Spec.Key, Hp, MaxHp, Block, Charged, RepairsLeft, Spec.Repairs, Kind,
         Text, Spec.CrashLength, Counter, Dead);
 }
 

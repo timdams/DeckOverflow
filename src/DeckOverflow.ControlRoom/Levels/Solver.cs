@@ -25,7 +25,7 @@ public static class Solver
         from value in level.ValuesFor(check)
         from not in withNot && level.AllowNot && check != Check.Always ? new[] { false, true } : [false]
         from move in level.Moves
-        select new Rule(new Condition(check, value, not), move);
+        select new Rule(level.Condition(check, value, not), move);
 
     private static void Search(Level level, List<Rule> vocabulary, List<Rule> current, int maxRules, List<Solution> wins)
     {
