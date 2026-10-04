@@ -16,6 +16,7 @@ export const juice = {
   explode: { pieces: [3, 4], distance: 70, ms: 900 },   // kolommen x rijen, hoe ver, hoe lang
   summaryHoldMs: 1600,
   cardFlyMs: 220,
+  backdrop: { alpha: 0.24, blur: 2 },           // de tekening van de act achter het gevecht: vaag genoeg voor de figuren
   dealStaggerMs: 70,
   hover: { liftPx: 26, scale: 1.12 },           // muis boven een kaart in je hand
   // Vinger op een kaart: groter om te lezen en boven je vinger, zodat die de kaart niet bedekt.

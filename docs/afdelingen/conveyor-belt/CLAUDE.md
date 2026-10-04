@@ -17,7 +17,7 @@ Geldt bovenop de [CLAUDE.md op de root](../../../CLAUDE.md). Het ontwerp staat i
 - **Een oneindige loop wordt bewezen, niet geraden:** de motor bewaart elke toestand. Een vangnet van 5000 tikken mag nooit afgaan.
 - **Geen RNG.**
 - **Het product is een vijand uit de Card Hall** (`Level.Product` is een `enemy.<key>`): zijn tekening komt uit `art.json`, zijn naam uit `enemy.*`.
-- **Groen en rood voor gelukt en mislukt** zijn een bewuste uitzondering op "kleur is voorbehouden aan types", uit spike 9; nog te beslissen (zie [todo](todo.md)).
+- **Geen groen of rood** (beslist op 4 oktober 2026): gelukt is een zwarte stempel, mislukt een oranje ✗, zoals de rest van het spel. Het scherm volgt [de beeldtaal](../../wereld/beeldtaal.md); zie [Het scherm](README.md#het-scherm-de-werkvloer).
 
 ## Een bestelling toevoegen of bijstellen
 

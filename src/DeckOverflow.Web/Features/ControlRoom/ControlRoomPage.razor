@@ -2,10 +2,11 @@
 @using DeckOverflow.ControlRoom.Gambits
 @using DeckOverflow.ControlRoom.Levels
 
-@* De Controlekamer (H5): je stelt de regels van een automaat op en kijkt hoe hij vecht. Links jouw bord en de
-   gereedschapsbak, in het midden de stage met de tijdlijn, rechts de regels van de vijand. *@
+@* De Controlekamer (H5): je stelt de regels van een automaat op en kijkt hoe hij vecht. Een echte controlekamer, zoals
+   de beeldtaal vraagt (docs/wereld/beeldtaal.md): links jouw schakelkast met de gereedschapsbak en het luik onder de
+   motorkap, in het midden de testcel met de ponsband, rechts de verzegelde kast van de vijand. *@
 
-<div class="room">
+<div class="room control-room">
     @if (!S.Loaded)
     {
         <div class="overlay"><h1>Deck Overflow</h1><p>...</p></div>
@@ -22,7 +23,11 @@
     {
         <header class="room-head">
             <button class="options-button" title="@S.T("ui.options")" aria-label="@S.T("ui.options")" @onclick="OpenOptionsAsync">☰</button>
-            <h1 class="title-word small">@S.T("ui.world.control-room.name")</h1>
+            <span class="step-badge" aria-hidden="true">@Departments.Get(Departments.ControlRoom).Step</span>
+            <div class="room-title">
+                <h1 class="heavy">@S.T("ui.world.control-room.name")</h1>
+                <small>@S.T("room.ui.fight-of", ("n", _levelIndex + 1), ("total", LevelCatalog.All.Count)) · @S.T($"room.enemy.{Level.Key}")</small>
+            </div>
             <nav class="steps">
                 @for (int i = 0; i < LevelCatalog.All.Count; i++)
                 {
@@ -45,40 +50,75 @@
 
         <main class="room-floor">
             <section class="board mine">
-                <h2>@S.T("room.ui.your-rules") <small>@S.T("room.ui.slots", ("used", _drafts.Count), ("max", Level.Slots))</small></h2>
-                <p class="hint">↓ @S.T("room.ui.top-first")</p>
-                <RuleBoard Rules="_drafts" Editable="Editing" Level="Level" Slots="Level.Slots"
-                           Checks="Level.Checks" Moves="Level.Moves" Joins="Level.Joins" AllowNot="Level.AllowNot"
-                           Checked="Shown?.PlayerChecked" Fired="Shown?.PlayerFired" Finished="AtEnd"
-                           FlashIndex="FlashOf(Side.Player)" OnChanged="BoardChangedAsync" />
-                <label class="code-toggle"><input type="checkbox" @bind="_showCode" /> @S.T("room.ui.code")</label>
-                @if (_showCode)
-                {
-                    <pre class="code">@RuleText.CSharp(S, _drafts.Select(d => d.ToRule()).ToList())</pre>
-                }
+                <div class="cabinet">
+                    <div class="cabinet-head">
+                        <h2 class="stencil">@S.T("room.ui.cabinet")</h2>
+                        <small>@S.T("room.ui.slots", ("used", _drafts.Count), ("max", Level.Slots))</small>
+                    </div>
+                    <p class="hint">↓ @S.T("room.ui.top-first")</p>
+                    <RuleBoard Rules="_drafts" Editable="Editing" Level="Level" Slots="Level.Slots"
+                               Checks="Level.Checks" Moves="Level.Moves" Joins="Level.Joins" AllowNot="Level.AllowNot"
+                               Checked="Shown?.PlayerChecked" Fired="Shown?.PlayerFired" Finished="AtEnd"
+                               FlashIndex="FlashOf(Side.Player)" OnChanged="BoardChangedAsync" />
+                </div>
+
+                @* Het luik onder de motorkap: dicht een gearceerd luik, open je bord als C#, met de regel die nu vuurt *@
+                <div class="hatch @(_showCode ? "open" : "")">
+                    <button class="hatch-lid" aria-expanded="@(_showCode ? "true" : "false")" @onclick="() => _showCode = !_showCode">
+                        <span class="stencil">@S.T("room.ui.code")</span>
+                        <small>@S.T(_showCode ? "room.ui.hatch-close" : "room.ui.hatch-open")</small>
+                    </button>
+                    @if (_showCode)
+                    {
+                        <pre class="code">@foreach (var line in RuleText.CSharpLines(S, _drafts.Select(d => d.ToRule()).ToList()))
+                        {<span class="line @(line.Rule >= 0 && line.Rule == FlashOf(Side.Player) ? "now" : "")">@line.Text</span>}</pre>
+                    }
+                </div>
             </section>
 
             <section class="arena">
-                <div class="stage-box" @ref="_host"></div>
+                @* De testcel: het duel door een raam met een dikke lijst en een bordje *@
+                <div class="test-cell">
+                    <span class="cell-sign stencil">
+                        @S.T("room.ui.test-cell", ("n", _levelIndex + 1))@if (Shown is { Turn: > 0 } now)
+                        {
+                            <text> · @S.T("room.ui.turn-short", ("turn", now.Turn))</text>
+                        }
+                    </span>
+                    <div class="stage-box" @ref="_host"></div>
+                </div>
 
                 <div class="controls">
+                    @* De ene grote knop: starten, pauzeren of verder, zoals op een machine *@
                     @if (Editing)
                     {
-                        <button class="play-big" disabled="@(_drafts.Count == 0)" @onclick="RunAsync">▶ @S.T("room.ui.run")</button>
+                        <button class="big-round" disabled="@(_drafts.Count == 0)" title="@S.T("room.ui.run")" aria-label="@S.T("room.ui.run")" @onclick="RunAsync"><MachineIcon Kind="play" /></button>
+                        <span class="big-label heavy">@S.T("room.ui.run")</span>
+                    }
+                    else if (_playing)
+                    {
+                        <button class="big-round paper" title="@S.T("room.ui.pause")" aria-label="@S.T("room.ui.pause")" @onclick="Stop"><MachineIcon Kind="pause" /></button>
+                        <span class="big-label heavy">@S.T("room.ui.running")</span>
+                    }
+                    else if (!AtEnd)
+                    {
+                        <button class="big-round" title="@S.T("room.ui.resume")" aria-label="@S.T("room.ui.resume")" @onclick="ResumeAsync"><MachineIcon Kind="play" /></button>
+                        <button @onclick="StepAsync">⏭ @S.T("room.ui.step")</button>
                     }
                     else
                     {
-                        @if (_playing)
-                        {
-                            <button @onclick="Stop">⏸ @S.T("room.ui.pause")</button>
-                        }
-                        else if (!AtEnd)
-                        {
-                            <button class="primary" @onclick="ResumeAsync">▶ @S.T("room.ui.resume")</button>
-                            <button @onclick="StepAsync">⏭ @S.T("room.ui.step")</button>
-                        }
+                        <button class="big-round paper" title="@S.T("room.ui.replay")" aria-label="@S.T("room.ui.replay")" @onclick="RunAsync">↻</button>
+                        <span class="big-label heavy">@S.T("room.ui.over")</span>
+                    }
+                    @if (!Editing && !AtEnd)
+                    {
+                        @* Aan het einde staat deze knop in de uitslag *@
                         <button class="secondary" @onclick="EditAsync">✎ @S.T("room.ui.edit")</button>
                     }
+                    <span class="counters">
+                        <span class="score"><span class="stencil">@S.T("room.ui.hist-turns")</span><Digits Value="@(Shown is { } s ? s.Turn.ToString() : "–")" Min="2" Class="@(Shown is null ? "dim" : "")" /></span>
+                        <span class="score"><span class="stencil">@S.T("room.ui.hist-rules")</span><Digits Value="@_drafts.Count.ToString()" /></span>
+                    </span>
                     <span class="speed">
                         @foreach (var sp in new[] { 1, 2, 4 })
                         {
@@ -88,13 +128,26 @@
                     </span>
                 </div>
 
-                @if (_recording is { } rec)
+                @if (_recording is not null)
                 {
-                    @* De tijdlijn: het duel ligt vast, dus je kan naar elke zet springen *@
-                    <div class="timeline">
-                        <input type="range" min="-1" max="@(rec.Frames.Count - 1)" value="@_frame" @oninput="ScrubAsync"
-                               aria-label="@S.T("room.ui.timeline")" />
-                        <span class="turn">@S.T("room.ui.turn", ("turn", Shown?.Turn ?? 0), ("max", Duel.MaxTurns))</span>
+                    @* De ponsband: per beurt een gaatje voor jou en een voor de vijand, met de regel die vuurde.
+                       Het duel ligt vast, dus een klik op een gaatje springt naar die zet, ook terug *@
+                    <div class="punch-tape" role="group" aria-label="@S.T("room.ui.timeline")">
+                        <div class="tape-head">
+                            <span class="stencil">@S.T("room.ui.tape")</span>
+                            <small>@S.T("room.ui.tape-hint")</small>
+                        </div>
+                        <div class="tape-strip">
+                            <div class="tape-rows" aria-hidden="true"><span>@S.T("room.ui.tape-you")</span><span>@S.T("room.ui.tape-them")</span></div>
+                            <button class="tape-start @(_frame < 0 ? "now" : "")" title="@S.T("room.ui.tape-start")" aria-label="@S.T("room.ui.tape-start")" @onclick="() => JumpAsync(-1)">⏮</button>
+                            @foreach (var column in Tape())
+                            {
+                                <div class="tape-col">
+                                    @Hole(column.Turn, column.Player)
+                                    @Hole(column.Turn, column.Enemy)
+                                </div>
+                            }
+                        </div>
                     </div>
                 }
 
@@ -104,15 +157,15 @@
                         @switch (done.Outcome)
                         {
                             case Outcome.PlayerWon:
-                                <h3>@S.T("room.ui.won")</h3>
+                                <span class="rubber-stamp slam big">@S.T("room.ui.won")</span>
                                 <p>@S.T("room.ui.won-detail", ("turns", done.Turns), ("rules", done.Rules.Count), ("hp", done.Frames[^1].Snapshot.Player.Hp))</p>
                                 break;
                             case Outcome.EnemyWon:
-                                <h3>@S.T("room.ui.lost")</h3>
+                                <h3 class="heavy">@S.T("room.ui.lost")</h3>
                                 <p>@S.T("room.ui.lost-detail", ("hp", done.Frames[^1].Snapshot.Enemy.Hp))</p>
                                 break;
                             default:
-                                <h3>@S.T("room.ui.shift-over")</h3>
+                                <h3 class="heavy">@S.T("room.ui.shift-over")</h3>
                                 <p>@S.T("room.ui.shift-over-detail", ("turns", done.Turns))</p>
                                 break;
                         }
@@ -159,20 +212,25 @@
             </section>
 
             <section class="board theirs">
-                <h2>
-                    @S.T($"room.enemy.{Level.Key}")
-                    @if (Level.Bug)
-                    {
-                        <small class="tag">@S.T("room.ui.real-bug")</small>
-                    }
-                </h2>
-                <p class="hint">↓ @S.T("room.ui.top-first")</p>
-                <RuleBoard Rules="_enemyDrafts" Checked="Shown?.EnemyChecked" Fired="Shown?.EnemyFired" Finished="AtEnd"
-                           FlashIndex="FlashOf(Side.Enemy)" />
-                <p class="flavor">@S.T($"room.flavor.{Level.Key}")</p>
+                @* De kast van de vijand: dezelfde platen en lampen, verzegeld. Lezen mag *@
+                <div class="cabinet sealed">
+                    <div class="cabinet-head">
+                        <h2 class="stencil">@S.T("room.ui.enemy-cabinet", ("name", S.T($"room.enemy.{Level.Key}")))</h2>
+                        @if (Level.Bug)
+                        {
+                            <span class="bug-tag">@S.T("room.ui.real-bug")</span>
+                        }
+                    </div>
+                    <p class="hint">@S.T("room.ui.sealed")</p>
+                    <RuleBoard Rules="_enemyDrafts" Checked="Shown?.EnemyChecked" Fired="Shown?.EnemyFired" Finished="AtEnd"
+                               FlashIndex="FlashOf(Side.Enemy)" />
+                    <p class="flavor">@S.T($"room.flavor.{Level.Key}")</p>
+                    <span class="seal" aria-hidden="true">@S.T("room.ui.seal")</span>
+                </div>
                 @if (_showCode)
                 {
-                    <pre class="code">@RuleText.CSharp(S, Level.EnemyRules)</pre>
+                    <pre class="code">@foreach (var line in RuleText.CSharpLines(S, Level.EnemyRules))
+                    {<span class="line @(line.Rule >= 0 && line.Rule == FlashOf(Side.Enemy) ? "now" : "")">@line.Text</span>}</pre>
                 }
             </section>
         </main>
@@ -229,6 +287,23 @@
 </div>
 
 @code {
+    /// <summary>
+    /// Een gaatje in de ponsband: het nummer van de regel die vuurde, of een streepje als er niets klopte. Wat al
+    /// gespeeld is, is geponst; de zet in beeld heeft een oranje ring.
+    /// </summary>
+    private RenderFragment Hole(int turn, Punch? punch)
+    {
+        if (punch is not { } p) return @<span class="hole blank"></span>;
+        // Wat nog moet komen, verklapt de band niet: een leeg gaatje, alleen om erheen te springen
+        bool punched = p.Frame <= _frame;
+        string label = !punched ? S.T("room.ui.tape-ahead", ("turn", turn))
+            : p.Rule is int rule ? S.T("room.ui.tape-punch", ("turn", turn), ("rule", rule + 1))
+            : S.T("room.ui.tape-none", ("turn", turn));
+        string mark = !punched ? "" : p.Rule is int r ? (r + 1).ToString() : "–";
+        return @<button class="hole @(punched ? "punched" : "") @(p.Frame == _frame ? "now" : "")"
+                        title="@label" aria-label="@label" @onclick="() => JumpAsync(p.Frame)">@mark</button>;
+    }
+
     /// <summary>Een histogram als staafjes, met jouw bord in inkt en je beste ooit omkaderd.</summary>
     private RenderFragment Bars(string title, IReadOnlyDictionary<int, int> bars, int yours, int? best) =>
         @<div class="histogram">

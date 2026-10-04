@@ -1,66 +1,164 @@
+@using System.Globalization
 @using DeckOverflow.Core.Codex
 @using DeckOverflow.Web.World
 @inject Strings S
 
-@* De fabrieksplattegrond, na de onthulling: elke afdeling is een genummerde stap, zoals in een handleiding.
-   Hoe meer onderdelen (Codex-pagina's van haar hoofdstukken) uitgepakt, hoe meer van de afdeling ingekt.
-   Een dichte afdeling is gestippeld. "Binnenkort" is gebouwd maar nog dicht en toont al wat erin zit (de tease);
-   "ooit" zit nog in de doos. Geen cijfers of percentages: een fabriek die af raakt. *@
+@* De fabrieksplattegrond, na de onthulling: één tekening van de fabrieksvloer (docs/wereld/README.md, Eén tekening).
+   De band van het titelscherm verbindt de afdelingen in de volgorde van het boek; een afdeling die er nog niet is, is
+   een gesloten doos. Hoe meer onderdelen (Codex-pagina's van haar hoofdstukken) uitgepakt, hoe meer van een afdeling
+   ingekt. Een afdeling die voor het eerst opengaat, klapt uit haar doos. Geen cijfers of percentages: een fabriek
+   die af raakt. *@
 
 <div class="world">
     <header class="world-head">
         <h1 class="title-word small">Deck <span>Overflow</span><span class="beta-badge">@S.T("ui.beta")</span></h1>
         <p class="hint">@S.T("ui.world.title")</p>
+        <nav class="world-tools">
+            <button class="title-button" @onclick="OnCodex">@S.T("ui.codex") · @Pages.Count</button>
+            <button class="title-button" disabled title="@S.T("ui.world.soon")">@S.T("ui.world.punch-clock")</button>
+            <button class="title-button" @onclick="OnXRegister">@S.T("ui.xregister") · @PanelCount</button>
+            @if (OnAccount.HasDelegate)
+            {
+                <button class="title-button" @onclick="OnAccount">@S.T("ui.account.open")</button>
+            }
+            <ZssLink />
+        </nav>
     </header>
 
-    <div class="world-floor">
-        @foreach (var d in Departments.All)
-        {
-            bool open = Departments.IsOpen(d, Unlocks, Superuser);
-            bool soon = d.Availability == Availability.Soon;
-            bool key = soon && Departments.IsEarned(d, Unlocks);
-            double progress = Progress(d);
-            bool loose = open && Parts(d).Any() && progress < 0.5;
-            <button class="department @(open ? "open" : soon ? "boxed soon" : "boxed") @(d.Key == _selected?.Key ? "selected" : "")"
-                    style="--inked: @(open ? (0.25 + 0.75 * progress).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) : "0")"
-                    @onclick="() => _selected = d">
-                <span class="step">@d.Step</span>
-                @if (d.Art is not null)
+    <div class="floor-plan-wrap">
+        <div class="floor-plan">
+            <div class="plan-heading">
+                <h2 class="heavy">@S.T("ui.world.heading")</h2>
+                <p>@S.T("ui.world.out-of-the-box", ("n", Departments.All.Count(d => d.Availability != Availability.Someday)), ("total", Departments.All.Count))</p>
+            </div>
+
+            @* De band: rollen waar beide afdelingen open zijn, gestippeld waar de fabriek nog niet af is *@
+            <svg class="plan-belt" viewBox="0 0 @FloorW @FloorH" preserveAspectRatio="none" aria-hidden="true">
+                @for (int i = 0; i + 1 < Departments.All.Count; i++)
                 {
-                    @* Een open afdeling inkt in met haar onderdelen; een dichte is een vage, gestippelde schets *@
-                    <img class="dept-art @(open ? "" : "sketch")" src="@d.Art" alt="" />
+                    var from = Departments.All[i];
+                    var to = Departments.All[i + 1];
+                    string d = BeltPath(Spot(from), Spot(to));
+                    if (IsOpen(to) && IsOpen(from) && to.Key != _unboxing)
+                    {
+                        string id = $"belt-{i}";
+                        <g class="belt-run @(to.Key == _justUnboxed ? "fresh" : "")">
+                            <path id="@id" class="belt-edge" d="@d" pathLength="100"></path>
+                            <path class="belt-face" d="@d" pathLength="100"></path>
+                            <path class="belt-rollers" d="@d"></path>
+                        </g>
+                        @for (int c = 0; c < 2; c++)
+                        {
+                            @* Kaarten die over de band rijden, zoals op het titelscherm *@
+                            <g class="belt-card">
+                                <rect x="-9" y="-12" width="18" height="24" rx="2"></rect>
+                                <path d="M0,-6 L5,0 L0,6 L-5,0 Z"></path>
+                                <animateMotion dur="7s" repeatCount="indefinite" rotate="auto" begin="@($"-{c * 3.5 + i}s")">
+                                    <mpath href="#@id"></mpath>
+                                </animateMotion>
+                            </g>
+                        }
+                    }
+                    else
+                    {
+                        <path class="belt-ghost" d="@d"></path>
+                    }
                 }
-                else
-                {
-                    <span class="dept-box" aria-hidden="true"></span>
-                }
-                <strong>@S.T($"ui.world.{d.Key}.name")</strong>
-                <small>@(open ? S.T($"ui.world.{d.Key}.genre") : soon ? S.T("ui.world.coming") : S.T("ui.world.locked"))</small>
-                @if (loose)
-                {
-                    <span class="sticker">@S.T("ui.world.loose")</span>
-                }
-                else if (key)
-                {
-                    <span class="sticker key">@S.T("ui.world.key")</span>
-                }
-            </button>
-        }
+            </svg>
+
+            @foreach (var d in Departments.All)
+            {
+                var dept = d;
+                bool open = IsOpen(d);
+                bool soon = d.Availability == Availability.Soon;
+                bool unboxing = d.Key == _unboxing;
+                bool boxed = d.Availability == Availability.Someday && !unboxing;
+                bool key = soon && Departments.IsEarned(d, Unlocks);
+                double progress = Progress(d);
+                bool loose = open && Parts(d).Any() && progress < 0.5;
+                var (x, y) = Spot(d);
+                double size = boxed ? BoxSize : RoomSize;
+                <button class="dept-node @(boxed ? "boxed" : open ? "open" : "soon") @(d.Key == _selected?.Key ? "selected" : "") @(unboxing ? "unboxing" : "")"
+                        style="@Place(x, y, size)" aria-pressed="@(d.Key == _selected?.Key ? "true" : "false")"
+                        @onclick="() => _selected = dept">
+                    <span class="drawing">
+                        @if (boxed)
+                        {
+                            <CardboardBox />
+                        }
+                        else if (d.Art is not null)
+                        {
+                            @* Een open afdeling inkt in met haar onderdelen; binnenkort is een vage schets *@
+                            <img class="dept-art @(open || unboxing ? "" : "sketch")" src="@d.Art" alt=""
+                                 style="--inked: @((open ? 0.25 + 0.75 * progress : 0).ToString("0.00", CultureInfo.InvariantCulture))" />
+                        }
+                        @if (unboxing)
+                        {
+                            @* Uit de doos: het deksel springt, de kamer stijgt op en de onderdelen hangen even in een explosietekening *@
+                            <span class="unbox" aria-hidden="true">
+                                <span class="unbox-rays"></span>
+                                <CardboardBox />
+                                @for (int p = 1; p <= 5; p++)
+                                {
+                                    <span class="unbox-part p@(p)"></span>
+                                }
+                            </span>
+                        }
+                        <span class="step-badge @(boxed || (!open && !unboxing) ? "todo" : "")">@d.Step</span>
+                        @if (loose)
+                        {
+                            <span class="sticker">@S.T("ui.world.loose")</span>
+                        }
+                        else if (key)
+                        {
+                            <span class="sticker key">@S.T("ui.world.key")</span>
+                        }
+                    </span>
+                    @* Een naambordje op de vloer: de band loopt erachter *@
+                    <span class="name-plate">
+                        <span class="dept-name">@S.T($"ui.world.{d.Key}.name")</span>
+                        <small>@(open ? S.T($"ui.world.{d.Key}.genre") : soon ? S.T("ui.world.coming") : S.T("ui.world.locked"))</small>
+                    </span>
+                </button>
+            }
+
+            @if (_selected is { } here)
+            {
+                @* Het figuurtje loopt naar de afdeling die je kiest *@
+                var (hx, hy) = Spot(here);
+                double hs = here.Availability == Availability.Someday && here.Key != _unboxing ? BoxSize : RoomSize;
+                <img class="plan-you" src="art/actors/hero.png" alt="" style="@Figure(hx, hy, hs)" />
+            }
+        </div>
     </div>
 
     @if (_selected is { } sel)
     {
-        bool open = Departments.IsOpen(sel, Unlocks, Superuser);
+        bool open = IsOpen(sel);
         bool soon = sel.Availability == Availability.Soon;
+        var parts = Parts(sel).ToList();
         <aside class="dept-panel">
-            <h2>@S.T($"ui.world.{sel.Key}.name")</h2>
+            <div class="panel-head">
+                <span class="step-badge @(open ? "" : "todo")">@sel.Step</span>
+                <div>
+                    <h2 class="heavy">@S.T($"ui.world.{sel.Key}.name")</h2>
+                    @if (open || soon)
+                    {
+                        <small>@S.T($"ui.world.{sel.Key}.genre")</small>
+                    }
+                </div>
+            </div>
+            @if (sel.Art is not null && (open || soon))
+            {
+                <img class="panel-art @(open ? "" : "sketch")" src="@sel.Art" alt="" />
+            }
             @if (open || soon)
             {
-                <p class="hint">@S.T($"ui.world.{sel.Key}.genre")</p>
                 <p>@S.T($"ui.world.{sel.Key}.text")</p>
             }
             else
             {
+                <div class="panel-box"><CardboardBox /></div>
                 <p>@S.T("ui.world.locked")</p>
             }
             @if (soon)
@@ -69,14 +167,19 @@
                 <p class="soon-note">@(Departments.IsEarned(sel, Unlocks) ? S.T("ui.world.earned") : S.T($"ui.world.{sel.Key}.needs"))</p>
             }
 
-            @if (Parts(sel).Any())
+            @if (parts.Count > 0)
             {
-                <h3>@S.T("ui.world.parts")</h3>
-                <ul class="parts">
-                    @foreach (var part in Parts(sel))
+                @* De onderdelen als verzamelalbum: zwart is uitgepakt, gestippeld zit nog in de zak *@
+                <div class="parts-head">
+                    <h3 class="stencil">@S.T("ui.world.parts")</h3>
+                    <small>@S.T("ui.world.parts-count", ("n", parts.Count(p => Pages.ContainsKey(p.Key))), ("total", parts.Count))</small>
+                </div>
+                <ul class="parts-album">
+                    @foreach (var part in parts)
                     {
                         bool unpacked = Pages.ContainsKey(part.Key);
-                        <li class="@(unpacked ? "unpacked" : "bagged")">@(unpacked ? S.T($"codex.{part.Key}.name") : S.T("ui.codex.locked"))</li>
+                        string name = unpacked ? S.T($"codex.{part.Key}.name") : S.T("ui.codex.locked");
+                        <li class="@(unpacked ? "unpacked" : "bagged")" title="@name" aria-label="@name"></li>
                     }
                 </ul>
             }
@@ -84,7 +187,7 @@
             @if (FoundFor(sel).Any())
             {
                 @* De onderdelen uit je zakje vallen hier op hun plaats *@
-                <h3>@S.T("ui.world.found")</h3>
+                <h3 class="stencil">@S.T("ui.world.found")</h3>
                 <ul class="parts">
                     @foreach (var odd in FoundFor(sel))
                     {
@@ -118,17 +221,6 @@
             </div>
         </aside>
     }
-
-    <nav class="world-tools">
-        <button class="title-button" @onclick="OnCodex">@S.T("ui.codex") · @Pages.Count</button>
-        <button class="title-button" disabled title="@S.T("ui.world.soon")">@S.T("ui.world.punch-clock")</button>
-        <button class="title-button" @onclick="OnXRegister">@S.T("ui.xregister") · @PanelCount</button>
-        @if (OnAccount.HasDelegate)
-        {
-            <button class="title-button" @onclick="OnAccount">@S.T("ui.account.open")</button>
-        }
-        <ZssLink />
-    </nav>
 </div>
 
 @code {
@@ -153,7 +245,84 @@
     /// <summary>Je fabriek bewaren of inloggen. Zonder Supabase geen knop.</summary>
     [Parameter] public EventCallback OnAccount { get; set; }
 
+    /// <summary>Afdelingen die al uit hun doos klapten.</summary>
+    [Parameter] public IReadOnlySet<string> Unboxed { get; set; } = new HashSet<string>();
+
+    /// <summary>Een afdeling klapte uit haar doos; de pagina bewaart dat.</summary>
+    [Parameter] public EventCallback<string> OnUnboxed { get; set; }
+
+    /// <summary>De superuser: speel "uit de doos" van deze afdeling af, zonder iets te bewaren.</summary>
+    [Parameter] public string? Unbox { get; set; }
+
+    /// <summary>De vloer is getekend op 1100 bij 650; alles staat in die eenheden en schaalt mee.</summary>
+    private const double FloorW = 1100, FloorH = 650, RoomSize = 220, BoxSize = 150;
+
+    /// <summary>Zo lang duurt "uit de doos", gelijk aan de animatie in run.css.</summary>
+    private const int UnboxMs = 2800;
+
+    /// <summary>Waar elke afdeling op de vloer staat: het midden van haar tekening, in de volgorde van het boek.</summary>
+    private static readonly Dictionary<string, (double X, double Y)> Spots = new()
+    {
+        [Departments.CardHall] = (160, 395),
+        [Departments.ControlRoom] = (395, 195),
+        [Departments.ConveyorBelt] = (625, 395),
+        ["tool-wall"] = (820, 195),
+        ["warehouse"] = (950, 430),
+        ["blueprints"] = (1010, 110),
+    };
+
     private Department? _selected = Departments.All[0];
+    private string? _unboxing;
+    private string? _justUnboxed;
+    private bool _forcedDone;
+
+    protected override void OnParametersSet()
+    {
+        if (_unboxing is not null) return;
+        // Een afdeling die voor jou opengaat, klapt één keer uit haar doos. De superuser kan het afspelen met ?unbox=
+        var next = Departments.All.FirstOrDefault(d => d.Key != Departments.CardHall
+            && Departments.IsOpen(d, Unlocks) && !Unboxed.Contains(d.Key));
+        bool forced = false;
+        if (next is null && !_forcedDone && Unbox is { } wanted
+            && Departments.All.FirstOrDefault(d => d.Key == wanted && d.Art is not null) is { } shown)
+        {
+            next = shown;
+            forced = _forcedDone = true;
+        }
+        if (next is null) return;
+        _unboxing = next.Key;
+        _selected = next;
+        _ = FinishUnboxingAsync(next.Key, forced);
+    }
+
+    private async Task FinishUnboxingAsync(string key, bool forced)
+    {
+        await Task.Delay(UnboxMs);
+        _unboxing = null;
+        _justUnboxed = key;
+        if (!forced) await OnUnboxed.InvokeAsync(key);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private bool IsOpen(Department d) => Departments.IsOpen(d, Unlocks, Superuser);
+
+    private static (double X, double Y) Spot(Department d) =>
+        Spots.TryGetValue(d.Key, out var spot) ? spot : (120 + 160 * (d.Step % 6), 580);
+
+    /// <summary>Waar een afdeling staat, in procenten van de vloer: zo schaalt de tekening mee.</summary>
+    private static string Place(double x, double y, double size) => string.Create(CultureInfo.InvariantCulture,
+        $"left:{(x - size / 2) / FloorW * 100:0.##}%;top:{(y - size / 2) / FloorH * 100:0.##}%;width:{size / FloorW * 100:0.##}%");
+
+    /// <summary>Het figuurtje staat links onderaan bij de tekening van de gekozen afdeling.</summary>
+    private static string Figure(double x, double y, double size) => string.Create(CultureInfo.InvariantCulture,
+        $"left:{(x - size / 2 - 30) / FloorW * 100:0.##}%;top:{(y + size / 2 - 92) / FloorH * 100:0.##}%");
+
+    /// <summary>De band tussen twee afdelingen: een zachte S van de ene vloer naar de andere.</summary>
+    private static string BeltPath((double X, double Y) a, (double X, double Y) b)
+    {
+        double ay = a.Y + 70, by = b.Y + 70, mid = (a.X + b.X) / 2;
+        return string.Create(CultureInfo.InvariantCulture, $"M{a.X:0},{ay:0} C{mid:0},{ay:0} {mid:0},{by:0} {b.X:0},{by:0}");
+    }
 
     /// <summary>De onderdelen van een afdeling: de Codex-pagina's van haar hoofdstukken.</summary>
     private static IEnumerable<CodexEntry> Parts(Department d) =>

@@ -2,11 +2,18 @@
 
 Wat bewust is uitgesteld. Nieuwste bovenaan. Wat af is, gaat eruit.
 
+## Na de werkvloer (4 oktober 2026)
+
+Het scherm volgt sinds 4 oktober 2026 [de beeldtaal](../../wereld/beeldtaal.md) (zie [Het scherm](README.md#het-scherm-de-werkvloer)). Wat nog open staat:
+
+- **Rechtop op een telefoon.** Beslist, nog niet gebouwd. De stage tekent de vloer dan een kwartslag gedraaid (de `root`-container 90° draaien in `fit()` als de host hoger is dan breed, en tekst en het product terugdraaien zodat ze rechtop blijven); de bestelbon wordt een strook bovenaan die als blad openschuift; de onderdelen een rij onder de duim; de grote knop rechtsonder. Daarvoor moet de vraag om te draaien (`ui.rotate`) op deze pagina weg. Zie de mockups op het [design-canvas](https://claude.ai/artifact/C2vUobKdxoLhtyMRDCo6Au).
+- **Het licht uit nagekeken in een zichtbaar venster.** Getest met stilgezette animaties in een verborgen tabblad: het donker, het oranje rondje, de pijlen en het telwerk kloppen, maar het tempo van de steeds snellere rondjes (`JUICE.loop` bovenaan `stage.js`) is nog niet op gevoel afgesteld.
+- **De rollen tekenen elke frame opnieuw** (`drawRollers`). Vlot genoeg op een laptop; op een trage schoolcomputer nakijken, en anders alleen hertekenen als de band in beeld beweegt.
+
 ## Na de overname uit spike 9 (4 oktober 2026)
 
 - **Ontgrendelen.** Een speler kan de Lopende Band nog niet openen: eerst wordt de Controlekamer afgewerkt (beslist op 4 oktober 2026). Ze staat op *binnenkort* (`Availability.Soon`). Daarna, zoals de Controlekamer na de Card Hall: de sleutel geven als de laatste baas van de Controlekamer valt (`PlayerProgress.TryUnlock(Departments.ConveyorBelt, ...)`, met de melding `ui.toast.key`), `ui.world.conveyor-belt.needs` aanpassen, en later `Availability.Released`.
 - **Het front in de verte, met een strakke animatie.** Bovenaan de stage, vaag en mistig, de strijd waar de goedgekeurde producten naartoe wandelen. Een eerste versie (heuvels, stokfiguurtjes, flitsen, rook in Pixi-tekenwerk) was te stom en ging eruit; later strakker, waarschijnlijk met echte tekeningen. De stage houdt er een strook voor vrij (`SKY` in `stage.js`).
-- **Groen en rood, of inkt en vorm?** De uitslag per testgeval is groen (gelukt) of rood (mislukt), een uitzondering op "kleur is voorbehouden aan types". Beslissen of dat blijft.
 - **Eigen tekeningen voor de machines** (pers, lasser, zaag, etiketprinter, wissel, telwerk, trechter, verzendpoort) in plaats van getekende vormen; zie [art/todo.md](../../../art/todo.md).
 - **Onder de motorkap:** een bord omzetten naar C# (`while`, `for`, `do while`). Bij een vrij rooster lastiger dan bij een regelbord.
 - **Voortgang synchroniseren:** `PlayerProgress.ConveyorBelt` blijft in de browser.

@@ -67,6 +67,33 @@ public class BeltTests
     }
 
     [Fact]
+    public void Een_oneindige_lus_weet_waar_het_rondje_begint()
+    {
+        var board = new Dictionary<Cell, Piece>
+        {
+            [new(1, 1)] = new Belt(Dir.Down),
+            [new(1, 2)] = new Belt(Dir.Right),
+            [new(2, 2)] = new Belt(Dir.Up),
+            [new(2, 1)] = new Belt(Dir.Left),
+        };
+        var run = Simulator.Run(Open, board, Open.Cases[0]);
+
+        // De bron hoort er niet bij: het rondje is de kring van vier banden, en daarna herhaalt alles zich
+        Assert.Equal(1, run.LoopFrom);
+        Assert.Equal(board.Keys.ToHashSet(), run.Frames.Skip(run.LoopFrom).Select(f => f.At).ToHashSet());
+    }
+
+    [Fact]
+    public void Een_kist_die_aankomt_heeft_geen_rondje()
+    {
+        var level = LevelCatalog.Get("zune");
+        var run = Simulator.Run(level, level.StartPieces);
+
+        Assert.Equal(-1, run.Cases.Single(c => c.Case.Input == Value.Int(400)).LoopFrom);
+        Assert.True(run.Cases.Single(c => c.Case.Input == Value.Int(366)).LoopFrom > 0);
+    }
+
+    [Fact]
     public void Een_teller_stuurt_de_kist_n_keer_de_lus_in_en_begint_dan_opnieuw()
     {
         var level = LevelCatalog.Get("three-times");

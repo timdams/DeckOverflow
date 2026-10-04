@@ -15,6 +15,17 @@ Elke puzzel is een bestelling van het front: "Slijmklodders, elk met minstens 30
 3. **Start en kijk.** De producten rijden tik per tik. De uitslag van een stuk verschijnt pas als het aankomt: vuurwerk of een rode stempel. Pauzeren, één tik, sneller (tot 8×), terugspoelen, en opnieuw afspelen, ook na een overwinning.
 4. **Verbeter.** Twee scores, elk apart: machines en tikken, zoals Opus Magnum.
 
+## Het scherm: de werkvloer
+
+Beslist op 4 oktober 2026, met de [beeldtaal](../../wereld/beeldtaal.md). Geen rooster met pijltjes, maar een werkvloer. **Gebouwd op 4 oktober 2026**, behalve de telefoon rechtop (zie [todo](todo.md)). Wat de stage tekent, staat in [events.md](events.md).
+
+- **In het midden de werkvloer.** Betonnen tegels; de bron is een trechter, de uitgang een laadperron *naar het front*, gearceerd. Band zijn rollen die echt draaien. Een machine is een kast met een meter, een poort een rond ventiel met een *ja*- en een *nee*-uitgang, een teller een telwerk. Het product rijdt mee, met zijn waarde in de kleur van zijn type. Bovenaan de vloer een telwerk met de tikken.
+- **Links de onderdelenlijst**, zoals op de eerste pagina van een handleiding: per stuk een tekening en een groot aantal (`∞` band, `1×` poort). Wat op is, wordt grijs. Het paneel van een gelegd stuk (richtingen, getal, voorwaarde) staat eronder.
+- **Rechts de bestelbon op een klembord**, met per testgeval een stempel: GOEDGEKEURD in inkt, of een oranje ✗ met wat er misliep. Geen groen of rood.
+- **Onder de vloer** de grote ronde startknop, één tik, de snelheden en de tijdlijn.
+- **Een oneindige loop doet het licht uit.** De vloer wordt donker, alleen het rondje brandt in oranje, het product rijdt rondjes die steeds sneller gaan, en een telwerk telt ze tot de band zichzelf stopt. Daarna verschijnt het ✗-paneel. Welke vakjes het rondje zijn, weet de motor: `CaseRun.LoopFrom` is de frame waar de herhaalde toestand voor het eerst voorkwam.
+- **Op een telefoon rechtop** draait de vloer een kwartslag: de band loopt van boven naar onder, met vakjes die groot genoeg blijven om aan te tikken. De bestelbon is een strook bovenaan die als blad openschuift, de onderdelen liggen onder je duim, en de grote knop staat rechtsonder. Het rooster in de motor blijft hetzelfde; alleen de stage tekent het gedraaid.
+
 ## De natuurwetten
 
 - **Het rooster:** een bron (in), een uitgang (verzending), en lege vakjes. Band is onbeperkt; machines, poorten en tellers zitten in een beperkte gereedschapsbak.

@@ -55,8 +55,16 @@ public sealed class ConveyorBeltStage(IJSRuntime js) : IAsyncDisposable
             product,
         }, ms, instant);
 
-    /// <summary>De afloop van een testgeval. Klaar als het product weg is (of afgekeurd).</summary>
-    public ValueTask EndingAsync(Ending ending) => Call("ending", new { ending = ending.ToString() });
+    /// <summary>
+    /// De afloop van een testgeval. Klaar als het product weg is (of afgekeurd). Bij een oneindige loop krijgt de
+    /// stage het rondje mee, de vakjes in de volgorde waarin het product ze aandoet, zoals de motor het bewees:
+    /// dat blijft branden als het licht uitgaat.
+    /// </summary>
+    public ValueTask EndingAsync(CaseRun run) => Call("ending", new
+    {
+        ending = run.Ending.ToString(),
+        loop = run.LoopFrom < 0 ? [] : run.Frames.Skip(run.LoopFrom).Select(f => new[] { f.At.X, f.At.Y }).ToArray(),
+    });
 
     public ValueTask ClearCrateAsync() => Call("clearCrate");
 

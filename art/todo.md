@@ -28,6 +28,7 @@ Open sinds 4 oktober 2026: de vijanden van de Controlekamer gebruiken reserves, 
 | `belt-counter` | nieuw (tegels) | Conveyor Belt | Een mechanisch telwerk met rolletjes boven de band | vorm in Pixi |
 | `belt-source`, `belt-output` | nieuw (tegels) | Conveyor Belt | Een trechter waar producten uit vallen; een verzendpoort met een stempel | vorm in Pixi |
 | `front` | nieuw (achtergrond) | Conveyor Belt | Een brede, vage strook: het front in de verte, mist, rookwolkjes. Zie de todo van de afdeling | niets |
+| `backdrop-vat-valley`, `backdrop-print-shop`, `backdrop-mold-works` | `wide` | Card Hall | Decor achter het gevecht, één per act: dezelfde plek als de actplaat, maar zonder het figuurtje en met een lege, vlakke vloer in het midden (daar staan held en vijand), 1280×720 | de actplaat, zacht en vervaagd; haar figuurtje schemert door |
 
 ## Liggen klaar, nog niet gebruikt
 

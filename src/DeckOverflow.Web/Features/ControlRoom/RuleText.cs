@@ -1,4 +1,3 @@
-using System.Text;
 using DeckOverflow.ControlRoom.Gambits;
 using DeckOverflow.Web.Text;
 
@@ -29,22 +28,29 @@ public static class RuleText
     /// een "altijd" ergens anders wordt <c>else if (true)</c>, zodat je ziet waarom alles eronder nooit loopt.
     /// Een leeg bord is een lege methode: de automaat staat stil.
     /// </summary>
-    public static string CSharp(Strings s, IReadOnlyList<Rule> rules)
+    public static string CSharp(Strings s, IReadOnlyList<Rule> rules) =>
+        string.Join("\n", CSharpLines(s, rules).Select(l => l.Text));
+
+    /// <summary>
+    /// Dezelfde keten, lijn per lijn, met bij elke lijn de regel waar ze bij hoort (-1 als geen enkele): zo kan het luik
+    /// de regel laten oplichten die nu vuurt.
+    /// </summary>
+    public static IReadOnlyList<(string Text, int Rule)> CSharpLines(Strings s, IReadOnlyList<Rule> rules)
     {
-        if (rules.Count == 0) return s.T("room.code.empty");
-        var sb = new StringBuilder();
+        if (rules.Count == 0) return [(s.T("room.code.empty"), -1)];
+        var lines = new List<(string Text, int Rule)>();
         for (int i = 0; i < rules.Count; i++)
         {
             Rule r = rules[i];
             bool last = i == rules.Count - 1;
             string call = $"{r.Then}();";
 
-            if (r.IsAlways && i == 0 && last) { sb.AppendLine(call); break; }
+            if (r.IsAlways && i == 0 && last) { lines.Add((call, i)); break; }
 
             string head = r.IsAlways && last ? "else" : (i == 0 ? "if" : "else if") + $" ({r.Expression()})";
-            sb.AppendLine(head);
-            sb.AppendLine("    " + call);
+            lines.Add((head, i));
+            lines.Add(("    " + call, i));
         }
-        return sb.ToString().TrimEnd();
+        return lines;
     }
 }

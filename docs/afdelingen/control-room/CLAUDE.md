@@ -15,7 +15,8 @@ Geldt bovenop de [CLAUDE.md op de root](../../../CLAUDE.md). Het ontwerp staat i
 - **Geen RNG.** Een duel is volledig bepaald door de twee regelborden. Dat maakt de oplosser, de tijdlijn en een eerlijk klassement mogelijk; voeg geen toeval toe zonder dat eerst voor te leggen.
 - **Een regel die klopt, voert altijd uit**, ook als de zet niets doet. Daarop drijven de Hersteller en Knight Capital.
 - **Elk gevecht: "alleen meppen" verliest nipt, en er zijn meerdere winnende borden.** Bijstellen gebeurt met de oplosser, nooit op gevoel. Faalt een test in `LevelTests` na een getal, kijk dan eerst wat het gevecht nu doet.
-- **Kleur blijft voorbehouden aan types.** Een regel die vuurt, licht op in inkt. HP is een `int`, dus de balk is int-blauw.
+- **Kleur blijft voorbehouden aan types.** Een regel die vuurt, laat haar lamp branden in inkt. HP is een `int`, dus de balk is int-blauw.
+- **Het scherm volgt [de beeldtaal](../../wereld/beeldtaal.md):** twee schakelkasten en een testcel (zie [Het scherm](README.md#het-scherm-twee-kasten-en-een-testcel)). Een nieuw stuk op het scherm bouw je uit de gedeelde bouwstenen, niet met een eigen stijl.
 - **Eerst ervaren, dan benoemen.** Op het bord staan woorden ("als", "EN", "NIET"); `if`, `&&` en `!` verschijnen alleen onder de motorkap en in de Codex.
 
 ## Een gevecht toevoegen of bijstellen

@@ -2,7 +2,8 @@
 @using DeckOverflow.ConveyorBelt.Belts
 
 @* De Lopende Band (H6): leg band en machines op een rooster, en kijk hoe de producten rijden. Een band die terugkomt,
-   is een loop. Links de gereedschapsbak, in het midden de stage, rechts de bestelbon van het front. *@
+   is een loop. Een werkvloer, zoals de beeldtaal vraagt (docs/wereld/beeldtaal.md): links de onderdelenlijst van de
+   handleiding, in het midden de vloer, rechts de bestelbon van het front op een klembord. *@
 
 <div class="room belt-room">
     @if (!S.Loaded)
@@ -21,7 +22,11 @@
     {
         <header class="room-head">
             <button class="options-button" title="@S.T("ui.options")" aria-label="@S.T("ui.options")" @onclick="() => _showOptions = true">☰</button>
-            <h1 class="title-word small">@S.T("ui.world.conveyor-belt.name")</h1>
+            <span class="step-badge" aria-hidden="true">@Departments.Get(Departments.ConveyorBelt).Step</span>
+            <div class="room-title">
+                <h1 class="heavy">@S.T("ui.world.conveyor-belt.name")</h1>
+                <small>@S.T("belt.ui.order", ("n", _levelIndex + 1)) · @S.T($"belt.level.{Level.Key}.name")</small>
+            </div>
             <nav class="steps">
                 @for (int i = 0; i < LevelCatalog.All.Count; i++)
                 {
@@ -43,20 +48,37 @@
 
         <main class="belt-floor">
             <section class="toolbox">
-                <h2>@S.T("belt.ui.toolbox")</h2>
-                <div class="tools">
-                    <button class="tool @(_tool == BeltTool ? "held" : "")" disabled="@(!Editing)" @onclick="() => _tool = BeltTool">
-                        <span class="glyph">→</span> @S.T("belt.ui.belt")
+                @* De onderdelenlijst van een handleiding: per stuk een tekening en hoeveel je er nog hebt *@
+                <h2 class="stencil">@S.T("belt.ui.parts")</h2>
+                <p class="sub">@S.T("belt.ui.parts-for", ("n", _levelIndex + 1))</p>
+                <div class="parts-list">
+                    <button class="part @(_tool == BeltTool ? "held" : "")" disabled="@(!Editing)" @onclick="() => _tool = BeltTool">
+                        <span class="pic"><span class="mini-belt"></span></span>
+                        <span class="name">@S.T("belt.ui.piece.Belt")</span>
+                        <span class="count">∞</span>
                     </button>
                     @foreach (var offer in Level.Palette)
                     {
                         var o = offer;
                         int left = o.Max - Used(o);
-                        <button class="tool @(o.Kind.ToString().ToLowerInvariant()) @(_tool == o.Id ? "held" : "")" disabled="@(!Editing || left <= 0)" @onclick="() => _tool = o.Id">
-                            <span class="glyph">@PieceText.Offer(o)</span> @S.T($"belt.ui.offer.{o.Kind}") <small>×@left</small>
+                        <button class="part @(_tool == o.Id ? "held" : "")" disabled="@(!Editing || left <= 0)" @onclick="() => _tool = o.Id">
+                            <span class="pic"><span class="mini-@o.Kind.ToString().ToLowerInvariant()">@PieceText.Offer(o)</span></span>
+                            <span class="name">
+                                @S.T($"belt.ui.piece.{o.Kind}")
+                                @if (left <= 0)
+                                {
+                                    <small>@S.T("belt.ui.all-placed")</small>
+                                }
+                            </span>
+                            <span class="count">@(left)×</span>
                         </button>
                     }
-                    <button class="tool erase @(_tool == EraseTool ? "held" : "")" disabled="@(!Editing)" @onclick="() => _tool = EraseTool">✕ @S.T("belt.ui.erase")</button>
+                    <button class="part erase @(_tool == EraseTool ? "held" : "")" disabled="@(!Editing)" @onclick="() => _tool = EraseTool">
+                        <span class="pic">
+                            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4 L20 10 L11 19 L5 13 Z"></path><path d="M5 13 L3 21 L11 19"></path></svg>
+                        </span>
+                        <span class="name">@S.T("belt.ui.erase-part")</span>
+                    </button>
                 </div>
                 <p class="hint">@S.T("belt.ui.toolbox-hint")</p>
 
@@ -103,28 +125,49 @@
             </section>
 
             <section class="arena">
-                <div class="belt-stage" @ref="_host"></div>
+                <div class="shop-floor">
+                    <div class="floor-head">
+                        <span class="stencil">@S.T("belt.ui.floor")</span>
+                        @if (_run is { } running)
+                        {
+                            <span class="floor-case">@S.T("belt.ui.case-of", ("n", _case + 1), ("total", running.Cases.Count))</span>
+                        }
+                        <span class="floor-tick">
+                            <span class="stencil">@S.T("belt.ui.tick-label")</span>
+                            <Digits Value="@(Current is { } now ? now.Tick.ToString() : "–")" Min="2" Class="@(Current is null ? "dim" : "")" />
+                        </span>
+                    </div>
+                    <div class="belt-stage" @ref="_host"></div>
+                </div>
 
                 <div class="controls">
+                    @* De ene grote knop: starten, pauzeren of verder, zoals op een machine *@
                     @if (Editing)
                     {
-                        <button class="play-big" @onclick="RunAsync">▶ @S.T("belt.ui.run")</button>
+                        <button class="big-round" title="@S.T("belt.ui.run")" aria-label="@S.T("belt.ui.run")" @onclick="RunAsync"><MachineIcon Kind="play" /></button>
+                        <span class="big-label heavy">@S.T("belt.ui.run")</span>
+                    }
+                    else if (_playing)
+                    {
+                        <button class="big-round paper" title="@S.T("belt.ui.pause")" aria-label="@S.T("belt.ui.pause")" @onclick="Stop"><MachineIcon Kind="pause" /></button>
+                        <span class="big-label heavy">@S.T("belt.ui.running")</span>
+                    }
+                    else if (!AllDone)
+                    {
+                        <button class="big-round" title="@S.T("belt.ui.resume")" aria-label="@S.T("belt.ui.resume")" @onclick="PlayAsync"><MachineIcon Kind="play" /></button>
+                        <button @onclick="StepOnce">⏭ @S.T("belt.ui.step")</button>
                     }
                     else
                     {
-                        @if (_playing)
-                        {
-                            <button @onclick="Stop">⏸ @S.T("belt.ui.pause")</button>
-                        }
-                        else if (!AllDone)
-                        {
-                            <button class="primary" @onclick="PlayAsync">▶ @S.T("belt.ui.resume")</button>
-                            <button @onclick="StepOnce">⏭ @S.T("belt.ui.step")</button>
-                        }
-                        @if (!_playing)
-                        {
-                            <button @onclick="RestartAsync">↻ @S.T("belt.ui.replay")</button>
-                        }
+                        <button class="big-round paper" title="@S.T("belt.ui.replay")" aria-label="@S.T("belt.ui.replay")" @onclick="RestartAsync">↻</button>
+                        <span class="big-label heavy">@S.T("belt.ui.stopped")</span>
+                    }
+                    @if (!Editing && !_playing && !AllDone)
+                    {
+                        <button @onclick="RestartAsync">↻ @S.T("belt.ui.replay")</button>
+                    }
+                    @if (!Editing)
+                    {
                         <button class="secondary" @onclick="Edit">✎ @S.T("belt.ui.edit")</button>
                     }
                     <span class="speed">
@@ -140,7 +183,6 @@
                 {
                     <div class="belt-timeline">
                         <input type="range" min="0" max="@(run.Frames.Count - 1)" value="@_frame" @oninput="Scrub" aria-label="@S.T("belt.ui.timeline")" />
-                        <span>@S.T("belt.ui.tick", ("tick", Current?.Tick ?? 0))</span>
                     </div>
                     @if (AtEnd)
                     {
@@ -150,58 +192,79 @@
             </section>
 
             <section class="order">
-                <p class="order-head">@S.T("belt.ui.order", ("n", _levelIndex + 1)) · @S.T("belt.ui.order-from")</p>
-                <h2>@S.T($"belt.level.{Level.Key}.name") @if (Level.Bug) { <small class="tag">@S.T("belt.ui.real-bug")</small> }</h2>
-                <p>@S.T($"belt.level.{Level.Key}.brief")</p>
-                <table class="cases">
-                    <thead><tr><th>@S.T("belt.ui.in")</th><th>@S.T("belt.ui.want")</th><th></th></tr></thead>
-                    <tbody>
-                        @for (int i = 0; i < Level.Cases.Count; i++)
+                @* De bestelbon van het front, op een klembord. Per stuk een stempel: zwart is goedgekeurd, oranje een ✗ *@
+                <div class="clipboard">
+                    <div class="sheet">
+                        <p class="order-head stencil">@S.T("belt.ui.order", ("n", _levelIndex + 1)) · @S.T("belt.ui.order-from")</p>
+                        <h2 class="heavy">@S.T($"belt.level.{Level.Key}.name")</h2>
+                        @if (Level.Bug)
                         {
-                            int index = i;
-                            var c = Level.Cases[i];
-                            var result = _run?.Cases[i];
-                            bool revealed = result is not null && _revealed.Contains(index);
-                            bool fresh = revealed && index == _fresh;
-                            <tr class="@(index == _case && _run is not null ? "current" : "") @(revealed ? (result!.Passed ? "pass" : "fail") : "") @(fresh ? "fresh" : "")"
-                                @key="(index, fresh ? _freshSeq : 0)" @onclick="() => _run is not null ? ShowCase(index) : Task.CompletedTask">
-                                <td>@c.Input</td>
-                                <td>@c.Expected</td>
-                                <td class="mark">
-                                    @if (revealed && result!.Passed)
-                                    {
-                                        <span class="ok">✓
-                                            @if (fresh)
-                                            {
-                                                @* Vuurwerk: twaalf vonken die uit het vinkje spatten *@
-                                                <span class="burst" aria-hidden="true">
-                                                    @for (int s = 0; s < 12; s++)
-                                                    {
-                                                        <i style="--a:@(s * 30)deg; --d:@(22 + (s % 3) * 8)px"></i>
-                                                    }
-                                                </span>
-                                            }
-                                        </span>
-                                    }
-                                    else if (revealed)
-                                    {
-                                        <span class="stamp">@S.T("belt.ui.fail")</span> <span class="why">@Outcome(result!)</span>
-                                    }
-                                    else if (_run is not null)
-                                    {
-                                        <span class="wait">…</span>
-                                    }
-                                </td>
-                            </tr>
+                            <span class="bug-tag">@S.T("belt.ui.real-bug")</span>
                         }
-                    </tbody>
-                </table>
+                        <div class="order-brief">
+                            <img src="@ProductArt" alt="" />
+                            <p>@S.T($"belt.level.{Level.Key}.brief")</p>
+                        </div>
+                        <table class="cases">
+                            <thead><tr><th>@S.T("belt.ui.in")</th><th>@S.T("belt.ui.want")</th><th></th></tr></thead>
+                            <tbody>
+                                @for (int i = 0; i < Level.Cases.Count; i++)
+                                {
+                                    int index = i;
+                                    var c = Level.Cases[i];
+                                    var result = _run?.Cases[i];
+                                    bool revealed = result is not null && _revealed.Contains(index);
+                                    bool fresh = revealed && index == _fresh;
+                                    <tr class="@(index == _case && _run is not null ? "current" : "") @(revealed ? (result!.Passed ? "pass" : "fail") : "") @(fresh ? "fresh" : "")"
+                                        @key="(index, fresh ? _freshSeq : 0)" @onclick="() => _run is not null ? ShowCase(index) : Task.CompletedTask">
+                                        <td>@c.Input</td>
+                                        <td>@c.Expected</td>
+                                        <td class="mark">
+                                            @if (revealed && result!.Passed)
+                                            {
+                                                <span class="rubber-stamp @(fresh ? "slam" : "")" style="--tilt:@Tilt(index)">@S.T("belt.stage.approved")</span>
+                                                @if (fresh)
+                                                {
+                                                    @* Vuurwerk: twaalf vonken die uit de stempel spatten *@
+                                                    <span class="burst" aria-hidden="true">
+                                                        @for (int s = 0; s < 12; s++)
+                                                        {
+                                                            <i style="--a:@(s * 30)deg; --d:@(26 + (s % 3) * 9)px"></i>
+                                                        }
+                                                    </span>
+                                                }
+                                            }
+                                            else if (revealed)
+                                            {
+                                                <span class="rubber-stamp no @(fresh ? "slam" : "")" style="--tilt:@Tilt(index)">✗</span> <span class="why">@Outcome(result!)</span>
+                                            }
+                                            else if (_run is not null)
+                                            {
+                                                <span class="wait">@(index == _case ? S.T("belt.ui.on-the-belt") : S.T("belt.ui.waiting"))</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
                 @if (AllRevealed && _run is { } done)
                 {
                     <div class="belt-result @(done.Solved ? "won" : "lost")" @key="_freshSeq">
-                        <h3>@S.T(done.Solved ? "belt.ui.solved" : "belt.ui.not-yet")</h3>
-                        <p>@S.T("belt.ui.score", ("machines", done.Machines), ("cycles", done.Cycles))</p>
+                        @if (done.Solved)
+                        {
+                            <span class="rubber-stamp slam big">@S.T("belt.ui.solved")</span>
+                        }
+                        else
+                        {
+                            <h3 class="heavy">@S.T("belt.ui.not-yet")</h3>
+                        }
+                        <div class="scores">
+                            <span class="score"><span class="stencil">@S.T("belt.ui.machines")</span><Digits Value="@done.Machines.ToString()" /></span>
+                            <span class="score"><span class="stencil">@S.T("belt.ui.ticks")</span><Digits Value="@done.Cycles.ToString()" /></span>
+                        </div>
                         @if (Record(Level.Key) is { Beaten: true } best)
                         {
                             <p class="best">@S.T("belt.ui.best", ("machines", best.BestMachines!), ("cycles", best.BestCycles!))</p>
@@ -301,6 +364,9 @@
             </select>
         </label>;
     }
+
+    /// <summary>Elke stempel hangt een beetje anders scheef, zoals met de hand gezet. Vast per rij, geen toeval.</summary>
+    private static string Tilt(int index) => (index % 3) switch { 0 => "-8deg", 1 => "5deg", _ => "-3deg" };
 
     /// <summary>Wat er misging, kort, voor de tabel: de verkeerde inhoud, of waarom de kist nooit aankwam.</summary>
     private string Outcome(CaseRun run) => run.Ending switch

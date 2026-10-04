@@ -7,7 +7,7 @@ Roguelike deckbuilder in de browser waarin de wereld gehoorzaamt aan C#. Doelgro
 De docs (en straks de code) zijn opgesplitst in **de wereld** en **één module per afdeling** (factory), zodat je context klein blijft. Lees niet alles; begin bij [docs/README.md](docs/README.md) en kies:
 
 - **Altijd nuttig:** [docs/visie.md](docs/visie.md) (pijlers, antipatronen) en [docs/architectuur.md](docs/architectuur.md) (motor/shell/stage, eventcontract).
-- **De wereld** ([docs/wereld/](docs/wereld/README.md)): plattegrond, ontgrendelen, mastery, Prikklok, onthulling, de [Codex](docs/wereld/codex.md), het [✗-register](docs/wereld/x-register.md), de [backend](docs/wereld/backend.md) (auth, klascode, Supabase). Todo's in [docs/wereld/todo.md](docs/wereld/todo.md).
+- **De wereld** ([docs/wereld/](docs/wereld/README.md)): plattegrond, ontgrendelen, mastery, Prikklok, onthulling, de [beeldtaal](docs/wereld/beeldtaal.md) (hoe elk scherm eruitziet), de [Codex](docs/wereld/codex.md), het [✗-register](docs/wereld/x-register.md), de [backend](docs/wereld/backend.md) (auth, klascode, Supabase). Todo's in [docs/wereld/todo.md](docs/wereld/todo.md).
 - **Een afdeling** ([docs/afdelingen/](docs/afdelingen/)): elk in een eigen map met `README.md`, `todo.md`, `ideeen.md`, `events.md` en een eigen `CLAUDE.md` met de regels die alleen daar gelden. Nu [The Card Hall](docs/afdelingen/card-hall/README.md), de deckbuilder, [The Control Room](docs/afdelingen/control-room/README.md), regels voor een automaat, en [The Conveyor Belt](docs/afdelingen/conveyor-belt/README.md), band en machines op een rooster (nog niet te ontgrendelen): lees bij werk aan een ervan eerst haar `CLAUDE.md` ([Card Hall](docs/afdelingen/card-hall/CLAUDE.md), [Control Room](docs/afdelingen/control-room/CLAUDE.md), [Conveyor Belt](docs/afdelingen/conveyor-belt/CLAUDE.md)).
 
 Houd het zo: wat voor één afdeling geldt, schrijf je in haar map, niet in de wereld-docs of hier. Een nieuwe afdeling krijgt een nieuwe map; ze deelt alleen via de wereld (Codex, ✗-register, voortgang).
@@ -65,6 +65,7 @@ Uit [docs/visie.md](docs/visie.md). Een wijziging die hiertegen ingaat, eerst vo
 - **Compilefout of exception:** een ongeldige zet weigert. Alleen runtimefouten ontploffen.
 - Elk gevecht of elke puzzel moet op meerdere manieren te winnen zijn. Begrijpen maakt het efficiënter, niet verplicht.
 - **De docent maakt alleen een klascode** (voor het klassement). Een afdeling ontgrendel je zelf.
+- **Elke afdeling is een plek**, gebouwd uit de bouwstenen van [de beeldtaal](docs/wereld/beeldtaal.md) (kast, lamp, onderdelenlijst, klembord, stempel, telwerk) in `app.css`. Geen groen of rood: gelukt is inkt, mislukt een oranje ✗.
 
 ## Conventies
 

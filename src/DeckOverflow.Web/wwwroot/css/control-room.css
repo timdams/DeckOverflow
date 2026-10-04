@@ -1,5 +1,6 @@
-/* De Controlekamer: hetzelfde papier en dezelfde inkt als de Card Hall. Kleur blijft voorbehouden aan types;
-   een regel die vuurt, licht op in inkt, niet in een kleur. */
+/* De Controlekamer: een echte controlekamer (docs/afdelingen/control-room/README.md, Het scherm). Twee schakelkasten
+   en een testcel, uit de bouwstenen van app.css (kast, lamp, stempel, telwerk, de grote knop). Kleur blijft voor
+   types: een regel die vuurt, laat haar lamp branden in inkt. De kop en de stappen deelt ze met de Lopende Band. */
 
 .room {
   position: fixed;
@@ -9,86 +10,174 @@
   background: var(--paper);
 }
 
+/* De kop van een afdeling (Controlekamer en Lopende Band): haar stapnummer, de naam in het zware gewicht van het
+   titelscherm, en de gevechten of bestellingen als genummerde stappen */
 .room-head {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 10px 112px 8px 14px;
-  border-bottom: 1px solid var(--rule);
+  gap: 12px;
+  padding: 10px 112px 10px 14px;
+  border-bottom: 3px solid var(--ink);
 }
-.room-head h1.title-word { margin: 0; white-space: nowrap; font-size: clamp(20px, 2.2vw, 28px); }
+.room-head .step-badge { font-size: 18px; }
+.room-title { display: flex; flex-direction: column; gap: 3px; flex: none; min-width: 0; }
+.room-title h1 { margin: 0; font-size: clamp(20px, 2.3vw, 30px); white-space: nowrap; }
+.room-title small { color: var(--muted); font-size: 12px; font-weight: 700; white-space: nowrap; }
 .room-head .head-tools { margin-left: auto; display: flex; gap: 8px; flex: none; }
 .room-head .head-tools .title-button { padding: 6px 10px; font-size: 13px; white-space: nowrap; }
 
-/* De gevechten als stappen in een handleiding */
-.steps { display: flex; gap: 6px; flex-wrap: nowrap; overflow-x: auto; min-width: 0; padding: 2px 4px 4px 2px; }
-.step {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 4px 10px 4px 4px; font-size: 12px; box-shadow: 2px 2px 0 var(--ink); white-space: nowrap; flex: none;
+/* De stappen: een rondje per gevecht. Zwart is gehaald, oranje is een echte bug, gestippeld is nog dicht.
+   Alleen de stap waar je nu bent, toont haar naam */
+.steps { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; overflow-x: auto; min-width: 0; padding: 4px 4px 4px 6px; }
+button.step {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  padding: 0;
+  font-size: 12px;
+  white-space: nowrap;
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  box-shadow: none;
 }
 .step .circle {
-  display: inline-grid; place-items: center; width: 22px; height: 22px;
-  border: 2px solid var(--ink); border-radius: 50%; font-size: 12px;
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  box-sizing: border-box;
+  font-size: 13px;
+  font-weight: 900;
+  background: var(--white);
+  border: 2.5px solid var(--ink);
+  border-radius: 50%;
 }
-.step.current { background: var(--ink); color: var(--paper); }
-.step.current .circle { border-color: var(--paper); }
-.step.beaten .circle { background: var(--ink); color: var(--paper); }
-.step.current.beaten .circle { background: var(--paper); color: var(--ink); }
+.step .label { display: none; font-weight: 900; }
+@media (hover: hover) {
+  button.step:not(.current):hover:not(:disabled) { background: transparent; }
+  button.step:not(.current):hover:not(:disabled) .circle { background: var(--shade); }
+}
+button.step:active:not(:disabled) { transform: translateY(1px); box-shadow: none; }
+.step.beaten .circle { color: var(--white); background: var(--ink); }
+.step.bug .circle { color: var(--zss); border-color: var(--zss); }
+.step.bug.beaten .circle { color: var(--white); background: var(--zss); border-color: var(--ink); }
+button.step.current, button.step.current:disabled { padding: 3px 12px 3px 3px; color: var(--white); background: var(--ink); }
+.step.current .label { display: inline; }
+.step.current .circle { color: var(--ink); background: var(--white); border-color: var(--white); box-shadow: 0 0 0 2px var(--zss); }
 .step.bug .label::after { content: " ✗"; color: var(--zss); }
+button.step:disabled:not(.current) { background: transparent; }
+button.step:disabled:not(.current):not(.beaten) .circle { color: var(--muted); border-color: var(--rule); border-style: dashed; background: transparent; }
+
+/* ---------------------------------------------------------------- de vloer: jouw kast, de testcel, de kast van de vijand */
 
 .room-floor {
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(300px, 1.1fr) minmax(340px, 1.6fr) minmax(240px, 0.9fr);
-  gap: 14px;
-  padding: 12px 14px;
+  grid-template-columns: minmax(320px, 1.1fr) minmax(360px, 1.55fr) minmax(260px, 0.9fr);
+  gap: 18px;
+  padding: 14px 18px 0;
+}
+.board { display: flex; flex-direction: column; gap: 14px; min-height: 0; overflow-y: auto; padding: 2px 4px 16px 2px; }
+.room .hint { margin: 0; color: var(--muted); font-size: 12px; font-weight: 700; }
+
+/* ---------------------------------------------------------------- de kasten */
+
+.cabinet-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 6px; }
+.cabinet-head h2 { margin: 0; }
+.cabinet-head small { font-family: Consolas, "Courier New", monospace; font-size: 13px; font-weight: 700; }
+.cabinet > .hint { padding: 4px 6px 12px; }
+.board .flavor { margin: 14px 6px 0; font-size: 14px; font-style: italic; font-weight: 600; line-height: 1.4; }
+
+/* De kast van de vijand is verzegeld: een ronde stempel in de hoek, lezen mag */
+.cabinet.sealed { padding-bottom: 26px; }
+.cabinet.sealed .flavor { padding-right: 84px; }
+.cabinet .seal {
+  position: absolute;
+  right: 18px;
+  bottom: 16px;
+  width: 76px;
+  height: 76px;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 4px var(--paper), inset 0 0 0 5.5px var(--ink);
+  transform: rotate(-14deg);
+  pointer-events: none;
 }
 
-.board { display: flex; flex-direction: column; gap: 6px; min-height: 0; overflow-y: auto; }
-.board h2 { margin: 0; font-size: 18px; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-.board h2 small { font-size: 12px; color: var(--muted); font-weight: 700; }
-.board h2 .tag { color: var(--zss); }
-.board .hint, .room .hint { margin: 0; color: var(--muted); font-size: 12px; font-weight: 700; }
-.board .flavor { margin: 4px 0 0; font-size: 13px; color: var(--ink); }
+/* ---------------------------------------------------------------- de regels: platen met een lamp */
 
-/* Regels: genummerde stappen. Wat vuurt, staat in inkt; wat nooit bereikt werd, is doorgestreept */
-.rules { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.rules { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
 .rule {
-  display: flex; align-items: center; flex-wrap: wrap; gap: 5px;
-  padding: 6px 8px; background: var(--white); border: 2px solid var(--ink); border-radius: 6px;
-  font-size: 13px; transition: background 120ms, color 120ms;
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 10px;
+  font-size: 13px;
+  background: var(--white);
+  border: 2.5px solid var(--ink);
+  border-radius: 10px;
+  box-shadow: 0 4px 0 var(--ink);
+  transition: transform 120ms, box-shadow 120ms;
 }
 .rule .num {
-  display: inline-grid; place-items: center; width: 20px; height: 20px; flex: none;
-  border: 2px solid var(--ink); border-radius: 50%; font-size: 11px; font-weight: 700;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--white);
+  background: var(--ink);
+  border-radius: 50%;
 }
 .rule .handle { cursor: grab; color: var(--muted); user-select: none; }
-.rule .kw { font-weight: 700; color: var(--muted); }
-.rule .arrow { font-weight: 700; }
+.rule .kw { font-size: 11px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.rule .arrow { font-weight: 900; }
 .rule .tools { margin-left: auto; display: flex; gap: 2px; }
-.rule .stat { font-size: 11px; color: var(--muted); font-weight: 700; margin-left: auto; }
 .rule .sentence { font-weight: 700; }
+.rule .fired { margin-left: auto; padding: 1px 6px; font-family: Consolas, "Courier New", monospace; font-size: 12px; font-weight: 700; color: var(--white); background: var(--ink); border-radius: 3px; }
+.rule .rubber-stamp { margin-left: auto; font-size: 10px; }
 .rule.lifted { opacity: 0.4; }
-.rule.live { box-shadow: 3px 3px 0 var(--ink); }
-.rule.flash { background: var(--ink); color: var(--paper); }
-.rule.flash .num { border-color: var(--paper); }
-.rule.flash .kw, .rule.flash .stat { color: var(--shade); }
-.rule.dead { border-style: dashed; color: var(--muted); }
+/* De regel die vuurt: haar lamp brandt en de plaat schuift naar voren */
+.rule.flash { transform: translateX(5px); box-shadow: 0 4px 0 var(--ink), 0 0 0 3px var(--paper), 0 0 0 5px var(--ink); }
+.rule.flash .fired { background: var(--zss); }
+.rule.dead { color: var(--muted); border-style: dashed; box-shadow: none; }
 .rule.dead .sentence, .rule.dead .chip { text-decoration: line-through; }
-.rule.idle { border-style: dashed; }
-.rule.new { border-style: dashed; color: var(--muted); cursor: pointer; background: transparent; }
-.rule.new.hot { border-color: var(--ink); color: var(--ink); background: var(--shade); }
+.rule.idle { border-style: dashed; box-shadow: none; }
+.rule.new { color: var(--muted); cursor: pointer; background: transparent; border-style: dashed; box-shadow: none; }
+.rule.new .num { color: var(--muted); background: transparent; border: 2px dashed var(--muted); box-sizing: border-box; }
+.rule.new.hot { color: var(--ink); background: var(--white); border-color: var(--ink); }
 
 /* Vakjes op een regel en de tegels die erin passen */
-.slot { display: inline-flex; align-items: center; gap: 4px; border-radius: 5px; padding: 1px; }
-.slot.hot { outline: 2px dashed var(--ink); outline-offset: 1px; background: var(--shade); cursor: copy; }
-.slot.empty { min-width: 26px; justify-content: center; border: 2px dashed var(--ink); font-weight: 700; }
+.slot { display: inline-flex; align-items: center; gap: 4px; padding: 1px; border-radius: 999px; }
+.slot.hot { outline: 2.5px dashed var(--ink); outline-offset: 2px; background: var(--shade); cursor: copy; }
+.slot.empty { min-width: 28px; justify-content: center; font-weight: 700; border: 2px dashed var(--ink); }
 .chip {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 2px 7px; border: 1.5px solid var(--ink); border-radius: 12px; background: var(--paper); font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  font-weight: 800;
+  background: var(--white);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  box-shadow: 0 2px 0 var(--ink);
 }
-.chip.move-chip { border-radius: 3px; background: var(--white); }
+.chip.move-chip { border-radius: 5px; }
 .chip .not { font-weight: 900; }
 .chip.negated { border-style: double; border-width: 3px; }
 .chip select.value { font: inherit; font-size: 12px; padding: 0 2px; border: 1px solid var(--ink); border-radius: 3px; background: var(--white); }
@@ -98,37 +187,180 @@ button.join-chip { padding: 1px 6px; font-size: 11px; box-shadow: none; border-w
 button.tiny { padding: 1px 6px; font-size: 11px; box-shadow: none; border-width: 1.5px; }
 button.tiny.on { background: var(--ink); color: var(--paper); }
 
-/* De gereedschapsbak */
-.toolbox { margin-top: 6px; padding: 8px; border: 2px dashed var(--rule); border-radius: 6px; display: flex; flex-direction: column; gap: 6px; }
-.toolbox .tiles { display: flex; flex-wrap: wrap; gap: 6px; }
-button.tile { padding: 4px 9px; font-size: 12px; box-shadow: 2px 2px 0 var(--ink); cursor: grab; border-radius: 12px; }
-button.tile.move { border-radius: 3px; }
+/* De gereedschapsbak: een bak met twee vakken. Een voorwaarde is rond, een zet hoekig */
+.toolbox {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 12px;
+  background: var(--paper);
+  border: 2.5px solid var(--ink);
+  border-radius: 10px;
+  box-shadow: inset 0 5px 0 rgba(22, 22, 22, 0.07);
+}
+.toolbox .tray { display: flex; flex-direction: column; gap: 8px; }
+.toolbox .tray + .tray { padding-top: 10px; border-top: 2px dashed var(--rule); }
+.toolbox .tray .stencil { font-size: 10px; color: var(--muted); }
+.toolbox .tiles { display: flex; flex-wrap: wrap; gap: 8px; }
+button.tile { padding: 6px 12px; font-size: 13px; font-weight: 800; cursor: grab; border-radius: 999px; box-shadow: 0 3px 0 var(--ink); }
+button.tile.move { border-radius: 6px; }
 button.tile.op { font-weight: 900; }
-button.tile.held { background: var(--ink); color: var(--paper); transform: translate(-1px, -2px); box-shadow: 3px 4px 0 var(--muted); }
+button.tile.held { color: var(--white); background: var(--ink); transform: translateY(-3px) rotate(-3deg); box-shadow: 0 6px 0 var(--muted); }
+button.tile:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
 
-.code-toggle { font-size: 12px; font-weight: 700; display: flex; gap: 6px; align-items: center; color: var(--muted); }
+/* ---------------------------------------------------------------- het luik onder de motorkap */
+
+.hatch { overflow: hidden; background: var(--shade); border: 3px solid var(--ink); border-radius: 14px; }
+button.hatch-lid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 14px 14px 12px;
+  text-align: center;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  background-color: var(--shade);
+  background-image: repeating-linear-gradient(135deg, transparent 0 12px, rgba(22, 22, 22, 0.08) 12px 14px);
+}
+button.hatch-lid small { color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: 0; }
+/* Het handvat om het luik op te tillen */
+button.hatch-lid::after { content: ""; width: 86px; height: 12px; margin-top: 4px; border: 3px solid var(--ink); border-top: none; border-radius: 0 0 10px 10px; }
+@media (hover: hover) { button.hatch-lid:hover:not(:disabled) { background-color: var(--rule); } }
+button.hatch-lid:active:not(:disabled) { transform: none; box-shadow: none; }
+
 pre.code {
-  margin: 0; padding: 8px 10px; background: var(--white); border: 1.5px solid var(--rule); border-radius: 4px;
-  font-family: Consolas, "Courier New", monospace; font-size: 12px; white-space: pre; overflow-x: auto;
+  margin: 0;
+  padding: 10px 12px;
+  overflow-x: auto;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre;
+  color: #c9c5b9;
+  background: var(--ink);
+  border-radius: 8px;
+}
+.hatch pre.code { padding: 12px 14px; font-size: 13px; border-radius: 0; }
+pre.code .line { display: block; }
+pre.code .line.now { margin: 0 -6px; padding: 0 6px; font-weight: 700; color: var(--ink); background: var(--paper); }
+
+/* ---------------------------------------------------------------- de testcel */
+
+.control-room .arena { display: flex; flex-direction: column; gap: 12px; min-height: 0; overflow-y: auto; padding: 18px 4px 16px; }
+.test-cell {
+  --bolt: var(--shade) 0 3px, transparent 3.5px;
+  position: relative;
+  flex: none;
+  padding: 14px;
+  background-color: var(--ink);
+  background-image:
+    radial-gradient(circle at 9px 9px, var(--bolt)),
+    radial-gradient(circle at calc(100% - 9px) 9px, var(--bolt)),
+    radial-gradient(circle at 9px calc(100% - 9px), var(--bolt)),
+    radial-gradient(circle at calc(100% - 9px) calc(100% - 9px), var(--bolt));
+  border-radius: 16px;
+}
+.test-cell .stage-box { position: relative; height: clamp(220px, 44vh, 440px); overflow: hidden; background: var(--paper); border-radius: 8px; }
+/* Glas: twee schuine strepen licht in de hoek, waar ze niets verbergen */
+.test-cell::after {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  border-radius: 8px;
+  pointer-events: none;
+  background: linear-gradient(118deg, transparent 0 4%, rgba(255, 255, 255, 0.4) 4% 9%, transparent 9% 11%, rgba(255, 255, 255, 0.4) 11% 12.5%, transparent 12.5%);
+}
+.cell-sign {
+  position: absolute;
+  z-index: 2;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 5px 14px;
+  white-space: nowrap;
+  background: var(--white);
+  border: 3px solid var(--ink);
+  border-radius: 6px;
+  box-shadow: 0 4px 0 var(--ink);
 }
 
-/* Het midden: stage, knoppen, tijdlijn, uitslag en log */
-.arena { display: flex; flex-direction: column; gap: 8px; min-height: 0; overflow-y: auto; }
-.stage-box { flex: none; height: clamp(220px, 46vh, 460px); border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; }
-.arena .controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.arena .controls .play-big { padding: 8px 22px; }
-.arena .speed { margin-left: auto; display: flex; gap: 3px; }
-.timeline { display: flex; align-items: center; gap: 10px; }
-.timeline input[type=range] { flex: 1; accent-color: var(--ink); }
-.timeline .turn { font-size: 12px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.control-room .arena .controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.control-room .big-label { font-size: 20px; }
+.control-room .counters { display: flex; gap: 12px; margin-left: auto; }
+.control-room .score { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.control-room .score .stencil { font-size: 10px; color: var(--muted); }
+.control-room .score .digits > span { font-size: 20px; }
+.control-room .speed { display: flex; gap: 3px; }
 
-.result { padding: 10px 12px; border: 2.5px solid var(--ink); border-radius: 6px; background: var(--white); box-shadow: 4px 4px 0 var(--ink); }
-.result h3 { margin: 0 0 4px; font-size: 20px; }
-.result p { margin: 0 0 6px; font-size: 14px; }
-.result .actions { display: flex; gap: 8px; margin-top: 8px; }
-.result .codex-bug { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--rule); font-size: 13px; }
-.result .codex-bug .codex-label { color: var(--zss); font-weight: 700; margin-right: 6px; }
-.result .codex-bug p { margin: 4px 0 0; }
+/* ---------------------------------------------------------------- de ponsband */
+
+.punch-tape { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; background: var(--shade); border: 3px solid var(--ink); border-radius: 12px; }
+.punch-tape .tape-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.punch-tape .tape-head small { color: var(--muted); font-size: 12px; font-weight: 700; }
+.punch-tape .tape-strip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 10px;
+  overflow-x: auto;
+  background: var(--white);
+  border: 2.5px solid var(--ink);
+  border-radius: 4px;
+  box-shadow: 0 4px 0 var(--ink);
+}
+.punch-tape .tape-rows { display: flex; flex-direction: column; gap: 6px; padding-right: 4px; flex: none; }
+.punch-tape .tape-rows span { height: 22px; line-height: 22px; font-size: 10px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.punch-tape .tape-col { display: flex; flex-direction: column; gap: 6px; flex: none; }
+.hole, button.hole {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink);
+  background: transparent;
+  border: 2px dashed var(--rule);
+  border-radius: 50%;
+  box-shadow: none;
+}
+.hole.blank { border-color: transparent; }
+button.hole.punched { color: var(--white); background: var(--ink); border: 2px solid var(--ink); }
+button.hole.now { box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--zss); }
+@media (hover: hover) { button.hole.punched:hover:not(:disabled) { background: #3a3a3a; } }
+button.hole:active:not(:disabled) { transform: scale(0.92); box-shadow: none; }
+button.tape-start { flex: none; width: 26px; height: 26px; padding: 0; font-size: 11px; border-width: 2px; border-radius: 50%; box-shadow: none; }
+button.tape-start.now { color: var(--white); background: var(--ink); }
+
+/* ---------------------------------------------------------------- de afloop, het histogram en het log */
+
+.control-room .result {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 14px 16px;
+  background: var(--white);
+  border: 3px solid var(--ink);
+  border-radius: 12px;
+  box-shadow: 4px 4px 0 var(--ink);
+}
+.control-room .result:not(.playerwon) { border-style: dashed; box-shadow: none; }
+.control-room .result h3 { margin: 0; font-size: 22px; }
+.control-room .result p { margin: 0; font-size: 14px; }
+.control-room .result .rubber-stamp.big { margin: 4px 0 6px; font-size: 19px; padding: 3px 12px; border-width: 4px; }
+.control-room .result .actions { display: flex; gap: 8px; margin-top: 4px; }
+.control-room .result .codex-bug { align-self: stretch; margin-top: 4px; padding-top: 8px; font-size: 13px; border-top: 1px solid var(--rule); }
+.control-room .result .codex-bug .codex-label { margin-right: 6px; color: var(--zss); font-weight: 700; }
+.control-room .result .codex-bug p { margin: 4px 0 0; }
 
 /* Histogrammen zoals Opus Magnum: jouw bord in inkt, je beste ooit omkaderd */
 .histograms { display: flex; gap: 18px; flex-wrap: wrap; margin: 6px 0 2px; }
@@ -142,34 +374,46 @@ pre.code {
 .hist-bars .bar.yours .key { color: var(--ink); }
 .hist-bars .bar.best .fill { outline: 2px solid var(--zss); outline-offset: 1px; }
 
-.log { list-style: none; margin: 0; padding: 0; font-size: 12px; display: flex; flex-direction: column; gap: 1px; }
+.log { list-style: none; margin: 0; padding: 0 4px; font-size: 12px; display: flex; flex-direction: column; gap: 1px; }
 .log li { color: var(--ink); }
 .log li.turn { color: var(--muted); font-weight: 700; margin-top: 3px; }
 .log li.enemy { padding-left: 14px; }
 .log li.wasted { color: var(--muted); font-style: italic; }
 
-/* Een tablet rechtop: de stage bovenaan over de hele breedte, de twee borden eronder */
+/* ---------------------------------------------------------------- kleinere schermen */
+
+/* Een tablet rechtop: de testcel bovenaan over de hele breedte, de twee kasten eronder */
 @media (max-width: 980px) and (min-height: 501px) {
   .room-floor { grid-template-columns: 1fr 1fr; overflow-y: auto; }
-  .room-floor .arena { grid-column: 1 / -1; order: -1; }
+  .room-floor .arena { grid-column: 1 / -1; order: -1; overflow: visible; }
 }
 
 /* Liggend op een telefoon: drie smalle kolommen naast elkaar, elk met een eigen schuifbalk */
 @media (max-height: 500px) {
   .room-head { padding: 4px 104px 4px 8px; gap: 8px; }
-  .room-head h1.title-word { display: none; }
+  .room-title { display: none; }
+  .room-head .step-badge { font-size: 13px; }
+  .step .circle { width: 24px; height: 24px; font-size: 11px; }
   .room-head .head-tools .title-button { padding: 4px 8px; font-size: 12px; }
-  .step .label { display: none; }
-  .step { padding: 2px; }
-  .room-floor { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, 0.8fr); padding: 6px 8px; gap: 8px; }
-  .board h2 { font-size: 15px; }
-  .board .hint, .board .flavor { font-size: 11px; }
+  .step.current .label { display: none; }
+  button.step.current, button.step.current:disabled { padding: 2px; }
+  .room-floor { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, 0.8fr); padding: 6px 8px 0; gap: 8px; }
+  .cabinet { padding: 14px 10px 12px; }
+  .cabinet > .hint, .board .flavor { font-size: 11px; }
+  .cabinet .seal { display: none; }
   .rule { padding: 4px 6px; font-size: 12px; gap: 4px; }
   .chip { padding: 1px 5px; }
   button.tile { padding: 3px 7px; font-size: 11px; }
-  .toolbox { padding: 6px; }
-  .stage-box { height: 50vh; min-height: 0; }
-  .arena .controls .play-big { padding: 6px 16px; font-size: 16px; }
+  .toolbox { padding: 6px; margin-top: 10px; }
+  .control-room .arena { padding-top: 14px; gap: 8px; }
+  .test-cell { padding: 8px; }
+  .test-cell::after { inset: 8px; }
+  .test-cell .stage-box { height: 50vh; min-height: 0; }
+  .cell-sign { top: -12px; padding: 2px 8px; font-size: 10px; }
+  .control-room button.big-round { width: 46px; height: 46px; border-width: 3px; box-shadow: 0 4px 0 var(--ink); }
+  .control-room button.big-round svg { width: 18px; height: 18px; }
+  .control-room .big-label { font-size: 15px; }
+  .control-room .score .digits > span { font-size: 14px; }
   .arena .controls button { padding: 6px 10px; font-size: 12px; }
   .log { font-size: 11px; }
 }

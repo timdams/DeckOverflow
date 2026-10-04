@@ -134,6 +134,184 @@ button.end-turn img { width: 28px; height: 28px; }
 
 .buttons { display: flex; gap: 12px; }
 
+/* ---------------------------------------------------------------- bouwstenen
+   Uit dezelfde handleiding, in elke afdeling (docs/wereld/beeldtaal.md). Kleur blijft voor types;
+   oranje alleen voor ✗, echte bugs, het boek en de ene grote knop. */
+
+/* Koppen in het gewicht van het titelscherm. Arial in 900 is op Windows Arial Black: geen webfont nodig */
+.heavy { font-weight: 900; letter-spacing: -0.03em; line-height: 1; }
+.stencil { font-weight: 900; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; }
+
+/* Een stapnummer: zwart is er, gestippeld is nog niet, oranje met ✗ is een echte bug */
+.step-badge {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 2.2em;
+  height: 2.2em;
+  box-sizing: border-box;
+  border-radius: 50%;
+  font-weight: 900;
+  color: var(--white);
+  background: var(--ink);
+}
+.step-badge.todo { color: var(--muted); background: var(--paper); border: 2.5px dashed var(--muted); }
+.step-badge.bug { background: var(--zss); border: 2.5px solid var(--ink); }
+
+/* Een echte bug: een oranje label, zoals bij de elites */
+.bug-tag {
+  display: inline-block;
+  padding: 2px 7px;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--white);
+  background: var(--zss);
+  border: 2px solid var(--ink);
+}
+
+/* Een kast: metaal, een dikke rand, een binnenrand en vier schroeven */
+.cabinet {
+  --screw: var(--white) 0 3.5px, var(--ink) 4px 5.5px, transparent 6px;
+  position: relative;
+  box-sizing: border-box;
+  padding: 22px 20px 20px;
+  background-color: var(--shade);
+  background-image:
+    radial-gradient(circle at 15px 15px, var(--screw)),
+    radial-gradient(circle at calc(100% - 15px) 15px, var(--screw)),
+    radial-gradient(circle at 15px calc(100% - 15px), var(--screw)),
+    radial-gradient(circle at calc(100% - 15px) calc(100% - 15px), var(--screw));
+  border: 3px solid var(--ink);
+  border-radius: 14px;
+  box-shadow: inset 0 0 0 6px var(--paper), inset 0 0 0 8px var(--ink);
+}
+
+/* Een lamp per regel: wacht in metaal, vuurt in inkt met stralen, en een die nooit aangaat, is grijs */
+.lamp {
+  position: relative;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  box-sizing: border-box;
+  border: 3px solid var(--ink);
+  border-radius: 50%;
+  background: var(--shade);
+}
+.lamp.on { background: var(--ink); box-shadow: 0 0 0 3px var(--white), 0 0 0 5px var(--ink); }
+.lamp.on::after {
+  content: "";
+  position: absolute;
+  inset: -13px;
+  border: 3px dotted var(--ink);
+  border-radius: 50%;
+  animation: lamp-rays 0.45s ease-in-out infinite alternate;
+}
+.lamp.dead { border-color: var(--muted); border-style: dashed; background: var(--rule); }
+@keyframes lamp-rays { from { transform: scale(0.82) rotate(0deg); opacity: 0.55; } to { transform: scale(1.04) rotate(24deg); opacity: 1; } }
+
+/* Een stempel: gelukt in inkt, een ✗ in oranje, nooit bereikt in grijs. Een stempel valt met een klap */
+.rubber-stamp {
+  display: inline-block;
+  padding: 1px 7px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ink);
+  border: 3px solid var(--ink);
+  border-radius: 4px;
+  transform: rotate(var(--tilt, -7deg));
+}
+.rubber-stamp.no { color: var(--zss); border-color: var(--zss); }
+.rubber-stamp.never { color: var(--muted); border-color: var(--muted); }
+.rubber-stamp.slam { animation: stamp-slam 380ms cubic-bezier(.2, 1.6, .4, 1) both; }
+@keyframes stamp-slam {
+  0% { opacity: 0; transform: rotate(var(--tilt, -7deg)) scale(2.6); }
+  100% { opacity: 1; transform: rotate(var(--tilt, -7deg)) scale(1); }
+}
+
+/* Een telwerk: witte cijfers op inkt, elk in een eigen vakje (World/Digits.razor) */
+.digits { display: inline-flex; gap: 2px; vertical-align: middle; }
+.digits > span {
+  min-width: 0.75em;
+  padding: 1px 3px;
+  text-align: center;
+  font-family: Consolas, "Courier New", monospace;
+  font-weight: 700;
+  color: var(--white);
+  background: var(--ink);
+  border-radius: 3px;
+}
+.digits.dim > span { color: var(--muted); }
+
+/* Een bestelbon op een klembord: zwart bord, metalen klem, papier dat net niet recht hangt */
+.clipboard { position: relative; padding: 30px 10px 12px; background: var(--ink); border-radius: 14px; }
+.clipboard::before {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  width: 92px;
+  height: 30px;
+  box-sizing: border-box;
+  transform: translateX(-50%);
+  background: var(--shade);
+  border: 3px solid var(--ink);
+  border-radius: 8px 8px 4px 4px;
+  box-shadow: 0 3px 0 var(--ink);
+}
+.clipboard > .sheet { position: relative; padding: 16px; background: var(--white); border: 2px solid var(--ink); transform: rotate(-0.8deg); }
+
+/* De onderdelenlijst van een handleiding: een tekening in een vakje en een groot aantal */
+.parts-list { display: flex; flex-direction: column; gap: 10px; }
+button.part { display: flex; align-items: center; gap: 12px; padding: 6px 12px 6px 6px; text-align: left; border-radius: 10px; }
+button.part .pic {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  box-sizing: border-box;
+  border: 2px solid var(--rule);
+  border-radius: 8px;
+  background: var(--paper);
+}
+button.part .name { flex: 1; display: flex; flex-direction: column; gap: 2px; font-size: 15px; font-weight: 900; }
+button.part .name small { font-size: 12px; font-weight: 700; color: var(--muted); }
+button.part .count { font-weight: 900; font-size: 24px; letter-spacing: -0.02em; }
+button.part.held { color: var(--white); background: var(--ink); box-shadow: 3px 3px 0 var(--zss); }
+button.part.held .pic { border-color: var(--white); background: var(--white); color: var(--ink); }
+button.part.held .name small { color: var(--shade); }
+button.part:disabled .count { color: var(--rule); }
+
+/* De ene grote ronde knop waarmee je begint, zoals op een machine */
+button.big-round {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 72px;
+  height: 72px;
+  padding: 0;
+  color: var(--white);
+  background: var(--zss);
+  border: 4px solid var(--ink);
+  border-radius: 50%;
+  box-shadow: 0 6px 0 var(--ink), inset 0 -7px 0 rgba(22, 22, 22, 0.18);
+}
+button.big-round svg { width: 28px; height: 28px; }
+button.big-round.paper { color: var(--ink); background: var(--white); }
+@media (hover: hover) { button.big-round:hover:not(:disabled) { background: #f08a1f; } button.big-round.paper:hover:not(:disabled) { background: var(--shade); } }
+button.big-round:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 2px 0 var(--ink), inset 0 -4px 0 rgba(22, 22, 22, 0.18); }
+button.big-round:disabled { background: var(--shade); border-color: var(--muted); box-shadow: 0 4px 0 var(--muted); }
+
+@media (prefers-reduced-motion: reduce) {
+  .lamp.on::after, .rubber-stamp.slam { animation: none; }
+}
+
 #blazor-error-ui {
   display: none;
   position: fixed;

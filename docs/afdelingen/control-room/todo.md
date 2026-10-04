@@ -3,6 +3,14 @@
 Wat bewust is uitgesteld, met genoeg context om het later op te pakken. Nieuwste bovenaan. Wat af is, gaat eruit.
 
 
+## Na de schakelkasten (4 oktober 2026)
+
+Het scherm volgt sinds 4 oktober 2026 [de beeldtaal](../../wereld/beeldtaal.md) (zie [Het scherm](README.md#het-scherm-twee-kasten-en-een-testcel)). Wat nog open staat:
+
+- **Een dossier bij een elite.** De mockup had onder de kast van de vijand een kaartje met de naam van de bug en het jaar ("goto fail; Apple, 2014"), en het verhaal na de overwinning. Nu staat alleen het oranje label op de kast, en het verhaal in de uitslag.
+- **De ponsband schuift niet mee.** Bij een lang duel (tot 40 beurten) loopt de band uit beeld; ze zou naar de zet in beeld moeten schuiven.
+- **De testcel en de stage.** De stage tekent nog haar eigen bladrand en het label van de beurt, binnen het raam van de testcel. Eén van de twee kan weg.
+
 ## Vrijgeven (4 oktober 2026)
 
 - **De Controlekamer staat op binnenkort.** Spelers verdienen de sleutel al met de laatste baas van de Card Hall, maar de deur blijft dicht. Als ze af is: `Availability.Released` in `World/Departments.cs`; wie de sleutel heeft, kan dan meteen binnen. Daarna de Lopende Band zijn sleutel geven (zie haar [todo](../conveyor-belt/todo.md)).

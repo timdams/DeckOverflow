@@ -37,7 +37,7 @@ De Vatenvallei is een fabriek die alles bouwt volgens de specificatie. De speler
 - **De fabriek** is de tegenspeler. Gewone vijanden zijn producten van de lopende band. Wie een truc te vaak gebruikt, krijgt een nieuwe revisie van de handleiding (zie De wereld patcht zich).
 - **Elites zijn echte bugs** uit de geschiedenis. Na het gevecht vertelt de Codex het echte verhaal. Bazen blijven figuren van de fabriek, zoals de inspecteur.
 - **Toon:** droog en deadpan, zoals een testfaciliteit die alles volgens protocol doet. Grappig voor volwassenen, nooit schattig.
-- **Beeldtaal:** zwarte lijnen op papier, één schreefloze letter, stapnummers. Kleur is voorbehouden aan types: zie je kleur, dan zie je een type. Een verslagen vijand valt uiteen in een explosietekening.
+- **Beeldtaal:** zwarte lijnen op papier, één schreefloze letter, stapnummers. Kleur is voorbehouden aan types: zie je kleur, dan zie je een type. Een verslagen vijand valt uiteen in een explosietekening. Elke afdeling is een plek, en wat je bedient is een onderdeel uit die plek: een schakelkast, een onderdelenlijst, een klembord. Zie [de beeldtaal](wereld/beeldtaal.md).
 
 ### Elites: echte bugs
 

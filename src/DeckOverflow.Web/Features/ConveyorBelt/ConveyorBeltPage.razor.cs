@@ -168,7 +168,10 @@ public partial class ConveyorBeltPage : IAsyncDisposable
         ["approved"] = S.T("belt.stage.approved"),
         ["rejected"] = S.T("belt.stage.rejected"),
         ["overflow"] = S.T("belt.stage.overflow"),
-        ["overheat"] = S.T("belt.stage.overheat"),
+        ["forever"] = S.T("belt.stage.forever"),
+        ["lap"] = S.T("belt.stage.lap"),
+        ["yes"] = S.T("belt.stage.yes"),
+        ["no"] = S.T("belt.stage.no"),
         ["in"] = S.T("belt.stage.in"),
         ["out"] = S.T("belt.stage.out"),
     };
@@ -229,6 +232,8 @@ public partial class ConveyorBeltPage : IAsyncDisposable
             Dir dir = piece is Belt b ? b.Out : _lastDir;
             _board[cell] = offer.Create(dir);
             _selected = cell;
+            // Het laatste stuk van die soort ligt: terug naar band, zoals je een leeg vakje in de doos laat liggen
+            if (Used(offer) >= offer.Max) _tool = BeltTool;
         }
         else
         {
@@ -328,7 +333,7 @@ public partial class ConveyorBeltPage : IAsyncDisposable
                     if (token.IsCancellationRequested) break;
                     if (AtEnd)
                     {
-                        await Stage.EndingAsync(Shown!.Ending);
+                        await Stage.EndingAsync(Shown!);
                         await RevealAsync(_case);
                     }
                 }
@@ -358,7 +363,7 @@ public partial class ConveyorBeltPage : IAsyncDisposable
         await ShowFrameAsync(instant: false);
         if (AtEnd && !_revealed.Contains(_case))
         {
-            await Stage.EndingAsync(Shown!.Ending);
+            await Stage.EndingAsync(Shown!);
             await RevealAsync(_case);
         }
     }

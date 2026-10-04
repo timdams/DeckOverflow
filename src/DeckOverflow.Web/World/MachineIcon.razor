@@ -1,0 +1,21 @@
+@* Een tekentje op de grote ronde knop van een machine: starten of pauzeren. Inkt op wit, of wit op oranje. *@
+
+@switch (Kind)
+{
+    case "pause":
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="5" y="4" width="5" height="16" fill="currentColor"></rect>
+            <rect x="14" y="4" width="5" height="16" fill="currentColor"></rect>
+        </svg>
+        break;
+    default:
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7 4 L20 12 L7 20 Z" fill="currentColor" stroke="#161616" stroke-width="1.5" stroke-linejoin="round"></path>
+        </svg>
+        break;
+}
+
+@code {
+    /// <summary><c>play</c> of <c>pause</c>.</summary>
+    [Parameter] public string Kind { get; set; } = "play";
+}

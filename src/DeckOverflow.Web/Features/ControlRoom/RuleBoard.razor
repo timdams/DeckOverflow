@@ -2,9 +2,10 @@
 @using DeckOverflow.ControlRoom.Levels
 @inject Strings S
 
-@* Een lijst regels, van boven naar onder bekeken. Bewerkbaar voor de speler, alleen-lezen voor de vijand.
-   Bewerken gaat met tegels uit de gereedschapsbak: slepen met een muis, of tikken op een tegel en dan op een vakje.
-   Tijdens en na een duel toont elke regel hoe vaak ze vuurde, of dat ze nooit bereikt werd. Geen spelregels hier. *@
+@* Een lijst regels, van boven naar onder bekeken: de platen in een schakelkast. Bewerkbaar voor de speler,
+   alleen-lezen voor de vijand. Bewerken gaat met tegels uit de gereedschapsbak: slepen met een muis, of tikken op een
+   tegel en dan op een vakje. Elke regel heeft een lamp die brandt als ze vuurt; na een duel krijgt een regel die nooit
+   vuurde een stempel. Geen spelregels hier. *@
 
 <ol class="rules @(Editable ? "editable" : "readonly")">
     @for (int i = 0; i < Rules.Count; i++)
@@ -13,6 +14,7 @@
         RuleDraft r = Rules[i];
         <li class="rule @StateClass(index) @(_draggedRow == index ? "lifted" : "")" @key="r"
             @ondragover:preventDefault="Editable" @ondrop="() => DropOnRow(index)">
+            <span class="lamp @LampClass(index)" aria-hidden="true"></span>
             <span class="num">@(index + 1)</span>
             @if (Editable)
             {
@@ -53,7 +55,7 @@
             {
                 <span class="sentence">@RuleText.Sentence(S, r.ToRule())</span>
             }
-            <span class="stat">@StatText(index)</span>
+            @Stat(index)
         </li>
     }
     @if (Editable && Rules.Count < Slots)
@@ -67,32 +69,38 @@
 
 @if (Editable)
 {
-    @* De gereedschapsbak: alles wat je in dit gevecht mag gebruiken *@
+    @* De gereedschapsbak: een metalen bak met twee vakken, alles wat je in dit gevecht mag gebruiken *@
     <div class="toolbox" @onkeydown="OnKey">
-        <div class="tiles">
-            @foreach (var check in Checks)
-            {
-                var tile = new Tile(TileKind.Condition, check);
-                <button class="tile cond @Held(tile)" draggable="true" @ondragstart="() => _hand = tile" @onclick="() => Pick(tile)">@S.T($"room.pick.{check}")</button>
-            }
-            @if (AllowNot)
-            {
-                var tile = new Tile(TileKind.Not);
-                <button class="tile op @Held(tile)" draggable="true" @ondragstart="() => _hand = tile" @onclick="() => Pick(tile)">@S.T("room.rule.not-kw")</button>
-            }
-            @foreach (var join in Joins)
-            {
-                var tile = new Tile(TileKind.Join, Join: join);
-                <button class="tile op @Held(tile)" draggable="true" @ondragstart="() => _hand = tile" @onclick="() => Pick(tile)">@S.T(join == Join.And ? "room.rule.and-kw" : "room.rule.or-kw")</button>
-            }
+        <div class="tray">
+            <span class="stencil">@S.T("room.ui.conditions")</span>
+            <div class="tiles">
+                @foreach (var check in Checks)
+                {
+                    var tile = new Tile(TileKind.Condition, check);
+                    <button class="tile cond @Held(tile)" draggable="true" @ondragstart="() => _hand = tile" @onclick="() => Pick(tile)">@S.T($"room.pick.{check}")</button>
+                }
+                @if (AllowNot)
+                {
+                    var tile = new Tile(TileKind.Not);
+                    <button class="tile op @Held(tile)" draggable="true" @ondragstart="() => _hand = tile" @onclick="() => Pick(tile)">@S.T("room.rule.not-kw")</button>
+                }
+                @foreach (var join in Joins)
+                {
+                    var tile = new Tile(TileKind.Join, Join: join);
+                    <button class="tile op @Held(tile)" draggable="true" @ondragstart="() => _hand = tile" @onclick="() => Pick(tile)">@S.T(join == Join.And ? "room.rule.and-kw" : "room.rule.or-kw")</button>
+                }
+            </div>
         </div>
-        <div class="tiles">
-            @foreach (var move in Moves)
-            {
-                var tile = new Tile(TileKind.Move, Move: move);
-                <button class="tile move @Held(tile)" draggable="true" @ondragstart="() => _hand = tile" @onclick="() => Pick(tile)"
-                        title="@S.T($"room.move-help.{move}")">@RuleText.Move(S, move)</button>
-            }
+        <div class="tray">
+            <span class="stencil">@S.T("room.ui.moves")</span>
+            <div class="tiles">
+                @foreach (var move in Moves)
+                {
+                    var tile = new Tile(TileKind.Move, Move: move);
+                    <button class="tile move @Held(tile)" draggable="true" @ondragstart="() => _hand = tile" @onclick="() => Pick(tile)"
+                            title="@S.T($"room.move-help.{move}")">@RuleText.Move(S, move)</button>
+                }
+            </div>
         </div>
         <p class="hint">@S.T(_hand is null ? "room.ui.toolbox-hint" : "room.ui.toolbox-holding")</p>
     </div>
@@ -228,12 +236,24 @@
         return (Fired[i] > 0 ? "live" : "") + flash;
     }
 
-    private string StatText(int i)
+    /// <summary>De lamp: brandt bij de zet die nu vuurt, en blijft grijs bij een regel die nooit bekeken werd.</summary>
+    private string LampClass(int i)
     {
-        if (Checked is null || Fired is null || i >= Checked.Length) return "";
-        if (Fired[i] > 0) return S.T("room.ui.fired", ("n", Fired[i]));
-        if (!Finished) return "";
-        return Checked[i] == 0 ? S.T("room.ui.never-reached") : S.T("room.ui.never-true");
+        if (Checked is null || i >= Checked.Length) return "";
+        if (i == FlashIndex) return "on";
+        return Finished && Checked[i] == 0 ? "dead" : "";
+    }
+
+    /// <summary>
+    /// Hoe vaak een regel vuurde, als een teller. Na het duel krijgt een regel die nooit vuurde een stempel:
+    /// nooit bereikt (een regel erboven klopte altijd eerst) of nooit waar.
+    /// </summary>
+    private RenderFragment Stat(int i)
+    {
+        if (Checked is null || Fired is null || i >= Checked.Length) return _ => { };
+        if (Fired[i] > 0) return @<span class="fired">@S.T("room.ui.fired", ("n", Fired[i]))</span>;
+        if (!Finished) return _ => { };
+        return @<span class="rubber-stamp never slam">@S.T(Checked[i] == 0 ? "room.ui.never-reached" : "room.ui.never-true")</span>;
     }
 
     private Task Swap(int a, int b)

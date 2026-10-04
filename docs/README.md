@@ -7,6 +7,7 @@ Deze repo is de enige bron voor het ontwerp. De docs zijn modulair: lees wat je 
 | [visie.md](visie.md) | Visie, pijlers, thema, elites als echte bugs, verslavingsmotor, game feel, antipatronen | elk ontwerp |
 | [architectuur.md](architectuur.md) | Platform, motor/shell/stage, determinisme, eventcontract, interop, technische risico's | code in elke afdeling |
 | [wereld/](wereld/README.md) | Afdelingen, plattegrond, ontgrendelen, mastery, Prikklok, onthulling | de wereld rond de afdelingen |
+| [wereld/beeldtaal.md](wereld/beeldtaal.md) | Hoe elk scherm eruitziet: elke afdeling een plek, de gedeelde bouwstenen | elk scherm, in elke afdeling |
 | [wereld/codex.md](wereld/codex.md) | De Codex als het boek, over alle afdelingen | Codex-pagina's |
 | [wereld/x-register.md](wereld/x-register.md) | Het ✗-register: achievements, en hoe een afdeling panelen levert | achievements |
 | [wereld/backend.md](wereld/backend.md), [wereld/supabase.md](wereld/supabase.md) | Hosting, accounts, klascode, data; het werkplan van de backend | auth, opslag, klassement |
@@ -43,6 +44,7 @@ Kort, met de datum; de uitwerking staat in het document van het onderwerp.
 
 - 2 oktober 2026: Blazor WebAssembly met PixiJS; de AI-art in handleidingstijl is definitief; runlengte afgestemd op een lesblok.
 - 4 oktober 2026: afdelingen staan op vrijgegeven, binnenkort (gebouwd, dicht, met tease) of ooit (in de doos); de Controlekamer en de Lopende Band staan voorlopig op binnenkort.
+- 4 oktober 2026: [de beeldtaal](wereld/beeldtaal.md). Elke afdeling is een plek met onderdelen uit een handleiding (schakelkast, werkvloer, klembord); de plattegrond is één tekening met dozen; een afdeling klapt uit haar doos; geen groen of rood; de Lopende Band speelt op een telefoon ook rechtop.
 - 3 oktober 2026: elke afdeling krijgt haar eigen spelvorm rond één plattegrond; de Card Hall heeft drie acts, één per hoofdstuk; startpunten met vijf keer 1 uit 3; de Codex is het boek; het vangnet voor de onthulling na 5 gestarte runs; de score van een run; Scrap voor wachtende modifiers; een afdeling ontgrendel je zelf; een docent maakt alleen een klascode voor het klassement, niets anders; gemonteerd is drie gewonnen runs of de elite; de eerste voltooide dagelijkse run telt.
 
 ## Product sheet

@@ -17,6 +17,7 @@
         @if (Revealed)
         {
             <WorldMap Paused="@PausedRun"OnContinue="ContinueRun" Unlocks="_progress.Unlocks" Pages="_progress.Codex" Trinkets="_progress.Trinkets" ReachedAct="ReachedAct" Superuser="_superuser" PanelCount="_progress.XPanels.Count"
+                      Unboxed="_progress.Unboxed" OnUnboxed="UnboxedAsync" Unbox="@(_superuser ? UnboxQuery : null)"
                       Starting="_starting" OnStart="StartAsync" OnCodex="() => OpenCodex(null)" OnXRegister="() => _showXRegister = true"
                       OnAccount="@(Account is null ? default : EventCallback.Factory.Create(this, () => _showAccount = true))" />
         }

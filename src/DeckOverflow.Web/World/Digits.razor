@@ -1,0 +1,19 @@
+@* Een telwerk: elk cijfer in een eigen vakje, witte cijfers op inkt (docs/wereld/beeldtaal.md). *@
+
+<span class="digits @Class" role="img" aria-label="@Value">
+    @foreach (char c in Text)
+    {
+        <span aria-hidden="true">@c</span>
+    }
+</span>
+
+@code {
+    [Parameter, EditorRequired] public string Value { get; set; } = "";
+
+    /// <summary>Zoveel vakjes minstens; een kort getal krijgt voorloopnullen, zoals op een echt telwerk.</summary>
+    [Parameter] public int Min { get; set; } = 1;
+
+    [Parameter] public string? Class { get; set; }
+
+    private string Text => Value.Length < Min && Value.All(char.IsDigit) ? Value.PadLeft(Min, '0') : Value;
+}

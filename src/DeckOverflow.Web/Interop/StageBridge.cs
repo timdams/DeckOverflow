@@ -43,6 +43,10 @@ public sealed class StageBridge(IJSRuntime js) : IAsyncDisposable
     public ValueTask ResetAsync() =>
         Stage.InvokeVoidAsync("reset");
 
+    /// <summary>De tekening van de act als decor achter het gevecht, zoals de beeldtaal vraagt: elke plek is een plek.</summary>
+    public ValueTask SetBackdropAsync(string url) =>
+        Stage.InvokeVoidAsync("setBackdrop", url);
+
     public async ValueTask DisposeAsync()
     {
         if (_stage is null) return;

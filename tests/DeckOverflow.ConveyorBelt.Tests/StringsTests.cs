@@ -28,7 +28,8 @@ public class StringsTests
                 yield return $"bug.{level.Key}.story";
             }
         }
-        foreach (var kind in Enum.GetValues<OfferKind>()) yield return $"belt.ui.offer.{kind}";
+        // De onderdelenlijst noemt een stuk uit de gereedschapsbak bij zijn soort, net als het paneel van een gelegd stuk
+        foreach (var kind in Enum.GetValues<OfferKind>()) yield return $"belt.ui.piece.{kind}";
         foreach (var piece in new[] { "Belt", "Machine", "Gate", "Counter" }) yield return $"belt.ui.piece.{piece}";
         foreach (var ending in Enum.GetValues<Ending>()) yield return $"belt.ui.ending.{ending}";
         foreach (var panel in XRegister.All)

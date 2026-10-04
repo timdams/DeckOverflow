@@ -2,6 +2,16 @@
 
 Wat bewust is uitgesteld voor de wereld (plattegrond, backend, Codex, ✗-register), met genoeg context om het later op te pakken. Nieuwste bovenaan. Wat af is, gaat eruit (de geschiedenis staat in git).
 
+## Plattegrond en uit de doos
+
+De plattegrond is sinds 4 oktober 2026 één tekening, met dozen en het moment "uit de doos" (zie [README](README.md#één-tekening-de-band-en-de-dozen) en [de beeldtaal](beeldtaal.md)). Wat nog open staat:
+
+- **Uit de doos bekijken in een zichtbaar venster.** Gebouwd en getest met stilgezette CSS-animaties (`?unbox=conveyor-belt` als superuser), maar nog niet op gevoel afgesteld: het tempo, de stralen, de explosietekening. Geen geluid; als dat erbij komt, via `wwwroot/audio/ui.js`.
+- **Een speler ziet het moment nog nooit.** Het gaat af voor een afdeling die voor jou opengaat, en de Controlekamer en de Lopende Band staan op *binnenkort*. Pas zodra de Controlekamer vrijgegeven is, komt het eerste echte "uit de doos".
+- **Een nieuwe afdeling krijgt een plaats op de vloer.** `Spots` in `WorldMap.razor` zet elke afdeling op de tekening; een afdeling zonder plaats belandt onderaan op een rij.
+- **Het figuurtje** loopt nu naar de afdeling die je kiest. Bij de afdeling waar je het laatst speelde, zou ook kunnen; daarvoor moet de voortgang dat bijhouden.
+- **Rechtop op een smal scherm** staan de vloer en het paneel onder elkaar en wordt de tekening klein. Nakijken op een telefoon.
+
 ## Superuser
 
 Gebouwd op 4 oktober 2026 (zie [backend.md](backend.md#superuser)).

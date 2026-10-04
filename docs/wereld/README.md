@@ -1,6 +1,6 @@
 # De wereld
 
-Alles rond de afdelingen: welke afdelingen er zijn, de fabrieksplattegrond, ontgrendelen, mastery, de Prikklok en de onthulling. Aparte documenten: de [Codex](codex.md), het [✗-register](x-register.md), de [backend](backend.md) (accounts, klascode, data, hosting) en de [woordenlijst](woordenlijst.md) (de termen en de toon van *Zie Scherp Scherper* voor de Nederlandse spelteksten).
+Alles rond de afdelingen: welke afdelingen er zijn, de fabrieksplattegrond, ontgrendelen, mastery, de Prikklok en de onthulling. Aparte documenten: de [beeldtaal](beeldtaal.md) (hoe elk scherm eruitziet), de [Codex](codex.md), het [✗-register](x-register.md), de [backend](backend.md) (accounts, klascode, data, hosting) en de [woordenlijst](woordenlijst.md) (de termen en de toon van *Zie Scherp Scherper* voor de Nederlandse spelteksten).
 
 ## Afdelingen: elk hoofdstuk zijn eigen spelvorm
 
@@ -52,6 +52,24 @@ De plattegrond verschijnt pas na [de onthulling](#de-onthulling). Tussen de afde
 - In het midden de plattegrond, met de afdelingen in de volgorde van het boek. Aan de rand drie vaste knoppen: de **Codex**, de **Prikklok** (klassement) en het **✗-register** (achievements).
 - Klik je op een afdeling, dan schuift één paneel open: naam, hoofdstuk, spelvorm, de onderdelenlijst, en twee knoppen: **Spelen** en **Dagelijkse run**.
 - Van het openen van de game tot in een spel: hooguit twee klikken. De plattegrond is een keuzescherm, geen menu in een menu.
+
+### Eén tekening: de band en de dozen
+
+Beslist op 4 oktober 2026, met de [beeldtaal](beeldtaal.md). De plattegrond is geen rooster van kaartjes maar één tekening van de fabrieksvloer. **Gebouwd op 4 oktober 2026** in `World/WorldMap.razor` (de vloer is 1100 bij 650 eenheden en schaalt mee):
+
+- **De band van het titelscherm verbindt de afdelingen**, in de volgorde van het boek. Tussen twee afdelingen die voor jou open zijn, draaien de rollen en rijden er kaarten; elders loopt ze gestippeld verder.
+- **Een afdeling die er nog niet is (*ooit*), is een gesloten doos** met plakband en pijltjes "deze kant boven" (`World/CardboardBox.razor`), haar stapnummer gestippeld. *Binnenkort* is de kamer zelf, nog niet ingekt, met haar tease.
+- **Het figuurtje loopt naar de afdeling die je kiest.**
+- **Het paneel is een blad uit de handleiding:** een groot stapnummer, de naam, de tekening van de plek, de uitleg, de onderdelen als verzamelalbum (zwart is uitgepakt, gestippeld zit nog in de zak) en één grote knop.
+
+### Uit de doos
+
+Het moment waarop een afdeling voor jou opengaat, één keer per afdeling, op de plattegrond (beslist op 4 oktober 2026). Een nieuwe afdeling is een beloning, dus een moment, zoals de kaarten die op het titelscherm uit de kist vallen. **Gebouwd op 4 oktober 2026**: 2,8 seconden in CSS (`run.css`), en `PlayerProgress.Unboxed` onthoudt welke afdelingen het al deden. De superuser speelt het af met `?unbox=<afdeling>`, zonder iets te bewaren.
+
+1. **De doos trilt.** De band van de vorige afdeling rolt tot aan de doos, die begint te schudden.
+2. **Het plakband springt.** De flappen klappen open; binnenin is het donker, met lijnen die naar buiten schieten.
+3. **Uit de doos.** De kamer stijgt op, de onderdelen vliegen eruit en hangen even in een explosietekening, met de stippellijnen van de handleiding.
+4. **Aangesloten.** De doos ligt plat, de band wordt echt, het stapnummer wordt zwart, en het figuurtje loopt erheen.
 
 ### Ontgrendelen
 

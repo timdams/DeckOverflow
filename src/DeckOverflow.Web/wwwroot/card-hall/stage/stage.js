@@ -73,7 +73,7 @@ export async function init(host, dotnetRef, debug = false) {
   app.stage.addChild(S.root);
   S.root.addChild(S.shaker);
 
-  for (const name of ['bg', 'actors', 'hand', 'fx', 'ui']) {
+  for (const name of ['backdrop', 'bg', 'actors', 'hand', 'fx', 'ui']) {
     S.layers[name] = new PIXI.Container();
     S.shaker.addChild(S.layers[name]);
   }
@@ -144,6 +144,30 @@ export function reset() {
   clearLog();
 }
 
+/**
+ * De tekening van de act als decor achter het gevecht (docs/wereld/beeldtaal.md: elke afdeling is een plek). Vaag en
+ * alleen boven de vloer, zodat de figuren en hun getallen scherp blijven. De shell geeft de tekening bij elk nieuw gevecht.
+ */
+export async function setBackdrop(url) {
+  if (S.backdropUrl === url) return;
+  S.backdropUrl = url;
+  let tex = null;
+  try { tex = await PIXI.Assets.load(url); } catch { tex = null; }
+  if (S.backdropUrl !== url || !S.app) return;
+  S.layers.backdrop.removeChildren().forEach((c) => c.destroy());
+  if (!tex) return;
+  const sprite = new PIXI.Sprite(tex);
+  sprite.anchor.set(0.5, 1);
+  sprite.scale.set((W - 20) / tex.width);
+  sprite.position.set(W / 2, GROUND_Y + 40);
+  sprite.alpha = juice.backdrop.alpha;
+  // Zacht, zoals een achtergrond in een foto: de platen hebben zelf een figuurtje, dat mag geen tweede held worden
+  sprite.filters = [new PIXI.BlurFilter({ strength: juice.backdrop.blur })];
+  const mask = new PIXI.Graphics().rect(10, 10, W - 20, GROUND_Y - 4).fill(0xffffff);
+  S.layers.backdrop.addChild(sprite, mask);
+  sprite.mask = mask;
+}
+
 /** Geluid aan of uit, vanuit het optiescherm van de shell. */
 export function setSound(on) {
   setMuted(!on);
@@ -203,7 +227,7 @@ S.discardHand = async () => {
 
 /** Al de rest vervaagt tot een schets, de hoofdrolspeler blijft scherp. */
 S.dimExcept = (actor) => {
-  const others = [S.layers.bg, S.layers.hand, S.layers.ui, ...[...S.actors.values()].filter((a) => a !== actor).map((a) => a.container)];
+  const others = [S.layers.backdrop, S.layers.bg, S.layers.hand, S.layers.ui, ...[...S.actors.values()].filter((a) => a !== actor).map((a) => a.container)];
   gsap.to(others, { alpha: 0.2, duration: sec(150) });
   return { restore: () => gsap.to(others, { alpha: 1, duration: sec(300) }) };
 };

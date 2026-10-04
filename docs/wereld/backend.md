@@ -45,7 +45,7 @@ Gebouwd op 4 oktober 2026. Een speler kan de maker laten weten wat hij leuk vond
 
 ## Superuser
 
-Beslist op 4 oktober 2026. De maker speelt als **superuser**, de enige die een gevecht wint met de sneltoets W. Voor de superuser staat alles open wat gebouwd is: ook afdelingen op *binnenkort*, elk level, elke act als startpunt en de plattegrond voor de onthulling. Ook de testroutes `?seed=`, `?fight=` en `?level=` werken alleen voor de superuser; bij een speler doen ze niets. `?all` en `?world` bestaan niet meer.
+Beslist op 4 oktober 2026. De maker speelt als **superuser**, de enige die een gevecht wint met de sneltoets W. Voor de superuser staat alles open wat gebouwd is: ook afdelingen op *binnenkort*, elk level, elke act als startpunt en de plattegrond voor de onthulling. Ook de testroutes `?seed=`, `?fight=`, `?level=` en `?unbox=` (een afdeling uit haar doos laten klappen op de plattegrond) werken alleen voor de superuser; bij een speler doen ze niets. `?all` en `?world` bestaan niet meer.
 
 - **Wie het is, staat alleen in Supabase**, nooit in de (publieke) code: `app_metadata.role = 'superuser'`. Een speler kan zijn `app_metadata` niet zelf aanpassen. Iemand superuser maken: `update auth.users set raw_app_meta_data = raw_app_meta_data || '{"role":"superuser"}' where email = '…';`. De rol komt mee bij de volgende inlog of vernieuwing van de sessie (binnen het uur).
 - **Lokaal** (`localhost`) is iedereen superuser, om te ontwikkelen zonder in te loggen.

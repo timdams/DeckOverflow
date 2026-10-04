@@ -36,6 +36,17 @@ public partial class ControlRoomPage : IAsyncDisposable
     private sealed record Toast(int Id, string Text);
     private sealed record PanelPopup(int Id, string Key);
 
+    /// <summary>Een gaatje in de ponsband: in welke zet, en welke regel vuurde (null: er klopte niets).</summary>
+    private sealed record Punch(int Frame, int? Rule);
+
+    /// <summary>Eén beurt op de ponsband: een gaatje voor de speler en een voor de vijand.</summary>
+    private sealed class TapeColumn(int turn)
+    {
+        public int Turn { get; } = turn;
+        public Punch? Player { get; set; }
+        public Punch? Enemy { get; set; }
+    }
+
     /// <summary>Zo lang blijft een melding staan; gelijk aan de animatie in run.css.</summary>
     private const int PopupMs = 4600;
     private const int LogLength = 8;
@@ -209,10 +220,10 @@ public partial class ControlRoomPage : IAsyncDisposable
         _playing = false;
     }
 
-    /// <summary>De tijdlijn: naar elke zet springen, zonder animatie.</summary>
-    private async Task ScrubAsync(ChangeEventArgs e)
+    /// <summary>De ponsband: naar elke zet springen, zonder animatie. -1 is de beginstand.</summary>
+    private async Task JumpAsync(int frame)
     {
-        if (_recording is not { } r || !int.TryParse(e.Value?.ToString(), out int frame)) return;
+        if (_recording is not { } r) return;
         Stop();
         _frame = Math.Clamp(frame, -1, r.Frames.Count - 1);
         await Stage.SyncAsync(Shown!);
@@ -292,6 +303,43 @@ public partial class ControlRoomPage : IAsyncDisposable
         _recording is { } r && _frame >= 0
             ? r.Frames[_frame].Events.OfType<RuleFired>().FirstOrDefault(f => f.Side == side)?.RuleIndex ?? -1
             : -1;
+
+    /// <summary>
+    /// De ponsband van het hele duel: per beurt welke regel er bij elke kant vuurde, en in welke zet. Het duel ligt
+    /// vast, dus de band is er meteen helemaal; de pagina toont alleen wat al gespeeld is.
+    /// </summary>
+    private List<TapeColumn> Tape()
+    {
+        var columns = new List<TapeColumn>();
+        if (_recording is not { } r) return columns;
+        TapeColumn? column = null;
+        for (int f = 0; f < r.Frames.Count; f++)
+        {
+            foreach (var e in r.Frames[f].Events)
+            {
+                switch (e)
+                {
+                    case TurnStarted t:
+                        column = new TapeColumn(t.Turn);
+                        columns.Add(column);
+                        break;
+                    case RuleFired fired when column is not null:
+                        Mark(column, fired.Side, new Punch(f, fired.RuleIndex));
+                        break;
+                    case NoRuleMatched none when column is not null:
+                        Mark(column, none.Side, new Punch(f, null));
+                        break;
+                }
+            }
+        }
+        return columns;
+
+        static void Mark(TapeColumn column, Side side, Punch punch)
+        {
+            if (side == Side.Player) column.Player ??= punch;
+            else column.Enemy ??= punch;
+        }
+    }
 
     /// <summary>Het log van de laatste zetten tot de zet in beeld, nieuwste bovenaan. Volgt de tijdlijn.</summary>
     private IEnumerable<LogLine> Log()

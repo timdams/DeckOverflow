@@ -7,6 +7,7 @@ using DeckOverflow.CardHall.Maps;
 using DeckOverflow.CardHall.Runs;
 using DeckOverflow.Core.Text;
 using Microsoft.AspNetCore.Components;
+using DeckOverflow.Web.Art;
 using DeckOverflow.Web.Backend;
 using DeckOverflow.Web.Progress;
 using DeckOverflow.Web.World;
@@ -20,7 +21,7 @@ namespace DeckOverflow.Web.Pages;
 /// </summary>
 public partial class RunPage
 {
-    // De testroutes ?seed= en ?fight= werken alleen voor de superuser, die ook altijd de plattegrond ziet.
+    // De testroutes ?seed=, ?fight= en ?unbox= werken alleen voor de superuser, die ook altijd de plattegrond ziet.
 
     [SupplyParameterFromQuery(Name = "seed")]
     public string? SeedQuery { get; set; }
@@ -28,6 +29,10 @@ public partial class RunPage
     /// <summary>Om één vijand snel te proberen: een run van één knoop.</summary>
     [SupplyParameterFromQuery(Name = "fight")]
     public string? FightQuery { get; set; }
+
+    /// <summary>Om het moment "uit de doos" van een afdeling te bekijken, zonder ze te verdienen.</summary>
+    [SupplyParameterFromQuery(Name = "unbox")]
+    public string? UnboxQuery { get; set; }
 
     [Inject] private HttpClient Http { get; set; } = default!;
     [Inject] private IProgressStore Store { get; set; } = default!;
@@ -258,6 +263,7 @@ public partial class RunPage
         if (_snap.Phase == RunPhase.Combat && before.Phase != RunPhase.Combat)
         {
             await Stage.ResetAsync();
+            await Stage.SetBackdropAsync(ArtStyle.Wide($"act-{_snap.ActKey}"));
             await Stage.SyncAsync(_run.CombatSnapshot()!);
         }
     }
@@ -454,6 +460,12 @@ public partial class RunPage
     {
         _codexFocus = focus;
         _showCodex = true;
+    }
+
+    /// <summary>Een afdeling klapte op de plattegrond uit haar doos: dat moment is gebeurd en komt niet terug.</summary>
+    private async Task UnboxedAsync(string department)
+    {
+        if (_progress.Unboxed.Add(department)) await Store.SaveAsync(_progress);
     }
 
     /// <summary>Een melding per nieuwe pagina; een klik opent de Codex op die pagina.</summary>

@@ -16,6 +16,17 @@ Vijftien gevechten na elkaar, elk een eigen puzzel, vrij te herspelen om beter t
 
 Je bord blijft per gevecht bewaard. Het volgende gevecht gaat open zodra je het vorige wint (voor de [superuser](../../wereld/backend.md#superuser) staat alles open, en `?level=sentry` springt naar één gevecht).
 
+## Het scherm: twee kasten en een testcel
+
+Beslist op 4 oktober 2026, met de [beeldtaal](../../wereld/beeldtaal.md). De Controlekamer is een echte controlekamer: je bedient een schakelkast en kijkt door een raam naar de testcel. **Gebouwd op 4 oktober 2026** (`ControlRoomPage`, `RuleBoard`, `control-room.css`); de stage zelf bleef dezelfde.
+
+- **Links jouw schakelkast.** Elke regel is een plaat met een lamp, een stapnummer, *als* een voorwaarde *dan* een zet, en hoe vaak ze vuurde. Een vrije plaats is een gestippelde plaat. Eronder de gereedschapsbak: een metalen bak met twee vakken, voorwaarden en zetten. Een voorwaarde is een rond plaatje, een zet een hoekig.
+- **Onder de kast het luik *onder de motorkap*.** Dicht is het een gearceerd luik; open toont het je bord als C#, en tijdens het duel licht de regel op die nu vuurt.
+- **In het midden de testcel.** Het duel zie je door een raam met een dikke zwarte lijst, schroeven en een bordje met het gevecht en de beurt. Eronder de grote ronde startknop, de snelheden, en telwerken voor beurten en regels.
+- **De tijdlijn is een ponsband:** per beurt een gaatje voor jou en een voor de vijand, met het nummer van de regel die vuurde (een streepje als er niets klopte). Wat nog moet komen, blijft een leeg gaatje: de band verklapt niets. Klik op een gaatje om naar die zet te springen, ook terug.
+- **Rechts de kast van de vijand, verzegeld:** dezelfde platen en lampen, met zijn typering eronder. Een elite is oranje gemerkt.
+- **Tijdens het duel knipperen de twee kasten naar elkaar.** De lamp van de regel die vuurt, brandt. Een regel die nooit bekeken wordt, blijft donker; het stempel *nooit bereikt* valt pas als het duel voorbij is.
+
 ## De natuurwetten
 
 - **Een regel:** *als* een voorwaarde, eventueel met een tweede via *EN* of *OF*, eventueel omgedraaid met *NIET*, *dan* een zet. Elke beurt zet eerst de speler, dan de vijand.
@@ -72,4 +83,4 @@ De histogrammen tellen borden tot 3 regels zonder EN, OF of NIET; met die operat
 
 ## Onder de motorkap
 
-Een vinkje toont je bord als C#: een `if` / `else if`-keten. Een "altijd" onderaan wordt `else`; een "altijd" ergens anders wordt `else if (true)`, zodat je ziet waarom alles eronder nooit loopt. Methodenamen blijven C# (`Whack()`), de rest volgt de taal van het spel.
+Het luik onder je kast toont je bord als C#: een `if` / `else if`-keten. Een "altijd" onderaan wordt `else`; een "altijd" ergens anders wordt `else if (true)`, zodat je ziet waarom alles eronder nooit loopt. Methodenamen blijven C# (`Whack()`), de rest volgt de taal van het spel.

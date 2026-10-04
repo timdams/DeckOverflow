@@ -27,6 +27,12 @@ public sealed record CaseRun(TestCase Case, IReadOnlyList<Frame> Frames, Ending 
 {
     public bool Passed => Ending == Ending.Delivered;
     public int Ticks => Frames[^1].Tick;
+
+    /// <summary>
+    /// Bij een oneindige loop: de frame waar het rondje begint. Van daar tot de laatste frame herhaalt de band zich,
+    /// zodat de stage precies dat rondje kan laten branden. -1 als de band nooit in een toestand terugkwam.
+    /// </summary>
+    public int LoopFrom { get; init; } = -1;
 }
 
 /// <summary>Alle testgevallen van een puzzel. Gelukt als elke kist juist aankwam.</summary>
@@ -65,7 +71,8 @@ public static class Simulator
         var layout = level.Layout(board);
         var counters = new Dictionary<Cell, int>();
         var gateVisits = new Dictionary<Cell, int>();
-        var seen = new HashSet<string>();
+        // Elke toestand met de frame waarin ze voor het eerst voorkwam: zo weet de band waar het rondje begint
+        var seen = new Dictionary<string, int>();
         var moments = new Moments();
         var frames = new List<Frame> { new(0, level.Source, test.Input, Note.None, null, Snapshot(counters)) };
 
@@ -134,11 +141,12 @@ public static class Simulator
 
             frames.Add(new Frame(tick, at, value, note, gate, Snapshot(counters)));
             string state = $"{at}|{heading}|{value}|{string.Join(";", counters.OrderBy(c => c.Key.X).ThenBy(c => c.Key.Y))}";
-            if (!seen.Add(state))
+            if (seen.TryGetValue(state, out int first))
             {
                 moments.Add(CodexCatalog.InfiniteLoop, ("value", value.ToString()), ("ticks", Num(tick)));
-                return new CaseRun(test, frames, Ending.Forever, value, moments.All);
+                return new CaseRun(test, frames, Ending.Forever, value, moments.All) { LoopFrom = first };
             }
+            seen[state] = frames.Count - 1;
         }
         moments.Add(CodexCatalog.InfiniteLoop, ("value", value.ToString()), ("ticks", Num(MaxTicks)));
         return new CaseRun(test, frames, Ending.Forever, value, moments.All);

@@ -32,6 +32,12 @@ public sealed class PlayerProgress
     /// <summary>Ontgrendelde afdelingen. De Card Hall staat altijd open en hoort hier niet in.</summary>
     public Dictionary<string, Unlock> Unlocks { get; init; } = [];
 
+    /// <summary>
+    /// Afdelingen die op de plattegrond al uit hun doos klapten (docs/wereld/README.md, Uit de doos): dat moment
+    /// gebeurt één keer per afdeling, de eerste keer dat ze voor jou opengaat.
+    /// </summary>
+    public HashSet<string> Unboxed { get; init; } = [];
+
     /// <summary>Verdiende ✗-panelen.</summary>
     public HashSet<string> XPanels { get; init; } = [];
 

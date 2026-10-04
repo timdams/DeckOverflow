@@ -870,115 +870,255 @@ button.title-button {
 }
 @keyframes crack-wiggle { 0%, 90%, 100% { transform: none; } 93% { transform: rotate(-2deg); } 96% { transform: rotate(2deg); } }
 
-/* ---------------------------------------------------------------- de plattegrond */
+/* ---------------------------------------------------------------- de plattegrond: één tekening van de fabrieksvloer
+   (docs/wereld/README.md, Eén tekening). De vloer is 1100 bij 650 eenheden en schaalt mee; alles erop staat in
+   procenten, en tekst in cqw, zodat de tekening op elk scherm dezelfde blijft. */
 
 .world {
   position: absolute;
   inset: 0;
   display: grid;
-  grid-template-columns: 1fr minmax(260px, 340px);
-  grid-template-rows: auto 1fr auto;
-  gap: 16px 24px;
-  padding: 22px clamp(16px, 4vw, 48px);
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 350px);
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 14px 24px;
+  padding: 16px clamp(16px, 3vw, 36px) 20px;
   background: var(--paper);
   overflow: auto;
 }
-.world-head { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; }
+.world-head {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 0 96px 12px 0;
+  border-bottom: 3px solid var(--ink);
+}
 .world-head .hint { margin: 0; color: var(--muted); font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; font-size: 13px; }
 .title-word.small { font-size: clamp(28px, 4vw, 44px); line-height: 1; }
+.world-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-left: auto; }
 
-.world-floor {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 22px;
-  align-content: start;
-  padding: 12px 0 0 12px;
-}
-
-.department {
+/* De vloer, met een puntraster zoals het papier van een tekenaar */
+.floor-plan-wrap { min-width: 0; min-height: 0; display: grid; justify-items: center; align-content: start; }
+.floor-plan {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-  min-height: 240px;
-  padding: 16px;
-  text-align: left;
-  font-weight: 400;
-  background: var(--white);
-  border: 2.5px solid var(--ink);
-  border-radius: 8px;
-  box-shadow: 4px 4px 0 var(--ink);
+  width: min(100%, calc((100dvh - 150px) * 1100 / 650));
+  aspect-ratio: 1100 / 650;
+  container-type: inline-size;
+  background-image: radial-gradient(var(--rule) 1.2px, transparent 1.4px);
+  background-size: 24px 24px;
 }
-.department strong { font-size: 17px; }
-.department small { font-size: 13px; color: var(--muted); }
-.department.selected { box-shadow: 5px 5px 0 var(--zss); transform: translate(-2px, -2px); }
-.department .step {
+.plan-heading { position: absolute; z-index: 1; left: 2%; top: 1%; pointer-events: none; }
+.plan-heading h2 { margin: 0; font-size: clamp(26px, 5.4cqw, 64px); }
+.plan-heading p { margin: 0.4em 0 0; font-size: clamp(12px, 1.4cqw, 17px); font-weight: 700; }
+
+/* De band van het titelscherm: echte rollen waar de fabriek af is, een stippellijn waar nog niet */
+.plan-belt { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.plan-belt .belt-edge { fill: none; stroke: var(--ink); stroke-width: 22; stroke-linecap: round; }
+.plan-belt .belt-face { fill: none; stroke: var(--white); stroke-width: 15; stroke-linecap: round; }
+.plan-belt .belt-rollers { fill: none; stroke: var(--ink); stroke-width: 15; stroke-dasharray: 2 8; animation: plan-roll 0.8s linear infinite; }
+.plan-belt .belt-ghost { fill: none; stroke: var(--muted); stroke-width: 3; stroke-dasharray: 10 9; stroke-linecap: round; }
+.plan-belt .belt-card rect { fill: var(--white); stroke: var(--ink); stroke-width: 2; }
+.plan-belt .belt-card path { fill: var(--zss); }
+@keyframes plan-roll { to { stroke-dashoffset: -10; } }
+/* Net uit de doos: de band wordt echt, van de vorige afdeling tot bij de nieuwe */
+.plan-belt .belt-run.fresh .belt-edge, .plan-belt .belt-run.fresh .belt-face { stroke-dasharray: 100; animation: plan-draw 0.7s ease-out both; }
+@keyframes plan-draw { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
+
+/* Een afdeling: haar tekening, haar stapnummer, haar naam. Gekozen staat ze op een oranje gestippelde ring */
+button.dept-node {
   position: absolute;
   z-index: 2;
-  top: -12px;
-  left: -12px;
-  width: 30px;
-  height: 30px;
-  display: grid;
-  place-items: center;
-  font-weight: 800;
-  color: var(--white);
-  background: var(--ink);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 0;
+  font-size: clamp(11px, 1.5cqw, 19px);
+  font-weight: 400;
+  text-align: center;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+@media (hover: hover) {
+  button.dept-node:hover:not(:disabled) { background: transparent; }
+  button.dept-node:hover .drawing { transform: translateY(-4px); }
+}
+button.dept-node:active:not(:disabled) { transform: none; box-shadow: none; }
+.dept-node .drawing { position: relative; display: block; width: 100%; aspect-ratio: 1; container-type: inline-size; transition: transform 160ms; }
+.dept-node.selected .drawing::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 6%;
+  right: 6%;
+  bottom: 0;
+  height: 24%;
+  border: 3px dashed var(--zss);
   border-radius: 50%;
 }
-/* Hoe meer onderdelen uitgepakt, hoe meer van de tekening ingekt */
-.department .dept-art {
+/* Hoe meer onderdelen uitgepakt, hoe meer van de tekening ingekt; binnenkort is een vage schets */
+.dept-node .dept-art {
+  display: block;
   width: 100%;
-  height: 130px;
-  object-fit: cover;
-  border: 1.5px solid var(--rule);
-  border-radius: 4px;
+  height: 100%;
+  object-fit: contain;
   filter: grayscale(calc(1 - var(--inked, 0)));
   opacity: calc(0.35 + 0.65 * var(--inked, 0));
 }
-.department .dept-box { width: 100%; height: 130px; border: 2px dashed var(--rule); border-radius: 4px; }
-.department.boxed { background: transparent; border-style: dashed; border-color: var(--muted); box-shadow: none; color: var(--muted); }
-.department.boxed .step { background: var(--muted); }
-.department .sticker {
+.dept-node .dept-art.sketch { filter: grayscale(1); opacity: 0.45; }
+.dept-node .cardboard { display: block; width: 100%; height: 100%; }
+.dept-node .step-badge { position: absolute; left: 0; top: 2%; font-size: 1em; box-shadow: 0 0 0 0.18em var(--paper); }
+/* Het naambordje staat voor de band: papier met een dunne rand, op één regel */
+.dept-node .name-plate { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 0.15em 0.5em 0.2em; white-space: nowrap; background: var(--paper); border-radius: 6px; }
+.dept-node .dept-name { font-size: 1.2em; font-weight: 900; letter-spacing: -0.02em; line-height: 1.05; }
+.dept-node small { font-size: 0.78em; font-weight: 700; color: var(--muted); }
+.dept-node.boxed .dept-name { color: var(--muted); }
+.dept-node.soon small { color: var(--ink); text-transform: uppercase; letter-spacing: 0.06em; }
+.dept-node .sticker {
   position: absolute;
-  top: 10px;
-  right: -8px;
-  padding: 2px 8px;
-  font-size: 11px;
-  font-weight: 800;
+  right: -4%;
+  top: 10%;
+  padding: 0.15em 0.5em;
+  font-size: 0.7em;
+  font-weight: 900;
+  white-space: nowrap;
   text-transform: uppercase;
   color: var(--white);
   background: var(--zss);
   border: 2px solid var(--ink);
   transform: rotate(6deg);
 }
+.dept-node .sticker.key { background: var(--ink); }
+
+/* Het figuurtje loopt naar de afdeling die je kiest */
+.plan-you {
+  position: absolute;
+  z-index: 3;
+  width: 5.5%;
+  pointer-events: none;
+  transition: left 600ms cubic-bezier(0.4, 0, 0.2, 1), top 600ms cubic-bezier(0.4, 0, 0.2, 1);
+  animation: plan-bob 2.4s ease-in-out infinite;
+}
+@keyframes plan-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+/* De kartonnen doos (World/CardboardBox.razor) */
+.cardboard polygon, .cardboard path { stroke: var(--ink); stroke-width: 3.5; stroke-linejoin: round; }
+.cardboard .box-hole { fill: var(--ink); }
+.cardboard .box-lid polygon { fill: var(--white); }
+.cardboard .box-lid .tape { fill: var(--rule); stroke-width: 2; }
+.cardboard .box-side.left { fill: var(--shade); }
+.cardboard .box-side.right { fill: var(--paper); }
+.cardboard .box-arrows { fill: none; stroke-width: 2.5; }
+.cardboard .box-flap { fill: var(--white); transform-box: fill-box; transform-origin: 50% 100%; transform: scaleY(0); }
+
+/* ---------------------------------------------------------------- uit de doos (docs/wereld/README.md, Uit de doos)
+   2,8 seconden, gelijk aan UnboxMs in WorldMap: de doos trilt, het deksel springt, de kamer stijgt op, de
+   onderdelen hangen even in een explosietekening, de doos ligt plat en het stapnummer wordt zwart. */
+
+.dept-node.unboxing .dept-art { animation: unbox-rise 2.8s ease-out both; }
+.dept-node.unboxing .step-badge { animation: unbox-badge 2.8s ease-out both; }
+.unbox { position: absolute; inset: 0; pointer-events: none; }
+.unbox .cardboard { position: absolute; left: 12%; top: 16%; width: 76%; height: 76%; transform-origin: 50% 88%; animation: unbox-box 2.8s ease-out both; }
+.unbox .box-lid { animation: unbox-lid 2.8s linear both; }
+.unbox .box-flap { animation: unbox-flap 2.8s ease-out both; }
+/* Lijnen die uit de doos schieten: spaken in een ring */
+.unbox-rays { position: absolute; left: 50%; top: 42%; width: 0; height: 0; animation: unbox-rays 2.8s ease-out both; }
+.unbox-rays::before {
+  content: "";
+  position: absolute;
+  left: -46cqw;
+  top: -46cqw;
+  width: 92cqw;
+  height: 92cqw;
+  border-radius: 50%;
+  background: repeating-conic-gradient(var(--ink) 0 2.5deg, transparent 2.5deg 24deg);
+  -webkit-mask: radial-gradient(circle, transparent 0 40%, #000 41% 70%, transparent 71%);
+  mask: radial-gradient(circle, transparent 0 40%, #000 41% 70%, transparent 71%);
+}
+/* De onderdelen: kaarten, een bout, een schroef. Ze vliegen eruit en vallen dan op hun plaats */
+.unbox-part { position: absolute; left: 46%; top: 40%; width: 7cqw; height: 9cqw; box-sizing: border-box; opacity: 0; background: var(--white); border: 2px solid var(--ink); border-radius: 2px; }
+.unbox-part::after { content: ""; position: absolute; inset: 30%; background: var(--zss); transform: rotate(45deg); }
+.unbox-part.p3 { width: 7cqw; height: 7cqw; border-radius: 50%; }
+.unbox-part.p3::after { inset: 36%; background: var(--ink); border-radius: 50%; transform: none; }
+.unbox-part.p4 { width: 3.5cqw; height: 11cqw; border-width: 2px 2px 2px 2px; border-top: 1.2cqw solid var(--ink); }
+.unbox-part.p4::after { display: none; }
+.unbox-part.p1 { animation: unbox-p1 2.8s ease-out both; }
+.unbox-part.p2 { animation: unbox-p2 2.8s ease-out both; }
+.unbox-part.p3 { animation: unbox-p3 2.8s ease-out both; }
+.unbox-part.p4 { animation: unbox-p4 2.8s ease-out both; }
+.unbox-part.p5 { animation: unbox-p5 2.8s ease-out both; }
+
+@keyframes unbox-box {
+  0% { transform: none; opacity: 1; }
+  4% { transform: rotate(-2deg); }
+  8% { transform: rotate(2deg); }
+  12% { transform: rotate(-3deg); }
+  16% { transform: rotate(3deg); }
+  20% { transform: translateY(-3%) rotate(-4deg); }
+  24% { transform: translateY(-5%) rotate(4deg); }
+  28% { transform: none; }
+  60% { transform: none; opacity: 1; }
+  75%, 100% { transform: translateY(12%) scaleY(0.25); opacity: 0; }
+}
+@keyframes unbox-lid { 0%, 28% { opacity: 1; } 29%, 100% { opacity: 0; } }
+@keyframes unbox-flap { 0%, 28% { transform: scaleY(0); } 32% { transform: scaleY(1.2); } 35%, 100% { transform: scaleY(1); } }
+@keyframes unbox-rays { 0%, 28% { opacity: 0; transform: scale(0.3); } 33% { opacity: 1; transform: scale(1); } 46%, 100% { opacity: 0; transform: scale(1.4); } }
+@keyframes unbox-rise { 0%, 38% { opacity: 0; transform: translateY(28%) scale(0.25); } 56% { opacity: 1; transform: translateY(-12%) scale(1.08); } 68%, 100% { opacity: 1; transform: none; } }
+@keyframes unbox-badge { 0%, 74% { transform: scale(0); } 80% { transform: scale(1.35); } 86%, 100% { transform: scale(1); } }
+@keyframes unbox-p1 { 0%, 40% { opacity: 0; transform: none; } 44% { opacity: 1; } 58%, 64% { opacity: 1; transform: translate(-48cqw, -40cqw) rotate(-40deg); } 74%, 100% { opacity: 0; transform: translate(0, -10cqw); } }
+@keyframes unbox-p2 { 0%, 40% { opacity: 0; transform: none; } 44% { opacity: 1; } 58%, 64% { opacity: 1; transform: translate(46cqw, -44cqw) rotate(35deg); } 74%, 100% { opacity: 0; transform: translate(0, -10cqw); } }
+@keyframes unbox-p3 { 0%, 40% { opacity: 0; transform: none; } 44% { opacity: 1; } 58%, 64% { opacity: 1; transform: translate(-56cqw, 6cqw) rotate(70deg); } 74%, 100% { opacity: 0; transform: translate(0, -10cqw); } }
+@keyframes unbox-p4 { 0%, 40% { opacity: 0; transform: none; } 44% { opacity: 1; } 58%, 64% { opacity: 1; transform: translate(54cqw, 2cqw) rotate(-60deg); } 74%, 100% { opacity: 0; transform: translate(0, -10cqw); } }
+@keyframes unbox-p5 { 0%, 40% { opacity: 0; transform: none; } 44% { opacity: 1; } 58%, 64% { opacity: 1; transform: translate(4cqw, -58cqw) rotate(20deg); } 74%, 100% { opacity: 0; transform: translate(0, -10cqw); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .plan-belt .belt-rollers, .plan-you { animation: none; }
+}
+
+/* ---------------------------------------------------------------- het paneel: een blad uit de handleiding */
 
 .dept-panel {
   align-self: start;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 18px;
+  gap: 12px;
+  padding: 20px;
   background: var(--white);
-  border: 2.5px solid var(--ink);
-  border-radius: 8px;
-  box-shadow: 5px 5px 0 var(--zss);
+  border: 3px solid var(--ink);
+  border-radius: 12px;
+  box-shadow: 7px 7px 0 var(--zss);
 }
-.dept-panel h2 { margin: 0; font-size: 1.5em; }
-.dept-panel h3 { margin: 6px 0 0; font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.dept-panel .panel-head { display: flex; align-items: center; gap: 12px; }
+.dept-panel .panel-head .step-badge { font-size: 22px; }
+.dept-panel h2 { margin: 0; font-size: 28px; }
+.dept-panel .panel-head small { display: block; margin-top: 4px; color: var(--muted); font-size: 13px; font-weight: 700; }
+.dept-panel .panel-art { display: block; width: 100%; height: 170px; object-fit: contain; background: var(--paper); border: 2px solid var(--ink); border-radius: 6px; }
+.dept-panel .panel-art.sketch { filter: grayscale(1); opacity: 0.6; }
+.dept-panel .panel-box { align-self: center; width: 140px; }
 .dept-panel p { margin: 0; line-height: 1.45; }
+.dept-panel h3 { margin: 4px 0 0; }
+.dept-panel .parts-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.dept-panel .parts-head h3 { margin: 0; }
+.dept-panel .parts-head small { font-family: Consolas, "Courier New", monospace; font-size: 13px; font-weight: 700; }
+/* De onderdelen als verzamelalbum: zwart is uitgepakt, gestippeld zit nog in de zak */
+.dept-panel .parts-album { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 5px; }
+.dept-panel .parts-album li { aspect-ratio: 1; box-sizing: border-box; border: 2px dashed var(--rule); border-radius: 4px; }
+.dept-panel .parts-album li.unpacked { background: var(--ink); border: 2px solid var(--ink); }
 .dept-panel .parts { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
 .dept-panel .parts li::before { content: "▢ "; color: var(--muted); }
 .dept-panel .parts li.unpacked::before { content: "▣ "; color: var(--zss); }
-.dept-panel .parts li.bagged { color: var(--muted); }
+.dept-panel .soon-note { padding: 8px 10px; border: 2px dashed var(--ink); font-weight: 700; }
 .dept-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
 a.play-big.as-link { display: inline-block; text-decoration: none; font-size: 18px; padding: 12px 22px; color: var(--white); background: var(--zss); border: 3px solid var(--ink); border-radius: 8px; box-shadow: 5px 5px 0 var(--ink); font-weight: 800; }
 
-.world-tools { grid-column: 1 / -1; display: flex; gap: 12px; flex-wrap: wrap; }
-
 @media (max-width: 860px) {
   .world { grid-template-columns: 1fr; }
+  .world-head { padding-right: 0; }
+  .world-tools { margin-left: 0; }
+  .floor-plan { width: 100%; }
 }
 
 /* ---------------------------------------------------------------- je fabriek: account en klassen */
@@ -1016,17 +1156,6 @@ a.play-big.as-link { display: inline-block; text-decoration: none; font-size: 18
 .end-scene { width: 200px; height: auto; }
 .wall-crack { display: inline-flex; align-items: center; gap: 10px; }
 .wall-crack .crack-art { width: 44px; height: 44px; }
-
-/* De kamer van een afdeling: past in haar kaart; dicht is ze een vage schets achter een stippellijn */
-.department .dept-art { object-fit: contain; background: var(--paper); }
-.department .dept-art.sketch { filter: grayscale(1); opacity: 0.18; border: 2px dashed var(--rule); }
-/* Binnenkort: gebouwd maar nog dicht, al beter te zien dan wat ooit komt */
-.department.boxed.soon { color: var(--ink); border-color: var(--ink); }
-.department.boxed.soon .step { background: var(--ink); }
-.department.boxed.soon small { color: var(--ink); font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; }
-.department.soon .dept-art.sketch { opacity: 0.45; }
-.department .sticker.key { background: var(--ink); }
-.dept-panel .soon-note { padding: 8px 10px; border: 2px dashed var(--ink); font-weight: 700; }
 
 /* Het zakje met onderdelen die nergens voor dienen */
 .trinket-found { font-style: italic; color: var(--ink); max-width: 460px; }
@@ -1249,12 +1378,14 @@ button.play-big.continue small { font-size: 13px; font-weight: 700; opacity: 0.9
   .wall-crack { padding: 6px 12px; font-size: 13px; }
   .wall-crack .crack-art { width: 30px; height: 30px; }
 
-  /* Plattegrond: twee kolommen blijven, want liggend is er breedte genoeg */
-  .world { grid-template-columns: 1fr minmax(220px, 280px); gap: 10px 16px; padding: 10px 16px; }
-  .world-floor { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px; padding: 8px 0 0 8px; }
-  .department { min-height: 0; padding: 10px; }
-  .department .dept-art, .department .dept-box { height: 80px; }
-  .dept-panel { padding: 12px; gap: 6px; }
+  /* Plattegrond: de vloer naast het paneel, want liggend is er breedte genoeg */
+  .world { grid-template-columns: minmax(0, 1fr) minmax(220px, 280px); gap: 8px 14px; padding: 8px 14px; }
+  .world-head { padding-bottom: 6px; }
+  .world-head .hint { display: none; }
+  .floor-plan { width: min(100%, calc((100dvh - 70px) * 1100 / 650)); }
+  .dept-panel { padding: 12px; gap: 8px; }
+  .dept-panel h2 { font-size: 20px; }
+  .dept-panel .panel-art { height: 90px; }
 
   button.options-button { width: 34px; height: 34px; font-size: 17px; }
   .options-button.in-combat { left: 8px; top: 8px; }
@@ -1295,7 +1426,7 @@ button.play-big.continue small { font-size: 13px; font-weight: 700; opacity: 0.9
 .zss-link .zss-ask { color: var(--muted); font-size: 12px; }
 .zss-link strong { color: var(--zss); }
 @media (hover: hover) { .zss-link:hover { background: var(--shade); } }
-.world-tools .zss-link { margin-left: auto; align-self: center; }
+.world-tools .zss-link { align-self: center; }
 
 /* Over dit spel: een bescheiden link onder de verwijzing naar het boek */
 .about-link {
