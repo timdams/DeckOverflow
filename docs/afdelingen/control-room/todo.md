@@ -21,5 +21,4 @@ Het scherm volgt sinds 4 oktober 2026 [de beeldtaal](../../wereld/beeldtaal.md) 
 - **De terugblik met spelers testen** (9 tot 13), en of de tegengestelde lessen (opwinden loont tegen een `int`, niet tegen tekst) verwarren of net doen nadenken. Specifiek voor 9 en 10: valt het op dat 2.5 een 2 wordt, en lezen ze "220 + 40 → 4" als een les en niet als een bug van het spel?
 - **Voortgang synchroniseren.** `PlayerProgress.ControlRoom` (beste scores, je borden) blijft in de browser; `SyncedProgressStore` stuurt alleen Codex, onderdelen en ontgrendelingen naar Supabase.
 - **Het histogram van andere spelers**, zoals Opus Magnum het echt doet. Nu toont het alle winnende borden die de oplosser vindt (tot 3 regels, zonder EN/OF/NIET). Kan via de Prikklok-tabellen zodra die bestaan.
-- **Eigen tekeningen.** Alle vijanden zijn plaatshouders uit andere tekeningen (zie [art/todo.md](../../../art/todo.md)); goto fail is de tekening uit de spike.
 - **Testen op een echte telefoon.** Getest in een desktopbrowser en in een kader van 844×390, niet op een toestel. De tekst in de stage is liggend op een telefoon klein, zoals in de Card Hall.

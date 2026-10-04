@@ -109,6 +109,12 @@ SHEETS_SPEC = [
         "relic-ternary-plate", "relic-metronome", "relic-overflow-valve", "relic-tryparse-glove", "relic-half-shim",
         "panels/after-midnight", "panels/divide-by-zero", "catch", "relic-undo", "relic-brackets",
     ]),
+    # De vijanden van de Controlekamer, in de volgorde van LevelCatalog (de Stempelaar heeft er al een).
+    # Gegenereerd op 4 oktober 2026 met GPT-5.4 Image 2, het vel future als stijlreferentie.
+    ("room", 7, 2, "actors", "tight", 300, 3, [
+        "press", "metronome", "mender", "goto-fail", "sentry", "contrarian", "knight-capital",
+        "cutter", "overload", "telex", "estimator", "giant", "titan", "day-248",
+    ]),
 ]
 
 # Figuren die op hun vel naar rechts kijken: gespiegeld, zodat ze vanaf rechts de held aankijken.
@@ -204,7 +210,11 @@ def fit(img: Image.Image, size: int) -> Image.Image:
 
 def main() -> None:
     for prefix, cols, rows, folder, shape, size, line, names in SHEETS_SPEC:
-        sheet_path = max(SHEETS.glob(f"{prefix}-2*.png"))  # nieuwste vel
+        found = sorted(SHEETS.glob(f"{prefix}-2*.png"))
+        if not found:
+            print(f"{prefix}: nog geen vel in art/sheets, overgeslagen")
+            continue
+        sheet_path = found[-1]  # nieuwste vel
         rgb = np.asarray(Image.open(sheet_path).convert("RGB"))
         alpha = alpha_mask(rgb, background(rgb))
         masks = pieces_per_cell(alpha, cols, rows)
