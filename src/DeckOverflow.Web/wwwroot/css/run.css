@@ -27,7 +27,7 @@
   background: none; border: none; box-shadow: none; padding: 0; min-height: 0; cursor: pointer; justify-content: flex-start;
 }
 .topbar .relics:disabled { cursor: default; }
-.topbar .relics:hover:not(:disabled) .relic-icon { transform: translateY(-2px); }
+@media (hover: hover) { .topbar .relics:hover:not(:disabled) .relic-icon { transform: translateY(-2px); } }
 .relic-icon {
   display: inline-flex; align-items: center; justify-content: center;
   width: 30px; height: 30px; border: 1.5px solid var(--ink); border-radius: 50%; background: var(--white);
@@ -57,10 +57,11 @@ button.small { padding: 6px 12px; font-size: 12px; }
   flex: 1;
   min-height: 0;
   display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: auto;
 }
+
+/* margin: auto centreert, maar laat een te hoog paneel bovenaan beginnen (align-items: center snijdt de bovenkant af) */
+.panel-area > * { margin: auto; }
 
 .panel {
   display: flex;
@@ -138,6 +139,8 @@ button.small { padding: 6px 12px; font-size: 12px; }
 }
 
 .map-board svg { height: 100%; max-width: 100%; }
+/* De liggende map is voor een telefoon in landscape; zie onderaan */
+.map-board svg.horizontal { display: none; }
 
 .map-board .edge {
   stroke: var(--rule);
@@ -158,7 +161,7 @@ button.small { padding: 6px 12px; font-size: 12px; }
 .map-board .node.current .disc { fill: var(--shade); stroke-width: 4; }
 .map-board .node.reachable { cursor: pointer; }
 .map-board .node.reachable .disc { stroke-width: 3.5; }
-.map-board .node.reachable:hover .disc { fill: var(--shade); }
+@media (hover: hover) { .map-board .node.reachable:hover .disc { fill: var(--shade); } }
 
 .map-board .node .pulse {
   fill: none;
@@ -221,7 +224,8 @@ button.small { padding: 6px 12px; font-size: 12px; }
 .card-tile.kind-int { outline: 3px solid var(--int); outline-offset: -8px; }
 .card-tile.kind-double { outline: 3px solid var(--double); outline-offset: -8px; }
 .card-tile.kind-byte { outline: 3px solid var(--byte); outline-offset: -8px; }
-.card-tile:hover:not(:disabled) { background: var(--white); transform: translateY(-6px); }
+.card-tile:hover:not(:disabled) { background: var(--white); }
+@media (hover: hover) { .card-tile:hover:not(:disabled) { transform: translateY(-6px); } }
 /* Zeldzaamheid als sterretjes in de hoek, zoals een moeilijkheidsgraad */
 .card-tile.rarity-uncommon::after, .card-tile.rarity-rare::after {
   position: absolute;
@@ -298,7 +302,7 @@ button.small { padding: 6px 12px; font-size: 12px; }
   align-items: center;
   gap: 16px;
   max-width: 92vw;
-  max-height: 92vh;
+  max-height: 92%;   /* van de modal, niet van vh: op een telefoon telt vh de browserbalken mee */
   overflow: auto;
   padding: 20px;
 }
@@ -1066,4 +1070,153 @@ a.play-big.as-link { display: inline-block; text-decoration: none; font-size: 18
   .picker-list { max-height: 30vh; }
   .preview-cards { flex-direction: column; }
   .preview-cards .arrow { transform: rotate(90deg); }
+}
+
+/* ---------------------------------------------------------------- telefoon */
+
+/* Rechtop op een telefoon: eerst draaien. Een tablet rechtop is breed genoeg en speelt gewoon. */
+.rotate-hint { display: none; }
+
+@media (orientation: portrait) and (max-width: 600px) and (pointer: coarse) {
+  .rotate-hint {
+    position: absolute;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 26px;
+    padding: 32px;
+    text-align: center;
+    background: var(--paper);
+  }
+  .rotate-hint p { margin: 0; max-width: 260px; font-size: 18px; font-weight: 700; line-height: 1.4; }
+}
+
+/* Een telefoon als lijntekening, die zich op zijn kant legt */
+.rotate-phone {
+  width: 54px;
+  height: 92px;
+  border: 3px solid var(--ink);
+  border-radius: 10px;
+  box-shadow: 4px 4px 0 var(--zss);
+  animation: rotate-phone 2.6s ease-in-out infinite;
+}
+@keyframes rotate-phone { 0%, 25% { transform: none; } 55%, 85% { transform: rotate(-90deg); } 100% { transform: none; } }
+
+/* Een kort scherm: een telefoon liggend (een tablet of laptop is hoger dan 500px).
+   Alles schuift dichter, de map ligt op haar kant, en wat niet past, scrolt. Het gevecht schaalt zelf mee. */
+@media (max-height: 500px) {
+  /* Bovenbalk: één smalle rij, die opzij schuift als hij niet past */
+  .topbar {
+    gap: 12px;
+    padding: 4px 12px;
+    font-size: 15px;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .topbar::-webkit-scrollbar { display: none; }
+  .topbar .hp img, .topbar .gold img { width: 22px; height: 22px; }
+  .topbar .relics { flex-wrap: nowrap; }
+  .topbar button.small { flex: none; padding: 7px 10px; }
+  .relic-icon { width: 26px; height: 26px; }
+  .relic-icon .art-img { width: 20px; height: 20px; }
+  .relics-label { display: none; }
+
+  /* De map ligt: van links naar rechts, met de legenda als strookje eronder. De actnaam staat al in de bovenbalk. */
+  .act-banner { display: none; }
+  .map-board { flex-direction: column; align-items: center; }
+  .map-board svg.vertical { display: none; }
+  .map-board svg.horizontal { display: block; flex: 1 1 0; min-height: 0; width: 100%; height: auto; max-width: none; }
+  .legend {
+    position: static;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2px 14px;
+    margin: 0 0 4px;
+    padding: 3px 10px;
+    font-size: 12px;
+    border-width: 1.5px;
+  }
+  .legend li { gap: 4px; }
+  .legend .legend-art { width: 20px; height: 20px; }
+  .page-number { bottom: 6px; font-size: 11px; }
+  .dashed-door { right: 14px; bottom: 30px; width: 30px; height: 46px; }
+  .dashed-door span { top: 6px; width: 18px; height: 18px; font-size: 11px; }
+
+  /* Schermen tussen de gevechten */
+  .panel { gap: 6px; padding: 6px 16px 10px; font-size: 14px; max-width: 92vw; }
+  .panel h2, .modal h2 { font-size: 1.35em; }
+  .card-row { gap: 12px; }
+  .card-tile { font-size: 10.5px; }
+  .card-grid.compact .card-tile { font-size: 10px; }
+  .choices { gap: 8px; }
+  .choices.column { min-width: min(420px, 80vw); }
+  .choices button, .shop-extras button { padding: 7px 14px; }
+  .choices button small, .shop-extras button small, .chest small { font-size: 12px; }
+  .codex { font-size: 13px; }
+  .end-art { width: 70px; height: 70px; }
+  .end-scene { width: 110px; }
+  .near-miss { width: min(320px, 60vw); }
+
+  /* Een plaat staat links naast de tekst in plaats van erboven, anders past een rustplaats of event niet */
+  .panel:has(> .art-img.scene) {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 22px;
+    row-gap: 8px;
+    justify-items: center;
+    align-items: center;
+  }
+  .panel > .art-img.scene { grid-column: 1; grid-row: 1 / span 5; width: 9em; }
+  .panel:has(> .art-img.scene) > :not(.scene) { grid-column: 2; }
+  .panel.wide > .art-img.scene { display: none; }
+  .panel.wide:has(> .art-img.scene) { display: flex; }
+  .chest .art-img.scene { width: 70px; }
+
+  /* Modals: krapper, en platen niet hoger dan een derde van het scherm */
+  .modal-body { padding: 12px; gap: 10px; }
+  .story-card { padding: 16px 22px 18px; }
+  .story-card p, .act-card p { font-size: 15px; line-height: 1.4; }
+  .story-card .story-art { width: 80px; }
+  .act-card { padding: 0 0 14px; gap: 6px; }
+  .act-card .act-art { max-height: 36vh; object-fit: cover; }
+  .act-card h2 { font-size: 1.5em; }
+  .reveal-card .reveal-art { max-height: 34vh; padding: 6px 0; }
+  .picker-list { max-height: 62vh; }
+
+  /* Titelscherm */
+  .title-panel { gap: 10px; }
+  .title-word { font-size: clamp(40px, 17vh, 120px); }
+  .tagline { font-size: 15px; }
+  button.play-big { font-size: 19px; padding: 10px 30px; }
+  button.title-button { font-size: 14px; padding: 8px 14px; }
+  .wall-crack { padding: 6px 12px; font-size: 13px; }
+  .wall-crack .crack-art { width: 30px; height: 30px; }
+
+  /* Plattegrond: twee kolommen blijven, want liggend is er breedte genoeg */
+  .world { grid-template-columns: 1fr minmax(220px, 280px); gap: 10px 16px; padding: 10px 16px; }
+  .world-floor { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px; padding: 8px 0 0 8px; }
+  .department { min-height: 0; padding: 10px; }
+  .department .dept-art, .department .dept-box { height: 80px; }
+  .dept-panel { padding: 12px; gap: 6px; }
+
+  /* Tijdens een gevecht: de knoppen onder elkaar in de hoek, naast de hand */
+  .hud { right: 10px; bottom: 10px; flex-direction: column; align-items: flex-end; gap: 4px; }
+  .hud .seed { font-size: 11px; }
+  .hud button { padding: 7px 12px; font-size: 13px; }
+  button.end-turn img { width: 22px; height: 22px; }
+
+  /* Meldingen */
+  .toasts { top: 44px; }
+  .toast { font-size: 13px; }
+  .xpanel-popups { bottom: 10px; }
+  .xpanel-popup { gap: 10px; padding: 8px 12px 8px 10px; }
+  .xpanel-popup .popup-art { width: 48px; height: 48px; }
+  .xpanel-popup strong { font-size: 16px; }
+  .xpanel-popup .badge { top: -12px; left: -12px; width: 28px; height: 28px; font-size: 16px; }
 }

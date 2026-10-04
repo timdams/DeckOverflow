@@ -17,6 +17,10 @@ export const juice = {
   summaryHoldMs: 1600,
   cardFlyMs: 220,
   dealStaggerMs: 70,
+  hover: { liftPx: 26, scale: 1.12 },           // muis boven een kaart in je hand
+  // Vinger op een kaart: groter om te lezen en boven je vinger, zodat die de kaart niet bedekt.
+  // Zodra je sleept, krimpt ze terug, zodat je ziet waar je haar laat vallen.
+  touchHold: { liftPx: 70, scale: 1.35, dragScale: 1, dragAfterPx: 12 },
   line: 2.5,                                    // dikte van een gewone lijn
 };
 

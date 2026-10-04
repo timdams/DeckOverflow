@@ -1,0 +1,15 @@
+{
+  "name": "Deck Overflow",
+  "short_name": "Deck Overflow",
+  "description": "A deckbuilder where the world obeys C#.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#f7f5ee",
+  "theme_color": "#f7f5ee",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

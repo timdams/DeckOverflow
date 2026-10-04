@@ -3,9 +3,16 @@
 
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Deck Overflow</title>
     <base href="/" />
+    <!-- Op een telefoon: vanaf het beginscherm opent het spel liggend en zonder browserbalken -->
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="icon-192.png" />
+    <meta name="theme-color" content="#f7f5ee" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <link rel="preload" id="webassembly" />
     <script type="importmap"></script>
     <link rel="stylesheet" href="css/app.css" />
@@ -31,6 +38,23 @@
             load: (key) => { try { return localStorage.getItem(key); } catch { return null; } },
             save: (key, value) => { try { localStorage.setItem(key, value); } catch { } },
         };
+
+        // Op een aanraakscherm: bij een tik naar volledig scherm en liggend vastzetten, zodat de
+        // browserbalken geen plaats innemen. Kan alleen na een tik van de speler. Een iPhone kent
+        // dit niet; daar helpt het manifest (zet op beginscherm). Wie het volledig scherm verlaat,
+        // krijgt het pas terug na een herlaadbeurt.
+        (() => {
+            const root = document.documentElement;
+            if (!matchMedia('(pointer: coarse)').matches || !root.requestFullscreen) return;
+            let left = false;
+            document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement) left = true; });
+            document.addEventListener('pointerup', () => {
+                if (left || document.fullscreenElement) return;
+                root.requestFullscreen({ navigationUI: 'hide' })
+                    .then(() => screen.orientation?.lock?.('landscape'))
+                    .catch(() => { });
+            });
+        })();
     </script>
 
     <!-- Stage-bibliotheken (vendored, geen CDN nodig) -->

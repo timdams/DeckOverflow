@@ -395,6 +395,7 @@
   "ui.relics.title": "Your relics",
   "ui.relics.empty": "No relics yet.",
   "ui.close": "Close",
+  "ui.rotate": "Turn your device sideways. The factory floor is wider than it is tall.",
   "ui.cancel": "Cancel",
   "ui.codex": "Codex",
   "ui.codex.intro": "Rules you felt in a fight, with their real names.",

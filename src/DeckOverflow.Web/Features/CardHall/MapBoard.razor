@@ -1,52 +1,13 @@
 @inject Strings S
 @inject ArtStyle Art
 
-@* De map van de act: van onder naar boven, de baas bovenaan. Toont alleen wat de snapshot zegt. *@
+@* De map van de act: van onder naar boven, de baas bovenaan (liggend: van links naar rechts). Toont alleen wat de snapshot zegt. *@
 
 <div class="map-board">
-    <svg viewBox="0 0 @Width @Height" preserveAspectRatio="xMidYMid meet">
-        @foreach (var edge in Map.Edges)
-        {
-            var from = Map.Nodes.First(n => n.Id == edge.From);
-            var to = Map.Nodes.First(n => n.Id == edge.To);
-            var (x1, y1) = Pos(from);
-            var (x2, y2) = Pos(to);
-            <line class="edge @(from.Visited && to.Visited ? "walked" : "") @(from.Current && to.Reachable ? "open" : "")"
-                  x1="@x1" y1="@y1" x2="@x2" y2="@y2" />
-        }
-        @* Elke rij is een stap in de handleiding: een omcirkeld nummer in de marge *@
-        @for (int row = 0; row < Map.Rows; row++)
-        {
-            double ry = Height - 80 - row * RowGap;
-            <g class="step" transform="translate(22 @ry)">
-                <circle r="15" />
-                <g><text dy="0.35em">@(row + 1)</text></g>
-            </g>
-        }
-        @foreach (var node in Map.Nodes)
-        {
-            var (x, y) = Pos(node);
-            int r = node.Kind == NodeKind.Boss ? 52 : 34;
-            <g class="node kind-@node.Kind.ToString().ToLowerInvariant() @(node.Reachable ? "reachable" : "") @(node.Visited ? "visited" : "") @(node.Current ? "current" : "")"
-               transform="translate(@x @y)" @onclick="() => Choose(node)">
-                <title>@S.T(NodeLabels.Key(node.Kind))</title>
-                @if (node.Reachable)
-                {
-                    <circle class="pulse" r="@(r + 8)" />
-                }
-                <circle class="disc" r="@r" />
-                @if (Art.Node(node.Kind) is { } art)
-                {
-                    <image class="node-art" href="@art" x="@(-r * 0.78)" y="@(-r * 0.78)" width="@(r * 1.56)" height="@(r * 1.56)" />
-                }
-                else
-                {
-                    @* Een <g> eromheen: binnen @if leest Razor <text> anders als eigen tag *@
-                    <g><text class="glyph" dy="0.35em" font-size="@(node.Kind == NodeKind.Boss ? 40 : 24)">@NodeLabels.Glyph(node.Kind)</text></g>
-                }
-            </g>
-        }
-    </svg>
+    @* Twee tekeningen van dezelfde map: staand (van onder naar boven) en liggend (van links naar rechts),
+       voor een telefoon in landscape. De CSS toont er één, afhankelijk van de hoogte van het scherm. *@
+    @Board(horizontal: false)
+    @Board(horizontal: true)
 
     <ul class="legend">
         @foreach (var kind in NodeLabels.Legend)
@@ -64,16 +25,79 @@
     private const int RowGap = 100;
     private int Height => Map.Rows * RowGap + 110;
 
-    private (double X, double Y) Pos(MapNodeView node)
-    {
-        double y = Height - 80 - node.Row * RowGap;
-        if (node.Kind == NodeKind.Boss) return (130 + (Width - 220) / 2.0, y + 10);
+    // Liggend: de rijen lopen van links naar rechts (even lang als staand), de kolommen staan dichter op elkaar
+    private const int CrossHeight = 460;
 
-        double step = (Width - 220.0) / Math.Max(1, Map.Columns - 1);
+    private RenderFragment Board(bool horizontal) => __builder =>
+    {
+        <svg class="@(horizontal ? "horizontal" : "vertical")" viewBox="0 0 @(horizontal ? Height : Width) @(horizontal ? CrossHeight : Height)" preserveAspectRatio="xMidYMid meet">
+            @foreach (var edge in Map.Edges)
+            {
+                var from = Map.Nodes.First(n => n.Id == edge.From);
+                var to = Map.Nodes.First(n => n.Id == edge.To);
+                var (x1, y1) = Pos(from, horizontal);
+                var (x2, y2) = Pos(to, horizontal);
+                <line class="edge @(from.Visited && to.Visited ? "walked" : "") @(from.Current && to.Reachable ? "open" : "")"
+                      x1="@x1" y1="@y1" x2="@x2" y2="@y2" />
+            }
+            @* Elke rij is een stap in de handleiding: een omcirkeld nummer in de marge *@
+            @for (int row = 0; row < Map.Rows; row++)
+            {
+                string at = horizontal ? $"translate({RowX(row)} {CrossHeight - 22})" : $"translate(22 {Height - 80 - row * RowGap})";
+                <g class="step" transform="@at">
+                    <circle r="15" />
+                    <g><text dy="0.35em">@(row + 1)</text></g>
+                </g>
+            }
+            @foreach (var node in Map.Nodes)
+            {
+                var (x, y) = Pos(node, horizontal);
+                int r = node.Kind == NodeKind.Boss ? 52 : 34;
+                <g class="node kind-@node.Kind.ToString().ToLowerInvariant() @(node.Reachable ? "reachable" : "") @(node.Visited ? "visited" : "") @(node.Current ? "current" : "")"
+                   transform="translate(@x @y)" @onclick="() => Choose(node)">
+                    <title>@S.T(NodeLabels.Key(node.Kind))</title>
+                    @if (node.Reachable)
+                    {
+                        <circle class="pulse" r="@(r + 8)" />
+                    }
+                    <circle class="disc" r="@r" />
+                    @if (Art.Node(node.Kind) is { } art)
+                    {
+                        <image class="node-art" href="@art" x="@(-r * 0.78)" y="@(-r * 0.78)" width="@(r * 1.56)" height="@(r * 1.56)" />
+                    }
+                    else
+                    {
+                        @* Een <g> eromheen: binnen @if leest Razor <text> anders als eigen tag *@
+                        <g><text class="glyph" dy="0.35em" font-size="@(node.Kind == NodeKind.Boss ? 40 : 24)">@NodeLabels.Glyph(node.Kind)</text></g>
+                    }
+                </g>
+            }
+        </svg>
+    };
+
+    private static double RowX(int row) => 70 + row * RowGap;
+
+    private (double X, double Y) Pos(MapNodeView node, bool horizontal)
+    {
         // Een vaste schok per knoop, zodat de map niet als een rooster oogt
         uint h = (uint)(node.Id * 2654435761u);
         double jx = ((h & 0xff) / 255.0 - 0.5) * 34;
         double jy = (((h >> 8) & 0xff) / 255.0 - 0.5) * 22;
+
+        if (horizontal)
+        {
+            // Onderaan ruimte voor de stapnummers; de schok dwars op de rijen is kleiner, want de kolommen staan dichter
+            const double top = 50, bottom = CrossHeight - 90;
+            double x = RowX(node.Row) + jy;
+            if (node.Kind == NodeKind.Boss) return (RowX(node.Row) + 10, (top + bottom) / 2);
+            double cross = (bottom - top) / Math.Max(1, Map.Columns - 1);
+            return (x, top + node.Column * cross + jx * 0.4);
+        }
+
+        double y = Height - 80 - node.Row * RowGap;
+        if (node.Kind == NodeKind.Boss) return (130 + (Width - 220) / 2.0, y + 10);
+
+        double step = (Width - 220.0) / Math.Max(1, Map.Columns - 1);
         return (130 + node.Column * step + jx, y + jy);   // links ruimte voor de stapnummers
     }
 

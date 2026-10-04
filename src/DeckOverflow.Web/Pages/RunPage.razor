@@ -480,6 +480,12 @@
         }
     </div>
 
+    @* Een telefoon rechtop: het spel is liggend. De CSS toont dit alleen op een smal aanraakscherm in portret. *@
+    <div class="rotate-hint">
+        <span class="rotate-phone" aria-hidden="true"></span>
+        <p>@(S.Loaded ? S.T("ui.rotate") : "")</p>
+    </div>
+
     @* Meldingen staan buiten de schermen, zodat ze ook op het titelscherm verschijnen *@
     <div class="toasts">
         @foreach (var toast in _toasts)

@@ -25,6 +25,19 @@ html, body {
   font-family: var(--font);
   font-size: 16px;
   overflow: hidden;
+  /* Op een telefoon: liggend blijft de tekst even groot, en geen grijze flits of zoom bij een tik */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* dvh volgt de browserbalken op een telefoon, die 100% niet kent */
+html, body { height: 100dvh; }
+
+/* Het papier loopt door tot in de hoeken, het spel blijft weg van een notch of afgeronde rand */
+#app {
+  box-sizing: border-box;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
 #app, .run {
@@ -33,12 +46,16 @@ html, body {
   height: 100%;
 }
 
+/* Een tik is een tik: geen dubbeltik-zoom, en lang drukken op een tekening opent geen menu */
+button, .map-board, .card-tile { touch-action: manipulation; }
+img { -webkit-touch-callout: none; }
+
 .stage-host {
   position: absolute;
   inset: 0;
 }
 
-.stage-host canvas { display: block; }
+.stage-host canvas { display: block; touch-action: none; user-select: none; -webkit-user-select: none; }
 
 .hud {
   position: absolute;
@@ -67,7 +84,10 @@ button {
   transition: transform 60ms, box-shadow 60ms, background 60ms;
 }
 
-button:hover:not(:disabled) { background: var(--shade); }
+/* Alleen met een muis: op een aanraakscherm blijft hover anders hangen na een tik */
+@media (hover: hover) {
+  button:hover:not(:disabled) { background: var(--shade); }
+}
 
 button:active:not(:disabled) {
   transform: translate(2px, 2px);

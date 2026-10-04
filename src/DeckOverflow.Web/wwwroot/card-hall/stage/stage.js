@@ -62,7 +62,7 @@ export async function init(host, dotnetRef, loadMs) {
     resizeTo: host,
     background: COLORS.paper,
     antialias: true,
-    resolution: window.devicePixelRatio || 1,
+    resolution: Math.min(window.devicePixelRatio || 1, 2),   // een telefoon heeft er soms 3: scherper zie je niet, trager wel
     autoDensity: true,
   });
   host.appendChild(app.canvas);
@@ -714,8 +714,8 @@ function createCard(view) {
   card.art = art;
   card.eventMode = 'static';
   card.cursor = 'grab';
-  card.on('pointerover', () => onCardHover(card, true));
-  card.on('pointerout', () => onCardHover(card, false));
+  card.on('pointerover', (e) => onCardHover(card, true, e));
+  card.on('pointerout', (e) => onCardHover(card, false, e));
   card.on('pointerdown', (e) => onCardDown(card, e));
   S.layers.hand.addChild(card);
   return card;
@@ -776,10 +776,12 @@ function matchHand(views) {
   layoutHand();
 }
 
-function onCardHover(card, over) {
-  if (inputLocked() || S.drag) return;
-  gsap.to(card, { y: card.home.y - (over ? 26 : 0), rotation: over ? 0 : card.home.rotation, duration: sec(120), ease: 'power2.out' });
-  gsap.to(card.scale, { x: over ? 1.12 : 1, y: over ? 1.12 : 1, duration: sec(120), ease: 'power2.out' });
+function onCardHover(card, over, e) {
+  // Een vinger zweeft niet: op een aanraakscherm doet onCardDown dit werk
+  if (inputLocked() || S.drag || e.pointerType !== 'mouse') return;
+  const { liftPx, scale } = juice.hover;
+  gsap.to(card, { y: card.home.y - (over ? liftPx : 0), rotation: over ? 0 : card.home.rotation, duration: sec(120), ease: 'power2.out' });
+  gsap.to(card.scale, { x: over ? scale : 1, y: over ? scale : 1, duration: sec(120), ease: 'power2.out' });
   card.zIndex = over ? 100 : card.handIndex;
   if (over) sfx('tick', { volume: 0.15, rate: 0.8 + card.handIndex * 0.1 });
 }
@@ -806,11 +808,20 @@ function onKey(e) {
 function onCardDown(card, e) {
   if (inputLocked()) return;
   const p = e.getLocalPosition(S.layers.hand);
-  S.drag = { card, dx: card.x - p.x, dy: card.y - p.y, hovered: null };
+  const touch = e.pointerType !== 'mouse';
+  S.drag = { card, dx: card.x - p.x, dy: card.y - p.y, hovered: null, touch, start: { x: p.x, y: p.y }, moved: false };
   card.zIndex = 200;
   card.cursor = 'grabbing';
   gsap.killTweensOf(card);
   gsap.to(card, { rotation: 0, duration: sec(80) });
+  if (touch) {
+    // Boven de vinger en groter, zodat je de kaart kan lezen terwijl je haar vasthoudt
+    const { liftPx, scale } = juice.touchHold;
+    S.drag.dy -= liftPx;
+    gsap.killTweensOf(card.scale);
+    gsap.to(card, { y: p.y + S.drag.dy, duration: sec(100), ease: 'power2.out' });
+    gsap.to(card.scale, { x: scale, y: scale, duration: sec(100), ease: 'power2.out' });
+  }
   sfx('deal', { volume: 0.4, rate: 1.3 });
 }
 
@@ -820,6 +831,11 @@ function onDragMove(e) {
   const p = e.getLocalPosition(S.layers.hand);
   const nx = p.x + d.dx;
   const ny = p.y + d.dy;
+  if (d.touch && !d.moved && Math.hypot(p.x - d.start.x, p.y - d.start.y) > juice.touchHold.dragAfterPx) {
+    d.moved = true;
+    const s = juice.touchHold.dragScale;
+    gsap.to(d.card.scale, { x: s, y: s, duration: sec(120), ease: 'power2.out' });
+  }
   // Kantelen in de bewegingsrichting: kleine moeite, veel gevoel
   d.card.rotation = Math.max(-0.35, Math.min(0.35, (nx - d.card.x) * 0.02));
   d.card.position.set(nx, ny);
@@ -847,6 +863,8 @@ async function onDragEnd(e) {
   if (!target && d.card.view.target === 'Self' && p.y < PLAY_LINE_Y) target = playerActor();
 
   if (!target) {
+    // Met een muis blijft de kaart groot zolang je erboven hangt; een vinger is weg
+    if (d.touch) gsap.to(d.card.scale, { x: 1, y: 1, duration: sec(150), ease: 'power2.out' });
     layoutHand();
     return;
   }

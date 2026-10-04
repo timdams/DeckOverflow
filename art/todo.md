@@ -15,6 +15,7 @@ Tekeningen die het spel nog mist, over alle afdelingen heen, zodat ze samen in �
 | `overflow-valve` | relic (`relics`) | Card Hall | Een ventiel op een overlopend vat, met een bliksemschicht die eruit spuit | een ◆ |
 | `tryparse-glove` | relic (`relics`) | Card Hall | Een dikke werkhandschoen die een etiket met krabbels vasthoudt zonder dat het ontploft | een ◆ |
 | `half-shim` | relic (`relics`) | Card Hall | Een dun opvulplaatje (shim) met een half schroefje | een ◆ |
+| `app-icon` | app-icoon (`wwwroot/icon-192.png`, `icon-512.png`, geen `art.json`) | wereld | Een vierkant icoon voor het beginscherm van een telefoon: het figuurtje met een kaart, of een D/O-monogram, leesbaar op 48px. Vierkant, papierkleur tot in de hoeken (iOS rondt zelf af) | de held op papier, eenmalig met PIL gemaakt |
 
 ## Liggen klaar, nog niet gebruikt
 

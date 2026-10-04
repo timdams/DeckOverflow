@@ -4,7 +4,9 @@ Hoe het spel technisch in elkaar zit, voor elke afdeling: motor, shell en stage,
 
 ## Platform en techniek
 
-Deck Overflow wordt een website: spelen zonder installatie, op laptop en tablet.
+Deck Overflow wordt een website: spelen zonder installatie, op laptop, tablet en (liggend) telefoon.
+
+**Op een telefoon speel je liggend** (sinds 4 oktober 2026). Het gevecht is een vaste wereld van 960×540 die meeschaalt, dus daar verandert niets. De HTML-schermen eromheen krijgen een compacte opmaak met `@media (max-height: 500px)` onderaan `run.css`: een smallere bovenbalk, een liggende map (`MapBoard` tekent beide, de CSS toont er één), een plaat naast de tekst in plaats van erboven. Rechtop op een smal aanraakscherm vraagt het spel om te draaien (`ui.rotate`). Op Android gaat het spel bij de eerste tik naar volledig scherm en liggend (een script in `index.html`, buiten Blazor); op een iPhone kan dat niet, daar zorgt het manifest ervoor dat het spel vanaf het beginscherm zonder browserbalken opent. In de stage zweeft een kaart onder je vinger erboven en groter (`juice.touchHold`), zodat je haar kan lezen.
 
 - **Game-engine:** Blazor WebAssembly voor de regelmotor en de shell, PixiJS voor de stage. Gekozen na zes spikes.
 - **Audio:** Web Audio, zodat we toonhoogte per trigger kunnen laten stijgen en geluiden laag op laag kunnen stapelen.

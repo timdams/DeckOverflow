@@ -2,6 +2,16 @@
 
 Wat bewust is uitgesteld voor de wereld (plattegrond, backend, Codex, ✗-register), met genoeg context om het later op te pakken. Nieuwste bovenaan. Wat af is, gaat eruit (de geschiedenis staat in git).
 
+## Mobiel
+
+Liggend spelen op een telefoon kwam erbij op 4 oktober 2026 (zie [architectuur.md](../architectuur.md#platform-en-techniek)). Getest in een desktopbrowser op 844×390 met nagebootste touch, nog niet op een echt toestel.
+
+- **Testen op een echte telefoon**, Android en iPhone: volledig scherm, de notch, slepen met de vinger, de toetsenbordpopup in het accountpaneel.
+- **Tekst in het gevecht is klein op een telefoon.** De stage schaalt 960×540 naar ongeveer 0,7: de uitleg op een kaart (11px) en het log worden zo'n 8px. Vasthouden vergroot een kaart, maar het log en de intents niet. Mogelijk: grotere letters in de stage zodra het scherm kort is, of het log achter een knop.
+- **Geen sneltoetsen op een telefoon.** F (snel), M (geluid) en W (debug) bestaan alleen op een toetsenbord. Snelle modus en geluid verdienen een knopje.
+- **Een echt app-icoon**: staat in [art/todo.md](../../art/todo.md).
+- **Tooltips (`title`) bestaan niet op een aanraakscherm.** Wat ertoe doet, staat al in beeld (relics openen een overzicht, een uitgeschakelde keuze toont waarom), maar de map-knopen en de Scrap-knop leunen op een tooltip.
+
 ## Backend
 
 - **De docent kan alleen nog een klascode maken** (beslist op 3 oktober 2026, zie [backend.md](backend.md)). Wat nu meer doet en eruit moet: afdelingen vrijgeven (`release_department` en `Account.ReleaseAsync`, de knoppen in `AccountPanel.razor`, de kolom `classes.released_departments`, `unlocks.how = teacher`) en de voortgang van de klas lezen (policies op `progress` en `unlocks`). Daarna [backend.md](backend.md) en [supabase.md](supabase.md) bijwerken. Een migratie op het echte project, dus eerst afstemmen met de sessie die de backend bouwde.
