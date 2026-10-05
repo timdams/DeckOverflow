@@ -7,6 +7,7 @@ const BASE = new URL('./', import.meta.url).href;
 let sounds = null;          // naam -> [{ howl, gain }]
 let loading = null;
 const last = new Map();     // naam -> index van de vorige variant
+const progress = { done: 0, total: 0 };
 
 // Geluid aan of uit is een keuze van dit toestel, over runs en afdelingen heen. Opslag kan falen (privévenster): dan staat het aan.
 const MUTED_KEY = 'deckoverflow.muted';
@@ -32,16 +33,20 @@ async function load() {
           if (howl.state() === 'loaded') return resolve();
           howl.once('load', resolve);
           howl.once('loaderror', resolve);
-        }));
+        }).then(() => { progress.done++; }));
         return { howl, gain };
       });
     }
+    progress.total = waits.length;
     await Promise.all(waits);
   } catch (err) {
     console.warn('Audio niet geladen, het spel speelt stil verder.', err);
     sounds = null;
   }
 }
+
+/** Hoeveel geluiden er al binnen zijn, voor het laadscherm. */
+export const audioProgress = () => ({ ...progress });
 
 export function sfx(name, { rate = 1, volume = 0.8 } = {}) {
   const variants = sounds?.[name];

@@ -399,6 +399,7 @@
   "act.print-shop": "The Print Shop",
   "act.print-shop.flavor": "Loose letters in wooden cases, waiting to be set. Every letter is a number, and every sentence is longer than it looks.",
   "ui.play": "Play",
+  "ui.loading": "Warming up the machines…",
   "ui.end-turn": "End turn",
   "ui.floor-of": "floor {floor}/{rows}",
   "ui.act": "Act {act}: {name}",

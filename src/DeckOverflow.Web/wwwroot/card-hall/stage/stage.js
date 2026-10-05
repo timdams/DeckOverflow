@@ -3,11 +3,11 @@
 // Alles is een bladzijde uit een montagehandleiding.
 
 import { juice, sec, wait, roll, text, burst, num, typeOf, typeBadge, circled, stamp, dashed, COLORS, FONT } from '../../shared/juice.js';
-import { initAudio, sfx, toggleMute, setMuted, isMuted } from './audio.js';
+import { initAudio, audioProgress, sfx, toggleMute, setMuted, isMuted } from './audio.js';
 import { runQueue } from './timeline.js';
 import { buildLog, clearLog } from './log.js';
 import { loadStrings, t, cardName, relicName } from '../../shared/strings.js';
-import { loadArt, cardTexture, relicTexture, actorTexture, iconTexture } from '../../shared/art.js';
+import { loadArt, artProgress, cardTexture, relicTexture, actorTexture, iconTexture } from '../../shared/art.js';
 
 const W = 960;
 const H = 540;
@@ -50,6 +50,24 @@ const S = {
 };
 
 // ---------------------------------------------------------------- publieke API
+
+/**
+ * Begint alvast te laden, zonder te wachten: de shell roept dit op het titelscherm op, zodat "Spelen"
+ * niet eerst vijf megabyte tekeningen moet ophalen. Een tweede oproep (of init) wacht op dezelfde lading.
+ */
+export function preload() {
+  if (typeof PIXI === 'undefined') return;
+  loadArt();
+  initAudio();
+}
+
+/** Hoe ver het laden is, van 0 tot 100, voor het laadscherm. */
+export function loadProgress() {
+  const parts = [artProgress(), audioProgress()];
+  const total = parts.reduce((n, p) => n + p.total, 0);
+  const done = parts.reduce((n, p) => n + p.done, 0);
+  return total === 0 ? 0 : Math.floor((100 * done) / total);
+}
 
 export async function init(host, dotnetRef, debug = false) {
   S.dotnet = dotnetRef;

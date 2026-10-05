@@ -16,7 +16,8 @@
       "ClaudeInChromeDomain(localhost:5295)",
       "ClaudeInChromeDomain(localhost:5296)",
       "ClaudeInChromeDomain(localhost:5199)",
-      "ClaudeInChromeDomain(localhost:5317)"
+      "ClaudeInChromeDomain(localhost:5317)",
+      "ClaudeInChromeDomain(localhost:5000)"
     ]
   }
 }

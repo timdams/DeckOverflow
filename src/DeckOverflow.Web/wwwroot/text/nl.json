@@ -399,6 +399,7 @@
   "act.print-shop": "De Drukkerij",
   "act.print-shop.flavor": "Losse letters in houten kasten, wachtend om gezet te worden. Elke letter is een getal, en elke zin is langer dan hij lijkt.",
   "ui.play": "Spelen",
+  "ui.loading": "De machines warmen op…",
   "ui.end-turn": "Beurt beëindigen",
   "ui.floor-of": "verdieping {floor}/{rows}",
   "ui.act": "Act {act}: {name}",

@@ -81,12 +81,29 @@ public partial class CardHallRun
     /// <summary>Er wordt een run gestart (de stage laadt nog).</summary>
     public bool Starting { get; private set; }
 
+    /// <summary>Hoe ver de stage met laden is (0 tot 100), voor het laadscherm terwijl <see cref="Starting"/>.</summary>
+    private int _loadPercent;
+
     /// <summary>De wachtende run, als korte regel voor de knop om verder te spelen.</summary>
     public string? PausedSummary => _paused && _snap is { } s
         ? S.T("ui.continue-run.where", ("act", s.Act), ("floor", s.Floor), ("rows", s.Map.Rows))
         : null;
 
     protected override void OnInitialized() => S.Changed += OnLanguageChanged;
+
+    /// <summary>Al laden terwijl het titelscherm staat: zo hoeft "Spelen" niet op vijf megabyte tekeningen te wachten.</summary>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        try
+        {
+            await Stage.PreloadAsync();
+        }
+        catch (JSException)
+        {
+            // Dan laadt de stage alles bij het opstarten, zoals vroeger
+        }
+    }
 
     /// <summary>Een andere taal: de stage laadt haar teksten opnieuw, de schermen tekenen opnieuw.</summary>
     private void OnLanguageChanged() => _ = InvokeAsync(async () =>
@@ -100,9 +117,18 @@ public partial class CardHallRun
     {
         _startAct = startAct;
         Starting = true;
+        _loadPercent = 0;
         await OnChanged.InvokeAsync();
         _self ??= DotNetObjectReference.Create(this);
-        await Stage.InitAsync(_host, _self, debug: Superuser);
+        Task init = Stage.InitAsync(_host, _self, debug: Superuser);
+        while (!init.IsCompleted)
+        {
+            // Het laadscherm toont hoe ver het is, zodat niemand denkt dat het spel vastzit
+            await Task.WhenAny(init, Task.Delay(150));
+            _loadPercent = await Stage.LoadProgressAsync();
+            StateHasChanged();
+        }
+        await init;
 
         ulong seed = Superuser && ulong.TryParse(SeedQuery, out ulong s) ? s : NewSeed();
         await NewRunAsync(seed);

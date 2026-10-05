@@ -9,10 +9,25 @@ const ICONS = [
 const A = {
   manifest: { cards: {}, relics: {}, actors: {} },
   textures: new Map(),   // pad -> PIXI.Texture
+  done: 0,
+  total: 0,
 };
 
-/** Laadt alles in één keer: het zijn er een vijftigtal en ze zijn klein. */
-export async function loadArt() {
+let loading = null;
+
+/** Hoeveel tekeningen er al binnen zijn, voor het laadscherm. */
+export const artProgress = () => ({ done: A.done, total: A.total });
+
+/**
+ * Laadt alles in één keer. Elke volgende oproep wacht op dezelfde lading, zodat de shell ze al op het
+ * titelscherm kan starten en de stage bij het opstarten alleen nog wacht op wat ontbreekt.
+ */
+export function loadArt() {
+  loading ??= load();
+  return loading;
+}
+
+async function load() {
   try {
     A.manifest = await (await fetch('art/art.json')).json();
   } catch {
@@ -24,12 +39,14 @@ export async function loadArt() {
     ...Object.values(A.manifest.actors),
     ...ICONS.map((n) => `icons/${n}`),
   ]);
+  A.total = files.size;
   await Promise.all([...files].map(async (file) => {
     try {
       A.textures.set(file, await PIXI.Assets.load(`art/${file}.png`));
     } catch {
       console.warn(`Art ontbreekt: ${file}`);
     }
+    A.done++;
   }));
 }
 

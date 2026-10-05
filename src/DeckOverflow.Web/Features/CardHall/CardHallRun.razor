@@ -9,6 +9,19 @@
 @* De stage staat altijd klaar onder de schermen, zodat PixiJS zijn maat houdt *@
 <div class="stage-host" @ref="_host"></div>
 
+@if (Starting)
+{
+    @* Na "Spelen" laadt de stage nog tekeningen en geluid. Het scherm verschijnt pas na een tel (CSS), zodat het
+       bij een snelle start niet flitst; daarna ziet de speler dat er iets gebeurt. *@
+    <div class="loading-cover" role="status" aria-live="polite">
+        <div class="cabinet loading-plate">
+            <span class="lamp on" aria-hidden="true"></span>
+            <p>@S.T("ui.loading")</p>
+            <span class="loading-count"><Digits Value="@_loadPercent.ToString()" Min="3" /> %</span>
+        </div>
+    </div>
+}
+
 @* Alles boven de stage tekent opnieuw bij een andere taal; de run zelf blijft, want die staat hierbuiten *@
 <div class="lang-scope" @key="S.Language">
 @if (Showing && _snap is { } s && _run is not null)
