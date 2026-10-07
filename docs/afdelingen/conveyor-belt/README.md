@@ -1,6 +1,6 @@
 # The Conveyor Belt: de Lopende Band
 
-Afdeling ⑥ op de plattegrond, hoofdstuk 6 van Zie Scherp Scherper (herhalingen). Je legt band en machines op een rooster en kijkt hoe de producten rijden. Een band die terugkomt bij zichzelf, is letterlijk een loop. Zo heet het nergens in beeld: `while`, `do while` en `for` staan in de Codex. Het voorbeeld is Opus Magnum, niet Scratch. Verder: [events](events.md), [ideeën](ideeen.md), [todo](todo.md).
+Afdeling ⑥ op de plattegrond, hoofdstuk 6 van Zie Scherp Scherper (herhalingen). Je legt band en machines op een rooster en kijkt hoe de producten rijden. Een band die terugkomt bij zichzelf, is letterlijk een loop. Zo heet het nergens in beeld: `while`, `do while` en `for` staan in de Codex. Het voorbeeld is Opus Magnum, niet Scratch. Verder: [events](events.md), [ideeën](../../../ideeen.md#the-conveyor-belt), [todo](todo.md).
 
 **Gebouwd op 4 oktober 2026** als afdeling in het spel, overgenomen uit [spike 9](../../../spikes/09-lopende-band/README.md). **Een speler kan ze nog niet ontgrendelen:** eerst wordt de Controlekamer afgewerkt. Op de plattegrond staat ze op *binnenkort*, met haar uitleg als tease; de [superuser](../../wereld/backend.md#superuser) kan er al in, en springt met `/conveyor-belt?level=zune` naar één bestelling.
 

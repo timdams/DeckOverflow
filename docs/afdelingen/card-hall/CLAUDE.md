@@ -1,6 +1,6 @@
 # The Card Hall: regels voor wie eraan werkt
 
-Geldt bovenop de [CLAUDE.md op de root](../../../CLAUDE.md). Het ontwerp staat in deze map: [README.md](README.md) (core loop, kernsysteem), [act-1.md](act-1.md), [act-2.md](act-2.md), [act-3.md](act-3.md), [kaarten.md](kaarten.md), [events.md](events.md), [ideeen.md](ideeen.md), [todo.md](todo.md).
+Geldt bovenop de [CLAUDE.md op de root](../../../CLAUDE.md). Het ontwerp staat in deze map: [README.md](README.md) (core loop, kernsysteem), [act-1.md](act-1.md), [act-2.md](act-2.md), [act-3.md](act-3.md), [kaarten.md](kaarten.md), [events.md](events.md), [todo.md](todo.md); ideeën staan in [ideeen.md op de root](../../../ideeen.md#the-card-hall).
 
 ## Waar de code staat
 

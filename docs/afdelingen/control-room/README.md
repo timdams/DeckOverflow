@@ -1,6 +1,6 @@
 # The Control Room: regels voor een automaat
 
-Afdeling ⑤ op de plattegrond, hoofdstuk 5 van Zie Scherp Scherper (beslissingen). Je speelt niet zelf: je stelt de regels op van een automaat en kijkt hoe hij vecht. De regels worden van boven naar onder bekeken, en de eerste die klopt, wint. Dat is een `if` / `else if`-keten, maar zo heet het pas in de Codex. Verder: [events van de motor](events.md), [ideeën en open vragen](ideeen.md), [todo](todo.md).
+Afdeling ⑤ op de plattegrond, hoofdstuk 5 van Zie Scherp Scherper (beslissingen). Je speelt niet zelf: je stelt de regels op van een automaat en kijkt hoe hij vecht. De regels worden van boven naar onder bekeken, en de eerste die klopt, wint. Dat is een `if` / `else if`-keten, maar zo heet het pas in de Codex. Verder: [events van de motor](events.md), [ideeën en open vragen](../../../ideeen.md#the-control-room), [todo](todo.md).
 
 **Gebouwd op 4 oktober 2026** als echte afdeling in het spel, overgenomen uit [spike 8](../../../spikes/08-controlekamer/README.md). De spike bleef een los prototype op `/spike-8/` en verandert niet meer.
 

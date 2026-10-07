@@ -128,7 +128,7 @@ Gebouwd op 4 oktober 2026, de kaart Haakjes uit het ontwerp. **Move the Brackets
 | The Splitter | `30 / (block + 1)` | `30 / block + 1`: met 5 blok 7, zonder blok een `DivideByZeroException` en geen aanval |
 | Dripper | `energy * 4 + 2.5` | `energy * (4 + 2.5)`: zonder energie 0, maar elke energie die je overhoudt kost 6.5 |
 
-Zo wordt de tablet van de Rekenmeester jouw wapen, zoals het ontwerp van fase 3 vroeg. De Codex-pagina Operator precedence opent ook bij een omgeschreven aanval; de Splitter door nul laten delen geeft het ✗-paneel *Do not divide by zero*. Operatorvoorrang in je eigen aanval (modifiers met voorrang in plaats van van links naar rechts) is niet gebouwd: zie [ideeen.md](ideeen.md).
+Zo wordt de tablet van de Rekenmeester jouw wapen, zoals het ontwerp van fase 3 vroeg. De Codex-pagina Operator precedence opent ook bij een omgeschreven aanval; de Splitter door nul laten delen geeft het ✗-paneel *Do not divide by zero*. Operatorvoorrang in je eigen aanval (modifiers met voorrang in plaats van van links naar rechts) is niet gebouwd: zie [ideeen.md](../../../ideeen.md#the-card-hall).
 
 ## Elites en baas
 

@@ -1,6 +1,6 @@
 # The Card Hall: de deckbuilder
 
-Afdeling ② op de plattegrond, hoofdstuk 2 tot 4 van Zie Scherp Scherper. Een roguelike deckbuilder in drie acts. Per act: [act 1](act-1.md) (H2), [act 2](act-2.md) (H3), [act 3](act-3.md) (H4). Verder: [kaarten en relics](kaarten.md), [events van de motor](events.md), [ideeën en open vragen](ideeen.md).
+Afdeling ② op de plattegrond, hoofdstuk 2 tot 4 van Zie Scherp Scherper. Een roguelike deckbuilder in drie acts. Per act: [act 1](act-1.md) (H2), [act 2](act-2.md) (H3), [act 3](act-3.md) (H4). Verder: [kaarten en relics](kaarten.md), [events van de motor](events.md), [ideeën en open vragen](../../../ideeen.md#the-card-hall).
 
 ## Core loop
 

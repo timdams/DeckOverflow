@@ -8,17 +8,31 @@ De docs (en straks de code) zijn opgesplitst in **de wereld** en **één module 
 
 - **Altijd nuttig:** [docs/visie.md](docs/visie.md) (pijlers, antipatronen) en [docs/architectuur.md](docs/architectuur.md) (motor/shell/stage, eventcontract).
 - **De wereld** ([docs/wereld/](docs/wereld/README.md)): plattegrond, ontgrendelen, mastery, Prikklok, onthulling, de [beeldtaal](docs/wereld/beeldtaal.md) (hoe elk scherm eruitziet), de [Codex](docs/wereld/codex.md), het [✗-register](docs/wereld/x-register.md), de [backend](docs/wereld/backend.md) (auth, klascode, Supabase). Todo's in [docs/wereld/todo.md](docs/wereld/todo.md).
-- **Een afdeling** ([docs/afdelingen/](docs/afdelingen/)): elk in een eigen map met `README.md`, `todo.md`, `ideeen.md`, `events.md` en een eigen `CLAUDE.md` met de regels die alleen daar gelden. Nu [The Card Hall](docs/afdelingen/card-hall/README.md), de deckbuilder, [The Control Room](docs/afdelingen/control-room/README.md), regels voor een automaat, en [The Conveyor Belt](docs/afdelingen/conveyor-belt/README.md), band en machines op een rooster (nog niet te ontgrendelen): lees bij werk aan een ervan eerst haar `CLAUDE.md` ([Card Hall](docs/afdelingen/card-hall/CLAUDE.md), [Control Room](docs/afdelingen/control-room/CLAUDE.md), [Conveyor Belt](docs/afdelingen/conveyor-belt/CLAUDE.md)).
+- **Een afdeling** ([docs/afdelingen/](docs/afdelingen/)): elk in een eigen map met `README.md`, `todo.md`, `events.md` en een eigen `CLAUDE.md` met de regels die alleen daar gelden. Nu [The Card Hall](docs/afdelingen/card-hall/README.md), de deckbuilder, [The Control Room](docs/afdelingen/control-room/README.md), regels voor een automaat, en [The Conveyor Belt](docs/afdelingen/conveyor-belt/README.md), band en machines op een rooster (nog niet te ontgrendelen): lees bij werk aan een ervan eerst haar `CLAUDE.md` ([Card Hall](docs/afdelingen/card-hall/CLAUDE.md), [Control Room](docs/afdelingen/control-room/CLAUDE.md), [Conveyor Belt](docs/afdelingen/conveyor-belt/CLAUDE.md)).
 
-Houd het zo: wat voor één afdeling geldt, schrijf je in haar map, niet in de wereld-docs of hier. Een nieuwe afdeling krijgt een nieuwe map; ze deelt alleen via de wereld (Codex, ✗-register, voortgang).
+Houd het zo: wat voor één afdeling geldt, schrijf je in haar map, niet in de wereld-docs of hier. Alleen ideeën staan samen, per afdeling, in [ideeen.md](ideeen.md) op de root. Een nieuwe afdeling krijgt een nieuwe map; ze deelt alleen via de wereld (Codex, ✗-register, voortgang).
 
 ## Prioriteit
 
 Eerst de core game loop: vechten, een beloning kiezen, de map. Geluid, definitieve art en andere polish hebben nu geen prioriteit; placeholders volstaan. Steek er geen tijd in tenzij erom gevraagd wordt, en stel liever vragen over wat de loop leuk maakt.
 
+## Rolverdeling
+
+Tim is product owner, Claude is implementer, en een aparte [reviewer](.claude/agents/reviewer.md) controleert het werk (`/review`).
+
+- **Beslissingen die bij de product owner liggen:** nieuwe features of scope, gedrag dat de speler ziet (UX), architectuur en nieuwe dependencies, wijzigingen aan het datamodel, en alles wat bestaand gedrag breekt. In dit project is dat onder meer: een nieuwe spelregel, tekst of schermonderdeel; het eventcontract, snapshots, de opgeslagen voortgang en het Supabase-schema; seeds die anders uitkomen of voortgang die niet meer laadt.
+- **Kom je zo'n keuze tegen:** stop, zet ze in [DECISIONS.md](DECISIONS.md) met status OPEN (context, opties met trade-offs, je aanbeveling) en vraag het. Werk ondertussen alleen verder aan wat niet van die keuze afhangt. Ook wat de ontwerpregels hieronder "eerst voorleggen" noemen, loopt zo. Een beslissing met status BESLIST volg je; wil je ervan afwijken, dan is dat een nieuwe beslissing.
+- **Implementatiekeuzes** (naamgeving, interne structuur, kleine refactors) neem je zelf, volgens de bestaande conventies.
+- **Geen scope creep:** bouw niets wat niet gevraagd is. Ideeën noteer je in [ideeen.md](ideeen.md), onder hun afdeling of onder De wereld.
+- **Review:** de reviewer krijgt geen uitleg van de implementer, alleen de diff, de `CLAUDE.md`'s en DECISIONS.md. Hij wijzigt nooit iets. De verborgen beslissingen die hij vindt, komen alsnog als OPEN in DECISIONS.md.
+- **Alles gebeurt op `main`**, zonder feature branches. De reviewer bekijkt wat nog niet naar `origin/main` gepusht is, plus wat nog niet gecommit is; draai `/review` dus voor je pusht, of geef een basis mee (`/review HEAD~3`).
+- **Een beslissing die BESLIST is**, krijgt ook één regel met datum onder [Beslist](docs/README.md#beslist), en de uitwerking in het document van haar module.
+
 ## Indeling en wat je waar doet
 
 - **`todo.md` per module**: wat bewust is uitgesteld, in [docs/wereld/todo.md](docs/wereld/todo.md) en in de map van elke afdeling. Lees de todo van je module bij de start van een taak, werk eraan als het gevraagd wordt, en vul hem aan als je zelf iets uitstelt of een gat vindt dat je niet meteen dicht. Haal eruit wat af is. De `todo.md` op de root is alleen een wegwijzer.
+- **[ideeen.md](ideeen.md) op de root**: ideeën en open vragen, met een sectie per afdeling en een voor De wereld. Een nieuwe afdeling krijgt er een sectie.
+- **[DECISIONS.md](DECISIONS.md)**: keuzes van de product owner, zie [Rolverdeling](#rolverdeling).
 - **`docs/`**: het ontwerp, modulair (zie hierboven), plus de product sheet. Deze repo is de enige bron; Claude Docs worden niet meer gebruikt of bijgewerkt. Schrijf ontwerpwijzigingen rechtstreeks in het document van de module.
 - **`spikes/NN-naam/`**: afgesloten of lopende experimenten, elk met een eigen `.sln`, README en CI-workflow, los draaibaar. Een afgesloten spike verandert niet meer; bouw er niet op verder. Een nieuwe spike krijgt een nieuwe map.
 - **`src/` en `tests/` op de root** zijn het echte spel, overgenomen uit spike 7 op 2 oktober 2026. Nieuw werk gebeurt daar. Code uit een spike neem je bewust over, niet door de spikemap te verplaatsen of te laten doorgroeien.

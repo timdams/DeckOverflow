@@ -18,7 +18,7 @@ Deze repo is de enige bron voor het ontwerp. De docs zijn modulair: lees wat je 
 | [Architectuurschema](architectuur.svg) | De motor beslist, de stage speelt af | |
 | [Product sheet](product-sheet/product-sheet.html) | A4-pitch voor instellingen en financiers | |
 
-**Een nieuwe afdeling** krijgt een map `afdelingen/<naam>/` met een `README.md` (de spelvorm en haar loop), een `todo.md`, een `ideeen.md` en, als de code er is, een `events.md`. Wat ze met de wereld deelt (Codex-pagina's, ✗-panelen), beschrijft ze in haar eigen map en registreert ze in de gedeelde systemen.
+**Een nieuwe afdeling** krijgt een map `afdelingen/<naam>/` met een `README.md` (de spelvorm en haar loop), een `todo.md` en, als de code er is, een `events.md`; haar ideeën krijgen een sectie in [ideeen.md](../ideeen.md) op de root. Wat ze met de wereld deelt (Codex-pagina's, ✗-panelen), beschrijft ze in haar eigen map en registreert ze in de gedeelde systemen.
 
 **Hoe je de docs leest.** Ze mengen wat gebouwd is met wat nog ontwerp is. Een sectie of regel met **Gebouwd** beschrijft het spel zoals het nu draait; de rest is richting.
 
@@ -46,6 +46,7 @@ Kort, met de datum; de uitwerking staat in het document van het onderwerp.
 - 4 oktober 2026: afdelingen staan op vrijgegeven, binnenkort (gebouwd, dicht, met tease) of ooit (in de doos); de Controlekamer en de Lopende Band staan voorlopig op binnenkort.
 - 4 oktober 2026: [de beeldtaal](wereld/beeldtaal.md). Elke afdeling is een plek met onderdelen uit een handleiding (schakelkast, werkvloer, klembord); de plattegrond is één tekening met dozen; een afdeling klapt uit haar doos; geen groen of rood; de Lopende Band speelt op een telefoon ook rechtop.
 - 3 oktober 2026: elke afdeling krijgt haar eigen spelvorm rond één plattegrond; de Card Hall heeft drie acts, één per hoofdstuk; startpunten met vijf keer 1 uit 3; de Codex is het boek; het vangnet voor de onthulling na 5 gestarte runs; de score van een run; Scrap voor wachtende modifiers; een afdeling ontgrendel je zelf; een docent maakt alleen een klascode voor het klassement, niets anders; gemonteerd is drie gewonnen runs of de elite; de eerste voltooide dagelijkse run telt.
+- 7 oktober 2026: [rolverdeling](../CLAUDE.md#rolverdeling) met product owner, implementer en reviewer; keuzes van de product owner in [DECISIONS.md](../DECISIONS.md) (D-001 tot D-003); ideeën samen in [ideeen.md](../ideeen.md) op de root, per afdeling; al het werk op `main`.
 
 ## Product sheet
 

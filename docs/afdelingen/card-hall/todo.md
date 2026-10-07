@@ -1,6 +1,6 @@
 # Todo: The Card Hall
 
-Wat bewust is uitgesteld voor de deckbuilder, met genoeg context om het later op te pakken. Nieuwste bovenaan. Wat af is, gaat eruit. Ideeën die nog ontworpen moeten worden, staan in [ideeen.md](ideeen.md).
+Wat bewust is uitgesteld voor de deckbuilder, met genoeg context om het later op te pakken. Nieuwste bovenaan. Wat af is, gaat eruit. Ideeën die nog ontworpen moeten worden, staan in [ideeen.md](../../../ideeen.md#the-card-hall).
 
 - **Een verborgen tabblad houdt het gevecht vast.** In een tabblad op de achtergrond loopt GSAP niet (geen `requestAnimationFrame`), en `Stage.PlayAsync` wacht op animaties die niet eindigen: het gevecht staat stil tot je het tabblad weer bekijkt. De Controlekamer en de Lopende Band slaan animaties dan over (`document.hidden`); de stage van de Kaartenhal nog niet. Gevonden op 4 oktober 2026.
 - **De beeldtaal voor het gevecht nakijken met spelers** ([beeldtaal](../../wereld/beeldtaal.md)). Gebouwd op 4 oktober 2026: de actplaat als zacht decor (`juice.backdrop`), een grotere intent en HP-balk (`juice.intent`, `juice.hpBar`), de hand als waaier (`juice.fan`) en een stapkader linksboven (`.step-plate`). Nog open: de decorplaten zonder figuurtje (zie de [art-todo](../../../art/todo.md)), en of de waaier op een telefoon niet te veel van de kaarten onder de rand duwt.

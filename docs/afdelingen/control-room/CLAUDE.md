@@ -1,6 +1,6 @@
 # The Control Room: regels voor wie eraan werkt
 
-Geldt bovenop de [CLAUDE.md op de root](../../../CLAUDE.md). Het ontwerp staat in deze map: [README.md](README.md) (loop, natuurwetten, de gevechten), [events.md](events.md), [ideeen.md](ideeen.md), [todo.md](todo.md).
+Geldt bovenop de [CLAUDE.md op de root](../../../CLAUDE.md). Het ontwerp staat in deze map: [README.md](README.md) (loop, natuurwetten, de gevechten), [events.md](events.md), [todo.md](todo.md); ideeën staan in [ideeen.md op de root](../../../ideeen.md#the-control-room).
 
 ## Waar de code staat
 
