@@ -48,6 +48,7 @@ Kort, met de datum; de uitwerking staat in het document van het onderwerp.
 - 3 oktober 2026: elke afdeling krijgt haar eigen spelvorm rond één plattegrond; de Card Hall heeft drie acts, één per hoofdstuk; startpunten met vijf keer 1 uit 3; de Codex is het boek; het vangnet voor de onthulling na 5 gestarte runs; de score van een run; Scrap voor wachtende modifiers; een afdeling ontgrendel je zelf; een docent maakt alleen een klascode voor het klassement, niets anders; gemonteerd is drie gewonnen runs of de elite; de eerste voltooide dagelijkse run telt.
 - 7 oktober 2026: de Controlekamer is vrijgegeven, nog zonder speeltest (D-004); de Prikklok is één venster op het titelscherm en de plattegrond, opnieuw spelen mag maar telt niet, en het histogram telt per speler de eerste run (D-005 tot D-007).
 - 9 oktober 2026: de ondertitel wordt "De handleiding zegt nee. C# zegt ja."; het ✗-register heet in het spel [Strafblad](wereld/x-register.md) (D-012).
+- 9 oktober 2026: het spel is voor de desktop; een toestel zonder muis krijgt één keer een melding dat het daar minder goed speelt ([beeldtaal](wereld/beeldtaal.md#op-een-telefoon)).
 - 7 oktober 2026: [rolverdeling](../CLAUDE.md#rolverdeling) met product owner, implementer en reviewer; keuzes van de product owner in [DECISIONS.md](../DECISIONS.md) (D-001 tot D-003); ideeën samen in [ideeen.md](../ideeen.md) op de root, per afdeling; al het werk op `main`.
 
 ## Product sheet

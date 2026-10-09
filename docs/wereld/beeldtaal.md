@@ -48,4 +48,6 @@ Op 4 oktober 2026, op dezelfde dag als de beslissing:
 
 ## Op een telefoon
 
+Het spel is gemaakt voor een computer met muis. Een toestel zonder muis (telefoon of tablet) krijgt op het titelscherm of de plattegrond één keer de melding dat het daar minder goed speelt, met een knop om toch te spelen; de browser onthoudt dat ze weggeklikt is.
+
 Liggend blijft de standaard (zie [architectuur](../architectuur.md#platform-en-techniek)). De Lopende Band speelt ook rechtop: haar rooster is hoog genoeg als je het een kwartslag draait. De motor verandert niet; alleen de stage tekent de vloer gedraaid, zodat de band van boven naar onder loopt en de vakjes groot genoeg blijven om aan te tikken. Nog niet gebouwd (zie [haar todo](../afdelingen/conveyor-belt/todo.md)).

@@ -1296,6 +1296,12 @@ button.play-big.continue small { font-size: 13px; font-weight: 700; opacity: 0.9
 
 /* ---------------------------------------------------------------- telefoon */
 
+/* Het spel is gemaakt voor een muis: een toestel zonder muis krijgt één keer die melding */
+.mobile-notice { display: none; }
+@media (hover: none) and (pointer: coarse) {
+  .mobile-notice { display: flex; }
+}
+
 /* Rechtop op een telefoon: eerst draaien. Een tablet rechtop is breed genoeg en speelt gewoon. */
 .rotate-hint { display: none; }
 

@@ -1,0 +1,35 @@
+@inject Strings S
+@inject IJSRuntime JS
+
+@* Op een aanraakscherm, één keer per toestel: het spel is gemaakt voor een computer met muis. Wie de melding
+   wegklikt, ziet ze niet meer. De CSS toont ze alleen op een toestel zonder muis; het onthouden staat in de
+   browser, niet in de voortgang. *@
+
+@if (_show && S.Loaded)
+{
+    <div class="modal mobile-notice">
+        <div class="modal-body story-card">
+            <h2>@S.T("ui.mobile.title")</h2>
+            <p>@S.T("ui.mobile.text")</p>
+            <button class="play-big" @onclick="DismissAsync">@S.T("ui.mobile.ok")</button>
+        </div>
+    </div>
+}
+
+@code {
+    private const string Key = "deckoverflow.mobile-notice";
+    private bool _show;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        _show = await JS.InvokeAsync<string?>("deckOverflow.load", Key) is null;
+        if (_show) StateHasChanged();
+    }
+
+    private async Task DismissAsync()
+    {
+        _show = false;
+        await JS.InvokeVoidAsync("deckOverflow.save", Key, "seen");
+    }
+}
