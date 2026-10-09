@@ -270,7 +270,7 @@
     }
     @if (_showXRegister)
     {
-        <XRegisterBook Earned="_progress.XPanels" OnClose="() => _showXRegister = false" />
+        <XRegisterBook Earned="_progress.XPanels" Unlocks="_progress.Unlocks" OnClose="() => _showXRegister = false" />
     }
 
     <div class="xpanel-popups">

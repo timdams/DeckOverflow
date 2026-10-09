@@ -25,9 +25,14 @@
                 <button class="title-button" disabled="@(Starting || !S.Loaded)" @onclick="() => OnStart.InvokeAsync(start)">@S.T("ui.start-at", ("act", start))</button>
             }
         </div>
-        @if (CodexCount > 0 || PanelCount > 0 || OnAccount.HasDelegate)
+        @if (CodexCount > 0 || PanelCount > 0 || PunchClock || OnAccount.HasDelegate)
         {
             <div class="title-links">
+                @if (PunchClock)
+                {
+                    @* De dagelijkse run, na je eerste run: voor de onthulling bestaat ze alleen voor de Kaartenhal *@
+                    <button class="title-button" @onclick="OnPunchClock">@S.T("ui.world.punch-clock")</button>
+                }
                 @if (CodexCount > 0)
                 {
                     <button class="title-button" @onclick="OnCodex">@S.T("ui.codex") · @CodexCount</button>
@@ -68,6 +73,10 @@
     [Parameter] public EventCallback<int> OnStart { get; set; }
     [Parameter] public EventCallback OnCodex { get; set; }
     [Parameter] public EventCallback OnXRegister { get; set; }
+
+    /// <summary>De Prikklok tonen: pas na je eerste run, zodat de eerste minuten één knop hebben.</summary>
+    [Parameter] public bool PunchClock { get; set; }
+    [Parameter] public EventCallback OnPunchClock { get; set; }
 
     /// <summary>Je fabriek bewaren of inloggen. Zonder Supabase geen knop.</summary>
     [Parameter] public EventCallback OnAccount { get; set; }

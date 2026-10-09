@@ -26,11 +26,20 @@ public class DepartmentsTests
     [Fact]
     public void Binnenkort_blijft_dicht_ook_met_de_sleutel()
     {
-        var room = Departments.Get(Departments.ControlRoom);
-        Assert.Equal(Availability.Soon, room.Availability);
+        var belt = Departments.Get(Departments.ConveyorBelt);
+        Assert.Equal(Availability.Soon, belt.Availability);
 
-        Assert.True(Departments.IsEarned(room, KeyFor(Departments.ControlRoom)));
-        Assert.False(Departments.IsOpen(room, KeyFor(Departments.ControlRoom)));
+        Assert.True(Departments.IsEarned(belt, KeyFor(Departments.ConveyorBelt)));
+        Assert.False(Departments.IsOpen(belt, KeyFor(Departments.ConveyorBelt)));
+    }
+
+    [Fact]
+    public void De_Controlekamer_gaat_open_met_de_sleutel_van_de_Kaartenhal()
+    {
+        var room = Departments.Get(Departments.ControlRoom);
+
+        Assert.False(Departments.IsOpen(room, NoKeys));
+        Assert.True(Departments.IsOpen(room, KeyFor(Departments.ControlRoom)));
     }
 
     [Fact]

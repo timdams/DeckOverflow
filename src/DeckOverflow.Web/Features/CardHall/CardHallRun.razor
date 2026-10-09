@@ -309,10 +309,20 @@
                                     </small>
                                 </div>
                             }
+                            @if (_punch is { } punch)
+                            {
+                                @* De dagelijkse run: telde ze voor de Prikklok? *@
+                                <p class="punch-note">@(punch switch
+                                {
+                                    PunchOutcome.Counted => S.T("ui.punch.end.counted"),
+                                    PunchOutcome.Again => S.T("ui.punch.end.again", ("score", Progress.Punch?.Score ?? 0)),
+                                    _ => S.T("ui.punch.end.debug"),
+                                })</p>
+                            }
                             <p class="stats">@S.T("ui.end.stats", ("deck", end.DeckSize), ("relics", end.RelicCount), ("gold", end.Gold))</p>
                             @NewPages()
                             <div class="buttons">
-                                <button @onclick="() => NewRunAsync(NewSeed())">@S.T("ui.new-run")</button>
+                                <button @onclick="NewPlainRunAsync">@S.T("ui.new-run")</button>
                                 <button class="secondary" @onclick="() => NewRunAsync(s.Seed)">@S.T("ui.same-seed")</button>
                                 @if (Revealed)
                                 {

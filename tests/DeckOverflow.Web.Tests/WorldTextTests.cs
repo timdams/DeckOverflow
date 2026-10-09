@@ -39,10 +39,10 @@ public class WorldTextTests
 
     [Theory]
     [MemberData(nameof(Languages))]
-    public void Een_afdeling_die_binnenkort_opengaat_zegt_waar_de_sleutel_ligt(string language)
+    public void Een_gebouwde_afdeling_met_een_slot_zegt_waar_de_sleutel_ligt(string language)
     {
         var texts = Load(language);
-        Assert.All(Departments.All.Where(d => d.Availability == Availability.Soon),
+        Assert.All(Departments.All.Where(d => d.Key != Departments.CardHall && d.Availability != Availability.Someday),
             d => Assert.Contains($"ui.world.{d.Key}.needs", texts.Keys));
     }
 

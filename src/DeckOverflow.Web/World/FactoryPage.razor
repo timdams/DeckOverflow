@@ -12,7 +12,8 @@
     <CardHallRun @ref="_cardHall" Progress="_progress" Superuser="_superuser" Revealed="Revealed"
                  SeedQuery="@SeedQuery" FightQuery="@FightQuery"
                  OnChanged="StateHasChanged" OnXPanel="EarnXPanelAsync" OnToast="t => AddToast(t.Text, t.Class)"
-                 OnOpenCodex="OpenCodex" OnOpenXRegister="() => _showXRegister = true" OnRunWon="RunWonAsync" />
+                 OnOpenCodex="OpenCodex" OnOpenXRegister="() => _showXRegister = true" OnRunWon="RunWonAsync"
+                 OnPunched="SendPunchAsync" />
 
     @* Alles hieronder tekent opnieuw bij een andere taal: de @key bouwt de schermen opnieuw op *@
     <div class="lang-scope" @key="S.Language">
@@ -24,12 +25,14 @@
             <WorldMap Paused="@PausedRun" OnContinue="ContinueRunAsync" Unlocks="_progress.Unlocks" Pages="_progress.Codex" Trinkets="_progress.Trinkets" ReachedAct="ReachedAct" Superuser="_superuser" PanelCount="_progress.XPanels.Count"
                       Unboxed="_progress.Unboxed" OnUnboxed="UnboxedAsync" Unbox="@(_superuser ? UnboxQuery : null)"
                       Starting="Starting" OnStart="StartAsync" OnCodex="() => OpenCodex(null)" OnXRegister="() => _showXRegister = true"
+                      OnPunchClock="() => _showPunchClock = true"
                       OnAccount="@(Account is null ? default : EventCallback.Factory.Create(this, () => _showAccount = true))" />
         }
         else
         {
             <TitleScreen Paused="@PausedRun" Starting="Starting" ReachedAct="ReachedAct" CodexCount="_progress.Codex.Count" PanelCount="_progress.XPanels.Count"
                          Crack="CrackVisible" OnContinue="ContinueRunAsync" OnStart="StartAsync" OnCodex="() => OpenCodex(null)" OnXRegister="() => _showXRegister = true"
+                         PunchClock="_progress.RunsStarted > 0" OnPunchClock="() => _showPunchClock = true"
                          OnAccount="@(Account is null ? default : EventCallback.Factory.Create(this, () => _showAccount = true))"
                          OnAbout="() => _showAbout = true" OnCrack="@(() => RevealAsync("crack"))" />
         }
@@ -54,9 +57,15 @@
         }
     }
 
+    @if (_showPunchClock && !RunShowing)
+    {
+        <PunchClockPanel Clock="Clock" Card="_progress.Punch" PausedDaily="_cardHall?.PausedDaily" Starting="Starting"
+                         OnStart="StartDailyAsync" OnContinue="ContinueDailyAsync" OnClose="() => _showPunchClock = false" />
+    }
+
     @if (_showXRegister)
     {
-        <XRegisterBook Earned="_progress.XPanels" OnClose="() => _showXRegister = false" />
+        <XRegisterBook Earned="_progress.XPanels" Unlocks="_progress.Unlocks" OnClose="() => _showXRegister = false" />
     }
 
     @if (_showCodex)

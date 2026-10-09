@@ -27,6 +27,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeckOverflow.ConveyorBelt.T
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeckOverflow.Web.Tests", "tests\DeckOverflow.Web.Tests\DeckOverflow.Web.Tests.csproj", "{E4207C78-80BF-4A97-B122-D2189F5FEACD}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{07C2787E-EAC7-C090-1BA3-A61EC2A24D84}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeckOverflow.ScoreCheck", "tools\DeckOverflow.ScoreCheck\DeckOverflow.ScoreCheck.csproj", "{49BCC782-56E3-4F90-B1C1-4A63E0ED0F43}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -157,6 +161,18 @@ Global
 		{E4207C78-80BF-4A97-B122-D2189F5FEACD}.Release|x64.Build.0 = Release|Any CPU
 		{E4207C78-80BF-4A97-B122-D2189F5FEACD}.Release|x86.ActiveCfg = Release|Any CPU
 		{E4207C78-80BF-4A97-B122-D2189F5FEACD}.Release|x86.Build.0 = Release|Any CPU
+		{49BCC782-56E3-4F90-B1C1-4A63E0ED0F43}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49BCC782-56E3-4F90-B1C1-4A63E0ED0F43}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49BCC782-56E3-4F90-B1C1-4A63E0ED0F43}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{49BCC782-56E3-4F90-B1C1-4A63E0ED0F43}.Debug|x64.Build.0 = Debug|Any CPU
+		{49BCC782-56E3-4F90-B1C1-4A63E0ED0F43}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{49BCC782-56E3-4F90-B1C1-4A63E0ED0F43}.Debug|x86.Build.0 = Debug|Any CPU
+		{49BCC782-56E3-4F90-B1C1-4A63E0ED0F43}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49BCC782-56E3-4F90-B1C1-4A63E0ED0F43}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49BCC782-56E3-4F90-B1C1-4A63E0ED0F43}.Release|x64.ActiveCfg = Release|Any CPU
+		{49BCC782-56E3-4F90-B1C1-4A63E0ED0F43}.Release|x64.Build.0 = Release|Any CPU
+		{49BCC782-56E3-4F90-B1C1-4A63E0ED0F43}.Release|x86.ActiveCfg = Release|Any CPU
+		{49BCC782-56E3-4F90-B1C1-4A63E0ED0F43}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -172,5 +188,6 @@ Global
 		{E87DFB87-9F62-44C3-A83A-676DF1E41840} = {EC40B86C-FD5E-4E99-B735-A52FC99C70F5}
 		{B3589137-E901-481E-991C-4A4A0B3676D6} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{E4207C78-80BF-4A97-B122-D2189F5FEACD} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{49BCC782-56E3-4F90-B1C1-4A63E0ED0F43} = {07C2787E-EAC7-C090-1BA3-A61EC2A24D84}
 	EndGlobalSection
 EndGlobal

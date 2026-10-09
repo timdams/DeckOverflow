@@ -32,8 +32,8 @@ Op 3 oktober 2026 is **The Card Hall** speelbaar: de deckbuilder met drie acts, 
 - **Bewuste intents** die rekenen met jouw blok, kaarten, energie of HP.
 - **De Codex**: 15 pagina's, geordend per hoofdstuk, met jouw moment als mini-animatie en een link naar het boek.
 - **Het ✗-register**: 11 panelen.
-- **De wereld**: teases, de onthulling en de fabrieksplattegrond met zes afdelingen. Alleen de Card Hall is open voor spelers. De Controlekamer (overgenomen uit spike 8) en de Lopende Band (tien bestellingen, overgenomen uit spike 9) zitten in het spel maar staan op **binnenkort** (beslist op 4 oktober 2026): de plattegrond toont al wat erin zit, en wie de laatste baas van de Card Hall verslaat, krijgt de sleutel van de Controlekamer, maar de deur blijft dicht tot de Controlekamer af is. De rest staat op **ooit**. De [superuser](wereld/backend.md#superuser) kan er al in.
-- **Score van een run** en een dagelijkse seed in de motor; accounts en klascodes in Supabase. Het klassement zelf (de Prikklok) is nog niet aangesloten.
+- **De wereld**: teases, de onthulling en de fabrieksplattegrond met zes afdelingen. Open voor spelers: de Card Hall en, sinds 7 oktober 2026, **de Controlekamer** (overgenomen uit spike 8): wie de laatste baas van de Card Hall verslaat, krijgt de sleutel en kan binnen. De Lopende Band (tien bestellingen, overgenomen uit spike 9) zit in het spel maar staat op **binnenkort**: de plattegrond toont al wat erin zit. De rest staat op **ooit**. De [superuser](wereld/backend.md#superuser) kan overal in wat gebouwd is.
+- **De Prikklok** (7 oktober 2026): een dagelijkse run in de Card Hall, voor iedereen dezelfde. De eerste uitgespeelde run van de dag telt; het venster toont je score, een histogram van iedereen en de top 10 van je klas met bijnamen. Een nachtelijke GitHub Action speelt elke ingestuurde run opnieuw af met de motor. Accounts en klascodes in Supabase.
 - **De sneltoets W** wint het lopende gevecht, alleen voor de [superuser](wereld/backend.md#superuser).
 
 Nog niet met spelers getest. Eén bevinding van de ontwikkelaar zelf: Ink tegen een getal zette een run vast (opgelost met Scrap).
@@ -46,6 +46,8 @@ Kort, met de datum; de uitwerking staat in het document van het onderwerp.
 - 4 oktober 2026: afdelingen staan op vrijgegeven, binnenkort (gebouwd, dicht, met tease) of ooit (in de doos); de Controlekamer en de Lopende Band staan voorlopig op binnenkort.
 - 4 oktober 2026: [de beeldtaal](wereld/beeldtaal.md). Elke afdeling is een plek met onderdelen uit een handleiding (schakelkast, werkvloer, klembord); de plattegrond is één tekening met dozen; een afdeling klapt uit haar doos; geen groen of rood; de Lopende Band speelt op een telefoon ook rechtop.
 - 3 oktober 2026: elke afdeling krijgt haar eigen spelvorm rond één plattegrond; de Card Hall heeft drie acts, één per hoofdstuk; startpunten met vijf keer 1 uit 3; de Codex is het boek; het vangnet voor de onthulling na 5 gestarte runs; de score van een run; Scrap voor wachtende modifiers; een afdeling ontgrendel je zelf; een docent maakt alleen een klascode voor het klassement, niets anders; gemonteerd is drie gewonnen runs of de elite; de eerste voltooide dagelijkse run telt.
+- 7 oktober 2026: de Controlekamer is vrijgegeven, nog zonder speeltest (D-004); de Prikklok is één venster op het titelscherm en de plattegrond, opnieuw spelen mag maar telt niet, en het histogram telt per speler de eerste run (D-005 tot D-007).
+- 9 oktober 2026: de ondertitel wordt "De handleiding zegt nee. C# zegt ja."; het ✗-register heet in het spel [Strafblad](wereld/x-register.md) (D-012).
 - 7 oktober 2026: [rolverdeling](../CLAUDE.md#rolverdeling) met product owner, implementer en reviewer; keuzes van de product owner in [DECISIONS.md](../DECISIONS.md) (D-001 tot D-003); ideeën samen in [ideeen.md](../ideeen.md) op de root, per afdeling; al het werk op `main`.
 
 ## Product sheet

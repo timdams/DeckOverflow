@@ -27,14 +27,15 @@ public static class Departments
     public const string ConveyorBelt = "conveyor-belt";
 
     /// <summary>
-    /// In de volgorde van het boek. De Controlekamer en de Lopende Band zijn gebouwd maar nog dicht
-    /// (beslist op 4 oktober 2026): wie de sleutel verdient, krijgt een tease, en de deur gaat open
-    /// zodra ze op <see cref="Availability.Released"/> staan. De superuser kan er al in.
+    /// In de volgorde van het boek. De Controlekamer is vrijgegeven sinds 7 oktober 2026 (D-004): wie de
+    /// laatste baas van de Card Hall versloeg, kan binnen. De Lopende Band is gebouwd maar nog dicht
+    /// (beslist op 4 oktober 2026): ze gaat open zodra ze op <see cref="Availability.Released"/> staat. De
+    /// superuser kan er al in.
     /// </summary>
     public static readonly IReadOnlyList<Department> All =
     [
         new(CardHall, 2, [2, 3, 4], Availability.Released, Art: "art/departments/card-hall.png"),
-        new(ControlRoom, 5, [5], Availability.Soon, Url: "control-room", Art: "art/departments/control-room.png"),
+        new(ControlRoom, 5, [5], Availability.Released, Url: "control-room", Art: "art/departments/control-room.png"),
         new(ConveyorBelt, 6, [6], Availability.Soon, Url: "conveyor-belt", Art: "art/departments/conveyor-belt.png"),
         new("tool-wall", 7, [7], Availability.Someday, Art: "art/departments/tool-wall.png"),
         new("warehouse", 8, [8], Availability.Someday, Art: "art/departments/warehouse.png"),

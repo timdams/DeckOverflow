@@ -5,3 +5,4 @@ obj/
 *.user
 node_modules/
 TestResults/
+__pycache__/

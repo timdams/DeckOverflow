@@ -130,7 +130,7 @@ public class ReplayTests
     /// Speelt een run met een domme maar volledige bot en neemt elk command op. Ook geweigerde
     /// commands tellen mee: een replay moet die net zo weigeren.
     /// </summary>
-    private static (Run Run, List<ICommand> Commands) PlayAndRecord(ulong seed, int maxSteps = 600, bool debugWin = false)
+    internal static (Run Run, List<ICommand> Commands) PlayAndRecord(ulong seed, int maxSteps = 600, bool debugWin = false)
     {
         var run = Run.Start(seed);
         var commands = new List<ICommand>();

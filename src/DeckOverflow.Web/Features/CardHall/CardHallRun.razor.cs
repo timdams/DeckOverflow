@@ -5,6 +5,7 @@ using DeckOverflow.CardHall.Commands;
 using DeckOverflow.CardHall.Events;
 using DeckOverflow.CardHall.Maps;
 using DeckOverflow.CardHall.Runs;
+using DeckOverflow.Core.Random;
 using DeckOverflow.Core.Text;
 using DeckOverflow.Web.Art;
 using DeckOverflow.Web.Progress;
@@ -45,6 +46,9 @@ public partial class CardHallRun
     /// <summary>De laatste baas van de Kaartenhal viel.</summary>
     [Parameter] public EventCallback OnRunWon { get; set; }
 
+    /// <summary>Een dagelijkse run prikte: <see cref="PlayerProgress.Punch"/> is nieuw en moet nog verstuurd worden.</summary>
+    [Parameter] public EventCallback OnPunched { get; set; }
+
     private ElementReference _host;
     private DotNetObjectReference<CardHallRun>? _self;
     private Run? _run;
@@ -54,6 +58,15 @@ public partial class CardHallRun
     private bool _showRelics;
     private bool _showPouch;
     private int _startAct = 1;
+
+    /// <summary>De UTC-datum van de dagelijkse run die nu loopt, of leeg voor een gewone run.</summary>
+    private DateOnly? _daily;
+
+    /// <summary>Elk command van deze run, ook geweigerde: de Prikklok stuurt ze in en de server speelt ze opnieuw af.</summary>
+    private readonly List<ICommand> _commands = [];
+
+    /// <summary>Hoe een uitgespeelde dagelijkse run uitkwam bij de Prikklok, voor het eindscherm.</summary>
+    private PunchOutcome? _punch;
 
     /// <summary>Terug in het hoofdmenu terwijl de run wacht: ze blijft in het geheugen, tot je herlaadt.</summary>
     private bool _paused;
@@ -89,6 +102,9 @@ public partial class CardHallRun
         ? S.T("ui.continue-run.where", ("act", s.Act), ("floor", s.Floor), ("rows", s.Map.Rows))
         : null;
 
+    /// <summary>De wachtende run is de dagelijkse run van deze dag.</summary>
+    public DateOnly? PausedDaily => _paused && _snap is not null ? _daily : null;
+
     protected override void OnInitialized() => S.Changed += OnLanguageChanged;
 
     /// <summary>Al laden terwijl het titelscherm staat: zo hoeft "Spelen" niet op vijf megabyte tekeningen te wachten.</summary>
@@ -112,10 +128,14 @@ public partial class CardHallRun
         StateHasChanged();
     });
 
-    /// <summary>Start na een klik, zodat de browser audio toelaat.</summary>
-    public async Task StartAsync(int startAct)
+    /// <summary>
+    /// Start na een klik, zodat de browser audio toelaat. Met <paramref name="daily"/> de dagelijkse run van de
+    /// Prikklok: altijd vanaf act 1, met de seed van die dag.
+    /// </summary>
+    public async Task StartAsync(int startAct, DateOnly? daily = null)
     {
-        _startAct = startAct;
+        _startAct = daily is null ? startAct : 1;
+        _daily = daily;
         Starting = true;
         _loadPercent = 0;
         await OnChanged.InvokeAsync();
@@ -130,7 +150,8 @@ public partial class CardHallRun
         }
         await init;
 
-        ulong seed = Superuser && ulong.TryParse(SeedQuery, out ulong s) ? s : NewSeed();
+        ulong seed = _daily is { } day ? DailySeed.For(day)
+            : Superuser && ulong.TryParse(SeedQuery, out ulong s) ? s : NewSeed();
         await NewRunAsync(seed);
         Starting = false;
         await OnChanged.InvokeAsync();
@@ -139,28 +160,33 @@ public partial class CardHallRun
     /// <summary>Is dit de testroute <c>?fight=</c>? Dan geen intro.</summary>
     public bool IsTestFight => Fight is not null;
 
+    /// <summary>Een dagelijkse run negeert de testroute <c>?fight=</c>.</summary>
+    private string? TestFight => _daily is null ? Fight : null;
+
     private async Task NewRunAsync(ulong seed)
     {
-        RunSetup setup = Bestiary.Exists(Fight)
-            ? new RunSetup(Map: SingleFight(Fight!), Opening: false, Deck: TestDeck)
+        RunSetup setup = Bestiary.Exists(TestFight)
+            ? new RunSetup(Map: SingleFight(TestFight!), Opening: false, Deck: TestDeck)
             : new RunSetup(StartAct: _startAct);
-        _run = Run.Start(seed, setup);
+        _run = _daily is { } day ? DailyRun.Start(day) : Run.Start(seed, setup);
         _snap = _run.Snapshot();
+        _commands.Clear();
+        _punch = null;
         _paused = false;
         _showOptions = false;
-        if (Fight is null)
+        if (TestFight is null)
         {
             Progress.RunsStarted++;
             await Store.SaveAsync(Progress);
         }
         // Elke run begint met de kaart van zijn act, behalve op de testroute ?fight=
-        _actCard = Fight is null ? _run.Act.Number : null;
+        _actCard = TestFight is null ? _run.Act.Number : null;
         _picker = null;
         _showDeck = false;
         _lastEnemy = null;
 
         var query = new Dictionary<string, object?> { ["seed"] = seed.ToString(CultureInfo.InvariantCulture) };
-        if (Fight is not null) query["fight"] = Fight;
+        if (TestFight is not null) query["fight"] = TestFight;
         Nav.NavigateTo(Nav.GetUriWithQueryParameters(query), replace: true);
 
         await Stage.ResetAsync();
@@ -205,7 +231,14 @@ public partial class CardHallRun
         return OnChanged.InvokeAsync();
     }
 
-    /// <summary>Dezelfde run van voren af aan: zelfde seed, zelfde startact.</summary>
+    /// <summary>Een nieuwe gewone run vanaf het eindscherm, ook na een dagelijkse run.</summary>
+    private Task NewPlainRunAsync()
+    {
+        _daily = null;
+        return NewRunAsync(NewSeed());
+    }
+
+    /// <summary>Dezelfde run van voren af aan: zelfde seed, zelfde startact. Een dagelijkse run blijft dagelijks.</summary>
     private Task RestartAsync() => _snap is { } s ? NewRunAsync(s.Seed) : Task.CompletedTask;
 
     /// <summary>De run opgeven: ze telt nergens mee en je staat weer in het hoofdmenu.</summary>
@@ -240,6 +273,7 @@ public partial class CardHallRun
         if (_run is null || _busy) return;
 
         var before = _snap!;
+        _commands.Add(command);
         var events = _run.Handle(command);
         _snap = _run.Snapshot();
         await ShowToastsAsync(events);
@@ -305,6 +339,7 @@ public partial class CardHallRun
         {
             _lastEnemy = _run.CombatSnapshot()?.Combatants.FirstOrDefault(c => c.IsEnemy)?.Key;
             if (_run.CombatSnapshot()?.Turn == 1) _newPages.Clear();
+            _commands.Add(command);
             var events = _run.Handle(command);
 
             await Stage.PlayAsync(events);
@@ -327,10 +362,23 @@ public partial class CardHallRun
         }
     }
 
-    /// <summary>De run is gewonnen: de wereld beslist wat dat ontgrendelt en onthult.</summary>
+    /// <summary>
+    /// De run is uit. Een dagelijkse run prikt; een gewonnen run laat de wereld beslissen wat dat ontgrendelt en onthult.
+    /// </summary>
     private async Task RememberRunEndAsync(IEnumerable<GameEvent> events)
     {
-        if (events.OfType<RunEnded>().Any(e => e.Won)) await OnRunWon.InvokeAsync();
+        if (events.OfType<RunEnded>().FirstOrDefault() is not { } ended) return;
+        if (_daily is { } day) await PunchAsync(day);
+        if (ended.Won) await OnRunWon.InvokeAsync();
+    }
+
+    /// <summary>Een dagelijkse run is uitgespeeld: prikken (<see cref="PlayerProgress.TryPunch"/>) en insturen.</summary>
+    private async Task PunchAsync(DateOnly day)
+    {
+        _punch = Progress.TryPunch(day, _run!.Score.Total, _commands);
+        if (_punch != PunchOutcome.Counted) return;
+        await Store.SaveAsync(Progress);
+        await OnPunched.InvokeAsync();
     }
 
     /// <summary>Een nieuwe act bereikt: die wordt een startpunt voor volgende runs.</summary>

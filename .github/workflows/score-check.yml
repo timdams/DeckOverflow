@@ -1,0 +1,23 @@
+name: score-check
+
+# De nachtelijke scorecontrole van de Prikklok (docs/wereld/supabase.md, stap 7): speelt elke ingestuurde
+# dagelijkse run opnieuw af met de echte motor. Houdt meteen het gratis Supabase-project wakker.
+# Nodig in Settings → Secrets → Actions: SUPABASE_SERVICE_KEY (de secret key of service_role van het project).
+
+on:
+  schedule:
+    - cron: '17 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - run: dotnet run --project tools/DeckOverflow.ScoreCheck
+        env:
+          SUPABASE_URL: https://bcrpupqzwmauqowtygae.supabase.co
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}

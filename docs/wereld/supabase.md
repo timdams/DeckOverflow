@@ -115,7 +115,7 @@ Een gastaccount omzetten ("Bewaar je fabriek"): `PUT /auth/v1/user` met adres en
 - Account verwijderen met één knop.
 - Alle teksten in `en.json`.
 
-**Gedaan op 3 oktober 2026, behalve de Prikklok** (die wacht op een score in de motor, zie [todo.md](todo.md)). Eén paneel "Your factory" (`Components/AccountPanel.razor`, logica in `Backend/Account.cs`), te openen vanaf het titelscherm, de plattegrond en de onthulling.
+**Gedaan op 3 oktober 2026, behalve de Prikklok** (gedaan op 7 oktober 2026, zie [README.md](README.md#prikklok-het-klassement)). Eén paneel "Your factory" (`Components/AccountPanel.razor`, logica in `Backend/Account.cs`), te openen vanaf het titelscherm, de plattegrond en de onthulling.
 
 - **Bewaren** verschijnt bij de onthulling, als knop naast "Look around", en blijft daarna op de plattegrond staan. Niet na het eerste gewonnen gevecht: dan is er nog weinig te verliezen, en het zou de eerste minuten onderbreken.
 - **Inloggen** op een ander toestel: wat je daar als gast deed, gaat mee naar je fabriek, en dat gastaccount wordt opgeruimd.
@@ -129,6 +129,10 @@ Een gastaccount omzetten ("Bewaar je fabriek"): `PUT /auth/v1/user` met adres en
 - Consoleproject `tools/DeckOverflow.ScoreCheck`: haalt scores met `verified = pending`, speelt ze opnieuw af met de motor, zet `ok` of `rejected`.
 - GitHub Action, elke nacht. De service-sleutel als GitHub-secret, nooit in de repo.
 - Houdt meteen het gratis project wakker.
+
+**Gedaan op 7 oktober 2026.** `tools/DeckOverflow.ScoreCheck` haalt de pending scores per 100 op, speelt elke run van de Card Hall opnieuw af met `DailyRun.Check` (dezelfde seed en setup als de shell) en zet `ok` of `rejected`. Afgewezen wordt: een commandolijst die geen lijst commands is, een run die niet uitgespeeld is, een run met `DebugWin`, en een andere score dan de motor uitrekent. Scores van een andere afdeling blijven pending. De Action `.github/workflows/score-check.yml` draait om 2.17 uur UTC en kan met de hand gestart worden; ze heeft het secret `SUPABASE_SERVICE_KEY` nodig (zie [todo.md](todo.md)). Nog niet tegen het echte project gedraaid: dat kan pas met die sleutel.
+
+**Erbij op 7 oktober 2026:** de migratie `punch_clock_first_run`, uitgevoerd via de connector: `score_histogram` telt per speler de eerste score die niet afgewezen werd, niet meer de beste (D-007). De security advisors melden niets nieuws. Getest als gast vanuit het spel: een score insturen lukt, en het histogram toont ze.
 
 ## Stap 8: docs bijwerken
 

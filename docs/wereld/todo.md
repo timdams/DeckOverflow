@@ -7,16 +7,10 @@ Wat bewust is uitgesteld voor de wereld (plattegrond, backend, Codex, ✗-regist
 De plattegrond is sinds 4 oktober 2026 één tekening, met dozen en het moment "uit de doos" (zie [README](README.md#één-tekening-de-band-en-de-dozen) en [de beeldtaal](beeldtaal.md)). Wat nog open staat:
 
 - **Uit de doos bekijken in een zichtbaar venster.** Gebouwd en getest met stilgezette CSS-animaties (`?unbox=conveyor-belt` als superuser), maar nog niet op gevoel afgesteld: het tempo, de stralen, de explosietekening. Geen geluid; als dat erbij komt, via `wwwroot/audio/ui.js`.
-- **Een speler ziet het moment nog nooit.** Het gaat af voor een afdeling die voor jou opengaat, en de Controlekamer en de Lopende Band staan op *binnenkort*. Pas zodra de Controlekamer vrijgegeven is, komt het eerste echte "uit de doos".
+- **Het eerste echte "uit de doos"** is de Controlekamer, sinds ze op 7 oktober 2026 vrijgegeven is. Nakijken met een speler die de laatste baas van de Card Hall verslaat: komt het moment na de onthulling, en voelt het als een beloning?
 - **Een nieuwe afdeling krijgt een plaats op de vloer.** `Spots` in `WorldMap.razor` zet elke afdeling op de tekening; een afdeling zonder plaats belandt onderaan op een rij.
 - **Het figuurtje** loopt nu naar de afdeling die je kiest. Bij de afdeling waar je het laatst speelde, zou ook kunnen; daarvoor moet de voortgang dat bijhouden.
 - **Rechtop op een smal scherm** staan de vloer en het paneel onder elkaar en wordt de tekening klein. Nakijken op een telefoon.
-
-## Superuser
-
-Gebouwd op 4 oktober 2026 (zie [backend.md](backend.md#superuser)).
-
-- **Geen score met `DebugWin` in het klassement.** Een score is een seed plus de commandolijst; zodra de Prikklok scores opslaat, moet een lijst met `DebugWin` geweigerd worden, zowel bij het insturen als bij de nachtelijke controle.
 
 ## Taal
 
@@ -51,8 +45,11 @@ Liggend spelen op een telefoon kwam erbij op 4 oktober 2026 (zie [architectuur.m
 - **Oude gastaccounts opruimen.** Elke nieuwe browser (of gewiste opslag) maakt een gast; wie stopt, laat er een achter. Supabase raadt aan om oude anonieme accounts geregeld te verwijderen. Kan mee in de nachtelijke Action van de scorecontrole, met de service-sleutel: anonieme accounts zonder activiteit sinds bv. 90 dagen. Er staat er nu al een: "Bright Spanner 74", van een test op 3 oktober 2026.
 - **Klassen beheren.** Een docent kan nu alleen afdelingen vrijgeven, niet terugtrekken, en geen leerling uit de klas halen (de database laat dat wel toe, het scherm nog niet). Een dashboard met de voortgang van de klas komt na de MVP.
 
-- **Scores controleren (stap 7 van [supabase.md](supabase.md)).** Consoleproject `tools/DeckOverflow.ScoreCheck`: haalt scores met `verified = pending`, speelt ze opnieuw af met `Run.Replay`, zet `ok` of `rejected`. Een GitHub Action draait het elke nacht, met de service-sleutel als GitHub-secret. Houdt meteen het gratis project wakker (pauzeert na een week zonder activiteit). Vergelijkt `Run.Replay(...).Score.Total` met `claimed_score`.
-- **De Prikklok.** Dagelijkse run met `DailySeed.For(datum)`, klasklassement met bijnamen, histogram voor iedereen (`score_histogram`). De score bestaat (`Run.Score`, `RunScore`, zie de Prikklok in [README.md](README.md#prikklok-het-klassement)) en `Run.Replay` geeft dezelfde score (`ReplayTests`). Nog te doen: de dagelijkse run starten, de score insturen, het klassement tonen. De knop staat al grijs op de plattegrond (`ui.world.punch-clock`).
+- **De service-sleutel als GitHub-secret.** De Action `score-check` (gebouwd op 7 oktober 2026) heeft `SUPABASE_SERVICE_KEY` nodig in Settings → Secrets → Actions: de secret key (`sb_secret_…`) of de oude service_role-sleutel van het project. Zonder faalt ze elke nacht, en pauzeert het gratis project na een week zonder activiteit. Daarna één keer met de hand starten (Run workflow) en nakijken.
+- **Een testrij in `scores`.** Rij 1 (7 oktober 2026, score 0, lege commandolijst) kwam van een test van de Prikklok. De eerste nachtelijke controle wijst ze af; daarna mag ze weg: `delete from scores where id = 1;`
+- **De Prikklok voor de andere afdelingen.** Alleen de Card Hall heeft een dagelijkse run. De Controlekamer en de Lopende Band meten een bord (regels, beurten, machines, tikken); daarvoor moeten ze een dagelijkse puzzel krijgen en moet de scorecontrole hun motor kennen. Eerst voorleggen.
+- **De Prikklok opent op de afdeling waar je het laatst speelde** (README). Pas nodig als er een tweede afdeling met een dagelijkse run is.
+- **Het klassement van gisteren.** Het venster toont alleen vandaag. Wie wil zien hoe de klas het gisteren deed, nadat alles nagekeken is, kan dat nog niet.
 - **Leesstand, ✗-panelen en het zakje met onderdelen synchroniseren.** Nu blijven ze in de browser (`PlayerProgress.CodexRead`, `XPanels`, `Trinkets`); een tweede toestel toont 0 panelen en een leeg zakje. Kan als kolommen op `profiles` of een eigen tabel.
 - **Een tweede Supabase-project voor ontwikkeling.** Nu praat ook `localhost` met het echte project. Het gratis plan laat twee actieve projecten toe en `stadsrally` neemt er al een.
 

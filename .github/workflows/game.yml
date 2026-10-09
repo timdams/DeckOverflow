@@ -18,6 +18,7 @@ jobs:
       - run: dotnet test tests/DeckOverflow.ConveyorBelt.Tests
       - run: dotnet test tests/DeckOverflow.Web.Tests
       - run: dotnet build src/DeckOverflow.Web
+      - run: dotnet build tools/DeckOverflow.ScoreCheck
       # Een Release-build trimt: elke motor die de shell naar JSON omzet, moet als TrimmerRootAssembly in de csproj
       # staan, anders vallen de parameternamen van records weg en crasht het spel online (4 oktober 2026).
       - name: Every engine is a trimmer root

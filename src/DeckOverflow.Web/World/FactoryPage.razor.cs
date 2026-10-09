@@ -38,11 +38,17 @@ public partial class FactoryPage
     private Account? Account => Services.GetService<Account>();
     private bool _showAccount;
 
+    /// <summary>De Prikklok tegenover Supabase; zonder backend speel je de dagelijkse run toch, zonder klassement.</summary>
+    private PunchClock? Clock => Services.GetService<PunchClock>();
+    private bool _showPunchClock;
+
     /// <summary>Het vangnet: na zoveel gestarte runs barst de muur vanzelf.</summary>
     private const int CrackAfterRuns = 5;
 
     private CardHallRun? _cardHall;
     private int _startAct = 1;
+    /// <summary>De dagelijkse run die start na de intro, of leeg voor een gewone run.</summary>
+    private DateOnly? _startDaily;
 
     /// <summary>Alles wat over runs heen blijft: Codex, panelen, ontgrendelde afdelingen, de onthulling.</summary>
     private PlayerProgress _progress = new();
@@ -95,19 +101,43 @@ public partial class FactoryPage
         Store.Changed += OnProgressChanged;
         _progress.ReachedAct = Math.Clamp(_progress.ReachedAct, 1, Acts.All[^1].Number);
         StateHasChanged();
+        // Een geprikte run die vorige keer niet weg raakte (geen netwerk), gaat nu mee
+        await SendPunchAsync();
     }
 
     /// <summary>Een run in de Kaartenhal starten. De allereerste keer komt eerst de intro.</summary>
-    private async Task StartAsync(int startAct)
+    private Task StartAsync(int startAct) => StartAsync(startAct, null);
+
+    private async Task StartAsync(int startAct, DateOnly? daily)
     {
         if (_cardHall is null) return;
         _startAct = startAct;
+        _startDaily = daily;
         if (!_progress.IntroSeen && !_cardHall.IsTestFight)
         {
             _showIntro = true;
             return;
         }
-        await _cardHall.StartAsync(startAct);
+        await _cardHall.StartAsync(startAct, daily);
+    }
+
+    /// <summary>Inprikken: de dagelijkse run van vandaag (UTC), vanuit de Prikklok.</summary>
+    private Task StartDailyAsync()
+    {
+        _showPunchClock = false;
+        return StartAsync(1, PunchClock.Today);
+    }
+
+    private Task ContinueDailyAsync()
+    {
+        _showPunchClock = false;
+        return ContinueRunAsync();
+    }
+
+    /// <summary>Een geprikte run insturen, als er een backend is. Faalt stil; dan gaat ze bij de volgende start mee.</summary>
+    private async Task SendPunchAsync()
+    {
+        if (Clock is { } clock) await clock.SendAsync(_progress);
     }
 
     private async Task FinishIntroAsync()
@@ -115,7 +145,7 @@ public partial class FactoryPage
         _progress.IntroSeen = true;
         _showIntro = false;
         await Store.SaveAsync(_progress);
-        await StartAsync(_startAct);
+        await StartAsync(_startAct, _startDaily);
     }
 
     private Task ContinueRunAsync() => _cardHall?.ContinueAsync() ?? Task.CompletedTask;

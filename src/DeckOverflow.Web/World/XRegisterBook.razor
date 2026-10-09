@@ -5,7 +5,8 @@
 @* Het ✗-register: de panelen uit de handleiding die zeggen wat niet mag, en die jij toch deed.
    Een verdiend paneel is doorkruist en uitgelegd. Een gewoon paneel dat je nog niet hebt, toont
    wat verboden is: een hint. Een verborgen paneel blijft een silhouet tot je het vindt. Elke afdeling heeft
-   een eigen pagina; een afdeling die nog binnenkort opengaat, verklapt haar panelen nog niet. *@
+   een eigen pagina; een afdeling die voor jou nog dicht is (binnenkort, of vrijgegeven maar zonder sleutel), verklapt
+   haar panelen nog niet. *@
 
 <div class="modal" @onclick="OnClose">
     <div class="modal-body xregister" @onclick:stopPropagation="true">
@@ -16,13 +17,14 @@
         @foreach (var source in XPanels.Sources)
         {
             var department = Departments.All.FirstOrDefault(d => d.Key == source.Department);
-            bool soon = department?.Availability == Availability.Soon && !source.Panels.Any(p => Earned.Contains(p.Key));
+            bool shut = department is not null && !Departments.IsOpen(department, Unlocks) && !source.Panels.Any(p => Earned.Contains(p.Key));
+            bool soon = shut && department!.Availability == Availability.Soon;
             <section class="xregister-page">
                 <h3>
                     @S.T(department is null ? "ui.xregister.world" : $"ui.world.{department.Key}.name")
-                    <small>@(soon ? S.T("ui.world.coming") : S.T("ui.xregister.count", ("earned", source.Panels.Count(p => Earned.Contains(p.Key))), ("total", source.Panels.Count)))</small>
+                    <small>@(soon ? S.T("ui.world.coming") : shut ? S.T("ui.world.shut") : S.T("ui.xregister.count", ("earned", source.Panels.Count(p => Earned.Contains(p.Key))), ("total", source.Panels.Count)))</small>
                 </h3>
-                @if (!soon)
+                @if (!shut)
                 {
                     <div class="xpanels">
                         @foreach (var panel in source.Panels)
@@ -58,5 +60,8 @@
 
 @code {
     [Parameter, EditorRequired] public IReadOnlySet<string> Earned { get; set; } = default!;
+
+    /// <summary>Je sleutels: de pagina van een afdeling die voor jou nog dicht is, blijft leeg.</summary>
+    [Parameter, EditorRequired] public IReadOnlyDictionary<string, Progress.Unlock> Unlocks { get; set; } = default!;
     [Parameter] public EventCallback OnClose { get; set; }
 }

@@ -1,5 +1,7 @@
 # Het ✗-register: achievements
 
+In het spel heet het **Strafblad** (Engels: *Rap sheet*), sinds 9 oktober 2026 (D-012). In code en docs blijft de interne naam ✗-register.
+
 De achievements van de hele fabriek. Het register hoort bij de wereld, niet bij één afdeling: elke afdeling levert haar eigen panelen aan, en de wereld bewaart, toont en laat ze opspringen.
 
 ## Wat een paneel is
@@ -36,7 +38,7 @@ public interface IXPanelSource
 }
 ```
 
-Hoe een afdeling een paneel herkent, blijft in haar eigen motor (bij de Card Hall `XRegister.Earned(events, enemy)`, uitgevoerd door `Run`, die `XPanelEarned` emitteert); het contract vraagt alleen de lijst. De wereld verzamelt alle bronnen in `World/XPanels.cs` (`Sources`, `All`), met daarin ook haar eigen paneel Do not read the manual. Een nieuwe afdeling voegt daar haar bron toe. Het register toont een pagina per afdeling, in de volgorde van de plattegrond, en de wereld als laatste. Een afdeling die nog op binnenkort staat, toont alleen haar naam en "binnenkort": ze verklapt haar panelen pas als ze opengaat (of als je er al een hebt). `tests/DeckOverflow.Web.Tests` kijkt na dat elk paneel tekst heeft in beide talen, dat sleutels uniek zijn over de fabriek, en dat elke bron bij een afdeling of de wereld hoort.
+Hoe een afdeling een paneel herkent, blijft in haar eigen motor (bij de Card Hall `XRegister.Earned(events, enemy)`, uitgevoerd door `Run`, die `XPanelEarned` emitteert); het contract vraagt alleen de lijst. De wereld verzamelt alle bronnen in `World/XPanels.cs` (`Sources`, `All`), met daarin ook haar eigen paneel Do not read the manual. Een nieuwe afdeling voegt daar haar bron toe. Het register toont een pagina per afdeling, in de volgorde van de plattegrond, en de wereld als laatste. Een afdeling die voor jou nog dicht is, toont alleen haar naam en "binnenkort" of "op slot" (vrijgegeven, maar zonder sleutel): ze verklapt haar panelen pas als ze voor jou opengaat (of als je er al een hebt). `tests/DeckOverflow.Web.Tests` kijkt na dat elk paneel tekst heeft in beide talen, dat sleutels uniek zijn over de fabriek, en dat elke bron bij een afdeling of de wereld hoort.
 
 ## Gebouwd: de panelen van de Card Hall
 

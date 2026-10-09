@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- De nachtelijke scorecontrole van de Prikklok: speelt ingestuurde runs opnieuw af met de echte motor. Geen packages. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>DeckOverflow.ScoreCheck</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DeckOverflow.CardHall\DeckOverflow.CardHall.csproj" />
+  </ItemGroup>
+</Project>

@@ -10,9 +10,10 @@ Het scherm volgt sinds 4 oktober 2026 [de beeldtaal](../../wereld/beeldtaal.md) 
 - **Het klikje per regel op gevoel afstellen** (`juice.ruleTick` in `wwwroot/shared/juice.js`), in een zichtbaar venster met geluid aan: is het een keten die je hoort, of geratel bij vijf regels?
 - **Slepen met een vinger op een echt toestel.** `wwwroot/shared/touch-drag.js` is getest met nagebootste touch-events in een desktopbrowser.
 
-## Vrijgeven (4 oktober 2026)
+## Vrijgegeven (7 oktober 2026)
 
-- **De Controlekamer staat op binnenkort.** Spelers verdienen de sleutel al met de laatste baas van de Card Hall, maar de deur blijft dicht. Als ze af is: `Availability.Released` in `World/Departments.cs`; wie de sleutel heeft, kan dan meteen binnen. Daarna de Lopende Band zijn sleutel geven (zie haar [todo](../conveyor-belt/todo.md)).
+- **Vrijgegeven zonder speeltest** ([D-004](../../../DECISIONS.md)). De vragen van spike 8 hieronder blijven open; spelers komen er nu zelf binnen, dus de feedback (`level:<key>`) begint te lopen.
+- **De sleutel van de Lopende Band** is nog niet beslist (waarschijnlijk de laatste baas van de Controlekamer, Dag 248). Eerst voorleggen; zie de [todo van de Lopende Band](../conveyor-belt/todo.md).
 
 ## Na de bouw van 4 oktober 2026
 

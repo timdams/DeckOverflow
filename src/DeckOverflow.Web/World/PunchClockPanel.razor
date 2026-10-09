@@ -1,0 +1,138 @@
+@using System.Globalization
+@using DeckOverflow.Web.Backend
+@using DeckOverflow.Web.Progress
+@inject Strings S
+
+@* De Prikklok (docs/wereld/README.md, Prikklok): de dagelijkse run van de Kaartenhal en hoe de dag ervoor staat.
+   Een prikkaart op een klembord: de knop om in te prikken, je score van vandaag als stempel en telwerk, het
+   histogram van iedereen met jouw emmer in inkt, en de top van je klas met bijnamen. De eerste voltooide run
+   telt (D-006); opnieuw spelen mag, maar telt niet. Zonder verbinding speel je gewoon, en je score gaat later mee. *@
+
+<div class="modal" @onclick="OnClose">
+    <div class="modal-body punch-clock" @onclick:stopPropagation="true">
+        <div class="clipboard">
+            <div class="sheet">
+                <h2 class="heavy">@S.T("ui.world.punch-clock")</h2>
+                <p class="hint">@S.T("ui.punch.day")</p>
+
+                @if (TodayCard is { } card)
+                {
+                    <div class="punch-card">
+                        <span class="rubber-stamp">@S.T("ui.punch.stamp")</span>
+                        <Digits Value="@card.Score.ToString(CultureInfo.InvariantCulture)" Min="4" />
+                        @if (!card.Sent && Clock is not null)
+                        {
+                            <small>@S.T("ui.punch.waiting")</small>
+                        }
+                    </div>
+                }
+
+                <div class="punch-actions">
+                    @if (PausedDaily is not null)
+                    {
+                        @* Ook een dagelijkse run van gisteren die nog wacht: niet zomaar weggooien *@
+                        <button class="play-big continue" @onclick="OnContinue">@S.T("ui.punch.continue")</button>
+                    }
+                    else if (TodayCard is null)
+                    {
+                        <button class="play-big" disabled="@Starting" @onclick="OnStart">@S.T("ui.punch.start")</button>
+                    }
+                    else
+                    {
+                        <button class="title-button" disabled="@Starting" @onclick="OnStart">@S.T("ui.punch.again")</button>
+                    }
+                </div>
+
+                @if (Clock is null || (!_loading && _standings is null))
+                {
+                    <p class="hint">@S.T("ui.punch.offline")</p>
+                }
+                else if (_loading)
+                {
+                    <p class="hint">...</p>
+                }
+                else if (_standings is { } standings)
+                {
+                    var bars = PunchClock.Bars(standings.Histogram);
+                    @if (bars.Count == 0)
+                    {
+                        <p class="hint">@S.T("ui.punch.nobody")</p>
+                    }
+                    else
+                    {
+                        @* Histogram in plaats van ranglijst, zoals Opus Magnum: waar val jij tegenover iedereen *@
+                        <h3 class="stencil">@S.T("ui.punch.everyone", ("n", standings.Players))</h3>
+                        <div class="punch-bars" role="img" aria-label="@S.T("ui.punch.everyone", ("n", standings.Players))">
+                            @foreach (var bar in bars)
+                            {
+                                bool yours = TodayCard is { } c && PunchClock.BucketOf(c.Score) == bar.From;
+                                <span class="bar @(yours ? "yours" : "")" title="@bar.From+: @bar.Players">
+                                    <span class="fill" style="height:@Height(bars, bar.Players)%"></span>
+                                </span>
+                            }
+                        </div>
+                        <div class="punch-axis">
+                            <span>@S.T("ui.punch.points", ("n", bars[0].From))</span>
+                            @if (bars.Count > 1)
+                            {
+                                <span>@S.T("ui.punch.points", ("n", bars[^1].From))</span>
+                            }
+                        </div>
+                    }
+
+                    @if (standings.Class.Count > 0)
+                    {
+                        <h3 class="stencil">@S.T("ui.punch.class")</h3>
+                        <ol class="punch-class">
+                            @foreach (var row in standings.Class)
+                            {
+                                <li class="@(row.You ? "you" : "")">
+                                    <span>@row.Nickname</span>
+                                    <Digits Value="@row.Score.ToString(CultureInfo.InvariantCulture)" Min="4" Class="@(row.You ? "" : "dim")" />
+                                </li>
+                            }
+                        </ol>
+                    }
+                }
+
+                <button class="secondary close" @onclick="OnClose">@S.T("ui.close")</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    /// <summary>De dienst tegenover Supabase; leeg zonder backend, dan zie je alleen je eigen kaart.</summary>
+    [Parameter] public PunchClock? Clock { get; set; }
+
+    /// <summary>Je laatste geprikte run, van welke dag ook.</summary>
+    [Parameter] public PunchCard? Card { get; set; }
+
+    /// <summary>De wachtende run is de dagelijkse run van die dag.</summary>
+    [Parameter] public DateOnly? PausedDaily { get; set; }
+
+    [Parameter] public bool Starting { get; set; }
+    [Parameter] public EventCallback OnStart { get; set; }
+    [Parameter] public EventCallback OnContinue { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private readonly DateOnly Today = PunchClock.Today;
+    private PunchStandings? _standings;
+    private bool _loading = true;
+
+    private PunchCard? TodayCard => Card?.Date == Today ? Card : null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Clock is null) return;
+        _standings = await Clock.StandingsAsync(Today);
+        _loading = false;
+    }
+
+    private static string Height(IReadOnlyList<PunchBucket> bars, int players)
+    {
+        int most = bars.Max(b => b.Players);
+        double percent = players == 0 ? 0 : Math.Max(6, 100.0 * players / most);
+        return percent.ToString("0.#", CultureInfo.InvariantCulture);
+    }
+}

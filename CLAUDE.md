@@ -52,6 +52,7 @@ dotnet test tests/DeckOverflow.ControlRoom.Tests # en de Controlekamer (/control
 dotnet test tests/DeckOverflow.ConveyorBelt.Tests # en de Lopende Band (/conveyor-belt)
 dotnet test tests/DeckOverflow.Web.Tests        # en de shell: afdelingen openen, superuser, wereldteksten
 dotnet run --project src/DeckOverflow.Web        # /?seed=255, of /?fight=golem; lokaal ben je superuser
+dotnet run --project tools/DeckOverflow.ScoreCheck # de nachtelijke scorecontrole van de Prikklok (SUPABASE_URL, SUPABASE_SERVICE_KEY)
 python tools/cut_sheets.py                       # tekeningen opnieuw uitsnijden
 python tools/copy_sfx.py                         # geluiden opnieuw kopiëren (pip install soundfile lameenc)
 ```

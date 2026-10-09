@@ -15,7 +15,7 @@
         <p class="hint">@S.T("ui.world.title")</p>
         <nav class="world-tools">
             <button class="title-button" @onclick="OnCodex">@S.T("ui.codex") · @Pages.Count</button>
-            <button class="title-button" disabled title="@S.T("ui.world.soon")">@S.T("ui.world.punch-clock")</button>
+            <button class="title-button" @onclick="OnPunchClock">@S.T("ui.world.punch-clock")</button>
             <button class="title-button" @onclick="OnXRegister">@S.T("ui.xregister") · @PanelCount</button>
             @if (OnAccount.HasDelegate)
             {
@@ -117,7 +117,7 @@
                     @* Een naambordje op de vloer: de band loopt erachter *@
                     <span class="name-plate">
                         <span class="dept-name">@S.T($"ui.world.{d.Key}.name")</span>
-                        <small>@(open ? S.T($"ui.world.{d.Key}.genre") : soon ? S.T("ui.world.coming") : S.T("ui.world.locked"))</small>
+                        <small>@(open ? S.T($"ui.world.{d.Key}.genre") : soon ? S.T("ui.world.coming") : boxed ? S.T("ui.world.locked") : S.T("ui.world.shut"))</small>
                     </span>
                 </button>
             }
@@ -136,23 +136,25 @@
     {
         bool open = IsOpen(sel);
         bool soon = sel.Availability == Availability.Soon;
+        // Gebouwd: open, binnenkort, of vrijgegeven maar nog zonder sleutel. Dan staat de tease er al.
+        bool built = sel.Availability != Availability.Someday;
         var parts = Parts(sel).ToList();
         <aside class="dept-panel">
             <div class="panel-head">
                 <span class="step-badge @(open ? "" : "todo")">@sel.Step</span>
                 <div>
                     <h2 class="heavy">@S.T($"ui.world.{sel.Key}.name")</h2>
-                    @if (open || soon)
+                    @if (built)
                     {
                         <small>@S.T($"ui.world.{sel.Key}.genre")</small>
                     }
                 </div>
             </div>
-            @if (sel.Art is not null && (open || soon))
+            @if (sel.Art is not null && built)
             {
                 <img class="panel-art @(open ? "" : "sketch")" src="@sel.Art" alt="" />
             }
-            @if (open || soon)
+            @if (built)
             {
                 <p>@S.T($"ui.world.{sel.Key}.text")</p>
             }
@@ -161,10 +163,10 @@
                 <div class="panel-box"><CardboardBox /></div>
                 <p>@S.T("ui.world.locked")</p>
             }
-            @if (soon)
+            @if (built && !open)
             {
                 @* De tease: wat erin zit staat er al, de deur nog niet *@
-                <p class="soon-note">@(Departments.IsEarned(sel, Unlocks) ? S.T("ui.world.earned") : S.T($"ui.world.{sel.Key}.needs"))</p>
+                <p class="soon-note">@(soon && Departments.IsEarned(sel, Unlocks) ? S.T("ui.world.earned") : S.T($"ui.world.{sel.Key}.needs"))</p>
             }
 
             @if (parts.Count > 0)
@@ -241,6 +243,7 @@
     [Parameter] public EventCallback<int> OnStart { get; set; }
     [Parameter] public EventCallback OnCodex { get; set; }
     [Parameter] public EventCallback OnXRegister { get; set; }
+    [Parameter] public EventCallback OnPunchClock { get; set; }
 
     /// <summary>Je fabriek bewaren of inloggen. Zonder Supabase geen knop.</summary>
     [Parameter] public EventCallback OnAccount { get; set; }

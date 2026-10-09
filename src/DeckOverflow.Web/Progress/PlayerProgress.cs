@@ -1,4 +1,6 @@
 using System.Text.Json.Serialization;
+using DeckOverflow.CardHall.Commands;
+using DeckOverflow.CardHall.Runs;
 using DeckOverflow.Web.World;
 
 namespace DeckOverflow.Web.Progress;
@@ -57,6 +59,12 @@ public sealed class PlayerProgress
 
     public bool IntroSeen { get; set; }
 
+    /// <summary>
+    /// De Prikklok: je eerste voltooide dagelijkse run van de laatste dag dat je er een uitspeelde. Alleen die
+    /// telt; wie daarna opnieuw speelt, prikt niet meer (D-006). Leeg tot je de eerste uitspeelt.
+    /// </summary>
+    public PunchCard? Punch { get; set; }
+
     /// <summary>Waarom de onthulling gebeurde (<c>won</c>, <c>crack</c>), of leeg als ze nog niet gebeurde.</summary>
     public string? RevealedBy { get; set; }
 
@@ -69,9 +77,38 @@ public sealed class PlayerProgress
         : Codex.ContainsKey(part) ? PartState.Unpacked
         : PartState.InBag;
 
+    /// <summary>
+    /// Een dagelijkse run is uitgespeeld. De eerste van de dag prikt; een volgende telt niet meer (D-006). Een run
+    /// met de sneltoets W prikt nooit, en de server zou ze toch afwijzen. Alleen wat prikt, verandert <see cref="Punch"/>.
+    /// </summary>
+    public PunchOutcome TryPunch(DateOnly day, int score, IReadOnlyList<ICommand> commands)
+    {
+        if (commands.Any(c => c is DebugWin)) return PunchOutcome.DebugWin;
+        if (Punch?.Date == day) return PunchOutcome.Again;
+        Punch = new PunchCard { Date = day, Score = score, Commands = DailyRun.CommandsToJson(commands) };
+        return PunchOutcome.Counted;
+    }
+
     /// <summary>Een afdeling ontgrendelen. De eerste manier blijft staan.</summary>
     public bool TryUnlock(string department, UnlockHow how, DateTimeOffset at) =>
         Unlocks.TryAdd(department, new Unlock(how, at));
+}
+
+/// <summary>Hoe een uitgespeelde dagelijkse run uitkwam bij de Prikklok.</summary>
+public enum PunchOutcome { Counted, Again, DebugWin }
+
+/// <summary>
+/// Eén geprikte dagelijkse run van de Kaartenhal. De commandolijst blijft bewaard tot de score verstuurd is,
+/// zodat een haperend schoolnetwerk niets kost: ze gaat mee bij de volgende kans.
+/// </summary>
+public sealed class PunchCard
+{
+    /// <summary>De UTC-datum van de seed, niet die van het einde: een run kan over middernacht lopen.</summary>
+    public DateOnly Date { get; init; }
+    public int Score { get; init; }
+    /// <summary>De commandolijst als JSON (<c>DailyRun.CommandsToJson</c>), leeg zodra ze verstuurd is.</summary>
+    public string? Commands { get; set; }
+    public bool Sent { get; set; }
 }
 
 /// <summary>
