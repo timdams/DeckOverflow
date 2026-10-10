@@ -1521,3 +1521,13 @@ button.play-big.continue small { font-size: 13px; font-weight: 700; opacity: 0.9
 
 /* Op het eindscherm van een dagelijkse run: telde ze? */
 .end .punch-note { margin: 0 0 6px; font-weight: 700; }
+
+/* ---------------------------------------------------------------- beheer: feedback en scores (D-013) */
+
+.admin { width: min(820px, 94vw); }
+.admin-scroll { align-self: stretch; max-height: 60vh; overflow: auto; }
+.admin-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.admin-table th, .admin-table td { text-align: left; padding: 4px 8px; border-bottom: 1px dashed var(--rule); }
+.admin-table th { position: sticky; top: 0; background: var(--paper); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+.admin-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.admin-comment { white-space: pre-wrap; overflow-wrap: anywhere; }

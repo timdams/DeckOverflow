@@ -147,3 +147,15 @@ Status: BESLIST
 - C. Overtredingen / Violations. Voor: kort. Tegen: in spike 7 waren de kaarten de overtredingen.
 **Aanbeveling:** A en A.
 **Beslissing:** A en A (9 oktober 2026). In het spel heet het register Strafblad (Engels: Rap sheet); in code en docs blijft het intern ✗-register (`XRegister`, `xpanel.*`).
+
+## D-013 Een beheerpaneel voor feedback en scores
+Status: BESLIST
+
+**Context:** Tim wil de feedback en de scores in het spel zelf lezen, niet alleen in het Supabase-dashboard. Feedback is nu met opzet voor niemand leesbaar via de API ([backend.md](docs/wereld/backend.md#feedback-in-het-spel)), en scores lees je alleen voor je eigen klas. Een paneel vraagt dus nieuwe databasefuncties die wél alles teruggeven, maar alleen aan de maker. De controle moet in de database gebeuren, niet in de browser: de bestaande superuser-controle in `Superuser.cs` is te patchen, en dat mag hier niet, want het gaat om berichten van leerlingen. Volgens de superuser-regel staat wie de maker is alleen in Supabase, nooit in de publieke code.
+**Opties (wie mag het zien):**
+- A. Wie `app_metadata.role = 'superuser'` heeft. De databasefuncties (security definer) controleren die rol in het JWT. Voor: volgt de bestaande regel; geen e-mailadres in de publieke repo; een speler kan zijn `app_metadata` niet zelf aanpassen. Tegen: wie je later superuser maakt om te testen, ziet ook de feedback.
+- B. Een vast e-mailadres (dams.tim@telenet.be) in de databasefuncties. Voor: precies wat gevraagd is. Tegen: je adres staat in de publieke repo, en het gaat in tegen "wie het is, staat alleen in Supabase".
+- C. Een aparte rol `admin` naast `superuser`. Voor: testers zien geen feedback. Tegen: een tweede rol om bij te houden.
+**Opties (waar):** een knop "Beheer" in het accountpaneel, alleen zichtbaar voor wie het mag, die een paneel opent op de plattegrond (geen eigen route: een vernieuwing op `/admin` geeft een 404 op GitHub Pages).
+**Aanbeveling:** A, of C als je de superuser-rol aan testers wilt geven. In beide gevallen zet je de rol één keer op je account met de SQL uit backend.md. Lokaal is iedereen superuser in de browser, maar de database geeft alleen data aan je echte account.
+**Beslissing:** A, met feedback per onderwerp, de berichten en de scores, via een knop "Beheer" in het accountpaneel (10 oktober 2026).

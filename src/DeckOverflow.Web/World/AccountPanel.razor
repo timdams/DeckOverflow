@@ -77,6 +77,10 @@
         }
 
         <div class="account-footer">
+            @if (OnAdmin.HasDelegate)
+            {
+                <button class="secondary small" @onclick="OnAdmin">@S.T("ui.admin.open")</button>
+            }
             @if (!Account.IsGuest)
             {
                 <button class="secondary small" disabled="@_busy" @onclick="LogOutAsync">@S.T("ui.account.logout")</button>
@@ -101,6 +105,9 @@
 
     /// <summary>Afgemeld of verwijderd: de pagina begint opnieuw, als een nieuwe gast.</summary>
     [Parameter] public EventCallback OnSignedOut { get; set; }
+
+    /// <summary>Alleen voor de superuser met een account: opent het beheerpaneel (D-013).</summary>
+    [Parameter] public EventCallback OnAdmin { get; set; }
 
     private enum Mode { Keep, LogIn }
 

@@ -1,0 +1,114 @@
+@using System.Globalization
+@using DeckOverflow.Web.Backend
+@inject Strings S
+
+@* Beheer (D-013): de feedback en de scores, alleen voor de maker. Wie het mag, beslist de database;
+   lokaal staat de knop er altijd, maar data komt alleen met je echte superuser-account. *@
+<div class="modal" @onclick="OnClose">
+    <div class="modal-body story-card account admin" @onclick:stopPropagation="true">
+        <h2>@S.T("ui.admin.title")</h2>
+
+        @if (_data is null)
+        {
+            <p class="hint">...</p>
+        }
+        else if (_data.Status == AdminStatus.Forbidden)
+        {
+            <p class="account-error">@S.T("ui.admin.forbidden")</p>
+        }
+        else if (_data.Status == AdminStatus.Failed)
+        {
+            <p class="account-error">@S.T("ui.admin.failed")</p>
+        }
+        else
+        {
+            <div class="account-tabs">
+                <button class="@(_tab == Tab.Feedback ? "" : "secondary") small" @onclick="() => _tab = Tab.Feedback">@S.T("ui.admin.feedback")</button>
+                <button class="@(_tab == Tab.Comments ? "" : "secondary") small" @onclick="() => _tab = Tab.Comments">@S.T("ui.admin.comments", ("count", _data.Comments.Count))</button>
+                <button class="@(_tab == Tab.Scores ? "" : "secondary") small" @onclick="() => _tab = Tab.Scores">@S.T("ui.admin.scores", ("count", _data.Scores.Count))</button>
+            </div>
+
+            <div class="admin-scroll">
+                @switch (_tab)
+                {
+                    case Tab.Feedback:
+                        @if (_data.Feedback.Count == 0)
+                        {
+                            <p class="hint">@S.T("ui.admin.empty")</p>
+                        }
+                        else
+                        {
+                            <table class="admin-table">
+                                <thead><tr><th>@S.T("ui.admin.col.department")</th><th>@S.T("ui.admin.col.subject")</th><th class="num">♥</th><th class="num">meh</th><th class="num">@S.T("ui.admin.col.players")</th></tr></thead>
+                                <tbody>
+                                    @foreach (var row in _data.Feedback)
+                                    {
+                                        <tr><td>@row.Department</td><td>@row.Subject</td><td class="num">@row.Likes</td><td class="num">@row.Dislikes</td><td class="num">@row.Players</td></tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        break;
+                    case Tab.Comments:
+                        @if (_data.Comments.Count == 0)
+                        {
+                            <p class="hint">@S.T("ui.admin.empty")</p>
+                        }
+                        @foreach (var c in _data.Comments)
+                        {
+                            <div class="account-class">
+                                <span class="hint">@When(c.CreatedAt) · @c.Department · @c.Subject@(c.Verdict == "like" ? " · ♥" : c.Verdict == "dislike" ? " · meh" : "")</span>
+                                <span class="admin-comment">@c.Comment</span>
+                            </div>
+                        }
+                        break;
+                    case Tab.Scores:
+                        @if (_data.Scores.Count == 0)
+                        {
+                            <p class="hint">@S.T("ui.admin.empty")</p>
+                        }
+                        else
+                        {
+                            <table class="admin-table">
+                                <thead><tr><th>@S.T("ui.admin.col.day")</th><th>@S.T("ui.admin.col.nickname")</th><th>@S.T("ui.admin.col.department")</th><th class="num">@S.T("ui.admin.col.score")</th><th>@S.T("ui.admin.col.verified")</th></tr></thead>
+                                <tbody>
+                                    @foreach (var s in _data.Scores)
+                                    {
+                                        <tr><td>@s.SeedDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)</td><td>@(s.Nickname ?? "?")</td><td>@s.Department</td><td class="num">@s.ClaimedScore</td><td>@s.Verified</td></tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        break;
+                }
+            </div>
+            <p class="hint">@S.T("ui.admin.limit", ("count", Admin.MaxRows))</p>
+        }
+
+        <div class="account-footer">
+            <button class="secondary small" disabled="@(_data is null)" @onclick="LoadAsync">@S.T("ui.admin.reload")</button>
+            <button class="small" @onclick="OnClose">@S.T("ui.account.close")</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public Admin Admin { get; set; } = default!;
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private enum Tab { Feedback, Comments, Scores }
+
+    private Tab _tab = Tab.Feedback;
+    private AdminData? _data;
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _data = null;
+        _data = await Admin.LoadAsync();
+    }
+
+    private static string When(DateTimeOffset at) =>
+        at.ToLocalTime().ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
+}

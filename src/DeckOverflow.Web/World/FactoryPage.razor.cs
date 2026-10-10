@@ -38,6 +38,10 @@ public partial class FactoryPage
     private Account? Account => Services.GetService<Account>();
     private bool _showAccount;
 
+    /// <summary>Beheer voor de maker (D-013): feedback en scores. De database beslist wie iets te zien krijgt.</summary>
+    private Admin? Admin => Services.GetService<Admin>();
+    private bool _showAdmin;
+
     /// <summary>De Prikklok tegenover Supabase; zonder backend speel je de dagelijkse run toch, zonder klassement.</summary>
     private PunchClock? Clock => Services.GetService<PunchClock>();
     private bool _showPunchClock;

@@ -39,7 +39,7 @@ Bij een brede uitrol laten we dit nalezen door iemand van privacy bij de instell
 
 Gebouwd op 4 oktober 2026. Een speler kan de maker laten weten wat hij leuk vond, altijd optioneel en zonder beloning: een hartje of "meh" na een gewonnen gevecht (onderwerp `enemy:<key>`), en op het eindscherm van een run een hartje plus een kort bericht (onderwerp `run`, hooguit 500 tekens, met de vraag er geen naam of school in te zetten). De component `World/FeedbackHeart.razor` kan elke afdeling gebruiken; zonder backend toont ze niets.
 
-- **Alleen schrijven.** De tabel `feedback` heeft geen leesregel: spelers, klasgenoten en docenten lezen niets, ook hun eigen rijen niet. Tim leest in het dashboard of met de service-sleutel.
+- **Alleen schrijven.** De tabel `feedback` heeft geen leesregel: spelers, klasgenoten en docenten lezen niets, ook hun eigen rijen niet. Tim leest in het [beheerpaneel](#beheer), in het dashboard of met de service-sleutel.
 - **Geen tracking.** Er wordt niets ongevraagd bijgehouden: alleen wat de speler zelf aanklikt of typt. De disclaimer op het hoofdscherm ("Over dit spel") zegt dat zo.
 - **Lezen**, bv. per vijand: `select subject, count(*) filter (where verdict = 'like') as fun, count(*) filter (where verdict = 'dislike') as meh, count(distinct user_id) as players from feedback group by subject order by subject;` en de berichten met `select created_at, subject, comment from feedback where comment is not null order by created_at desc;`.
 
@@ -51,6 +51,14 @@ Beslist op 4 oktober 2026. De maker speelt als **superuser**, de enige die een g
 - **Lokaal** (`localhost`) is iedereen superuser, om te ontwikkelen zonder in te loggen.
 - **Niets in de voortgang.** Open is niet hetzelfde als verdiend: er komen geen sleutels, Codex-pagina's of panelen bij. Wat je speelt, telt wel gewoon mee.
 - **Een controle in de browser** (`Backend/Superuser.cs`, gelezen uit de bewaarde sessie). Wie de app patcht, komt erlangs; daar staat niets tegenover dat dat de moeite waard maakt.
+
+## Beheer
+
+Beslist op 10 oktober 2026 (D-013). De superuser leest de feedback en de scores in het spel zelf: in het accountpaneel staat dan een knop **Beheer**, met drie tabbladen. Op het eerste staat de feedback per onderwerp (hartjes, meh, spelers), op het tweede de berichten en op het derde de scores (bijnaam, afdeling, dag, score, controle). Van de berichten en de scores zie je de nieuwste 200.
+
+- **De database beslist.** De functies `admin_feedback_summary`, `admin_feedback_comments` en `admin_scores` (security definer) kijken zelf naar `app_metadata.role` in het JWT en weigeren anders met `42501`. Wie de app patcht, krijgt de knop maar geen data. Feedback blijft voor iedereen anders onleesbaar.
+- **Alleen met een account.** Een gast krijgt de knop niet. Lokaal ben je superuser in de browser, maar data krijg je alleen als je aanmeldt met het account dat de rol echt heeft.
+- **Berichten zonder bijnaam.** Wat een speler schrijft, hangt in het paneel niet aan wie hij is. Scores tonen wel de bijnaam, zoals in het klassement.
 
 ## Data: Supabase
 

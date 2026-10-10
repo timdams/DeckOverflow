@@ -96,7 +96,13 @@
 
     @if (_showAccount && Account is { } account)
     {
-        <AccountPanel Account="account" OnClose="() => _showAccount = false" OnSignedOut="SignedOut" />
+        <AccountPanel Account="account" OnClose="() => _showAccount = false" OnSignedOut="SignedOut"
+                      OnAdmin="@(_superuser && !account.IsGuest && Admin is not null ? EventCallback.Factory.Create(this, () => { _showAccount = false; _showAdmin = true; }) : default)" />
+    }
+
+    @if (_showAdmin && Admin is { } admin)
+    {
+        <AdminPanel Admin="admin" OnClose="() => _showAdmin = false" />
     }
 
     @* Een verdiend ✗-paneel springt vanaf de onderkant op, in een eigen kader; een klik opent het register *@

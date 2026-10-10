@@ -30,6 +30,7 @@ if (!string.IsNullOrEmpty(supabaseUrl) && !string.IsNullOrEmpty(supabaseKey))
     builder.Services.AddScoped<IProgressStore, SyncedProgressStore>();
     builder.Services.AddScoped<Account>();
     builder.Services.AddScoped<PunchClock>();
+    builder.Services.AddScoped<Admin>();
 }
 else
 {
